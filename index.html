@@ -182,8 +182,8 @@
 <body>
 
 <div id="title-screen">
-    <h1 id="title-name">TIMING LOCK</h1>
-    <p style="color:#aaa; font-size:16px; margin-top:-10px; letter-spacing: 2px;">ULTIMATE PC EDITION</p>
+    <h1 id="title-name">クロック ストッパー</h1>
+    <p style="color:#d0ff00; font-size:32px; margin-top:-10px; letter-spacing: 2px;">ULTIMATE VIP EDITION</p>
     <button id="btn-start">GAME START</button>
 </div>
 
@@ -288,6 +288,9 @@
     <div class="modal-header"><h3>遊び方</h3><span class="close">×</span></div>
     <div style="font-size:14px; line-height:1.6; color:#ccc;">
         <p><strong>■ 基本ルール</strong><br>回転する針が赤いエリアに来たらクリックするとスコアとポイントがたまる！目指せ100スコア！<br>Escキーまたは画面中央右上のアイコンでポーズ。</p>
+        <p><strong>■ 持ち帰る</strong><br>ポイントはライフが０になると最低保証の分しか持って帰れません。ミスする前に押すことでポイントを全て持ち帰ることができます。<br>
+        <p><strong>■ 強化ラボ</strong><br>たまったポイントを使ってパワーアップすることができます。<br>強化した機能はOFFにすることもできます</p>
+        <p><strong>■ ショップ</strong><br>たまったポイントを使いスキンや施設を買う事ができます。おしゃれしている中にも役立つものもあるかも…？</p>
         <p><strong>■ ボス戦</strong><br>10回ごとに動く的が出現！難易度は高いがポイントも多くもらえるぞ！</p>
         <p><strong>■ スロー機能</strong><br>強化後で開放すると、スペースキーを押すことで一定時間スローになります（回数消費）。</p>
         <p><strong>■ フィーバー</strong><br>強化後で開放すると、ゲージ満タンで突入。時間内クリックし放題になります！なおゲージはミスすると10%後退してしまいます。</p>
@@ -414,15 +417,15 @@
         's_gold': { name:"ゴールドリム", type:'skin', cost:800, desc:"リングを金にする(常時発光)", val:'#ffd700' },
         's_white':{ name:"ホワイト", type:'skin', cost:400, desc:"リングを白にする(常時発光)", val:'#ffffff' },
         's_real_n':{ name:"黄金の針", type:'needle', cost:2500, desc:"針を黄金にする", val:'real_needle' },
-        'e_thun': { name:"雷エフェクト", type:'effect', cost:2500, desc:"ヒット時に雷発生", val:'thunder' },
+        'e_thun': { name:"雷エフェクト", type:'effect', cost:2500, desc:"クリティカルヒット時に雷発生", val:'thunder' },
         'e_party':{ name:"パーティクル", type:'effect', cost:4000, desc:"ヒット時に星屑が散る", val:'particle' }, 
         'f_bg':   { name:"サイバー背景", type:'facility', cost:4000, desc:"背景にデジタルグリッドを描画", val:'cyber_bg' }, 
         'sd_clk': { name:"カチッ音", type:'sound', cost:800, desc:"クリック音変更", val:'click_file' },
         'g_btn':  { name:"インターホン", type:'gadget', cost:1500, desc:"右側にボタン追加", val:'g_btn' },
         'g_met':  { name:"メトロノーム", type:'gadget', cost:1500, desc:"リズムを刻む", val:'g_met' },
-        'g_bomb': { name:"爆弾ボタン", type:'gadget', cost:3000, desc:"爆発GIFを再生", val:'g_bomb' },
-        'f_gorg': { name:"豪華なフォント", type:'font', cost:4000, desc:"文字を豪華にする", val:'f_gorg' },
-        'i_tikuwa':{ name:"ちくわ", type:'item', cost:400, desc:"持ち帰りボタンの右に出現", val:'i_tikuwa' }
+        'g_bomb': { name:"爆弾ボタン", type:'gadget', cost:3000, desc:"これから毎日爆破しようぜ？", val:'g_bomb' },
+        'f_gorg': { name:"豪華なフォント", type:'font', cost:4000, desc:"文字がとても豪華になる", val:'f_gorg' },
+        'i_tikuwa':{ name:"ちくわ", type:'item', cost:7000, desc:"高級なちくわ", val:'i_tikuwa' }
     };
 
     // --- アイテム画像追加 ---
@@ -552,7 +555,7 @@
         state.hasDeath = false;
         if(state.score >= 75 && Math.random() < 0.3) {
             state.hasDeath = true;
-            state.deathW = 0.3; // 前より少し広め
+            state.deathW = 0.3; 
             // 右隣か左隣にランダムで配置
             if(Math.random() < 0.5) {
                 state.deathA = (state.targetA + state.targetW/2 + state.deathW/2) % (Math.PI*2);
@@ -1027,7 +1030,7 @@
             let toggleHtml = (s.lv > 0 && !s.noToggle) ? `<button class="toggle-btn ${s.active?'on':''}" onclick="toggleSkill('${k}')">${s.active?'ON':'OFF'}</button>` : '';
             let catColor = getCatColor(s.cat);
 
-            // カテゴリごとの色分けを左端の枠線（border-left）として適用
+            // カテゴリごとの色分け、左端の枠線
             div.innerHTML += `<div class="list-row" style="opacity:${locked?0.5:1}; border-left: 5px solid ${catColor}; border-radius: 4px;">
                 <div class="list-info"><div class="list-title">${locked?'???':s.name} <span style="color:#ffeb3b">${lvText}</span></div><div class="list-desc" style="white-space:pre-wrap;">${descText}</div></div>
                 <div class="btn-group">${toggleHtml}<button class="list-btn" ${locked||max||state.pts<cost?'disabled':''} onclick="buySkill('${k}')">${max?'MAX':cost+'p'}</button></div></div>`;
