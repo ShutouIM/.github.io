@@ -342,25 +342,21 @@
             /* ★ ポイント表示の横並びコンパクト化 */
             .point-hud { 
                 min-height: auto; 
-                padding: 12px 20px; 
+                padding: 12px 0; 
                 margin-bottom: 0; 
                 flex-direction: row; 
-                justify-content: space-between; 
+                justify-content: center; 
                 align-items: center; 
-                text-align: left;
             }
-            .pts-wrapper { text-align: left; }
-            .pts-val { font-size: 26px; margin: 0; }
-            .pending-box { 
-                display: flex !important; 
-                flex-direction: column; 
-                align-items: flex-end; 
-                margin-top: 0; 
-                border-top: none; 
-                padding-top: 0; 
-                text-align: right; 
+            .pts-wrapper { 
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center; 
+                border-right: 1px dashed #333; 
             }
-            .pending-box > div:nth-child(2) { font-size: 20px !important; margin-bottom: 2px; }
+            .pending-box > div:nth-child(2) { font-size: 26px !important; margin-bottom: 2px; }
             .pending-box > div:nth-child(3) { margin-top: 0 !important; }
 
             .record-box { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; justify-content: space-around; margin-bottom: 15px; }
@@ -766,7 +762,7 @@
         'c_oil': { name:"よく滑る油", short:"針速度x1.5", desc:"針の基本スピードが1.5倍になる。重複可。\n(ゲームオーバーまで持続)", flavor:"歯車をツルツルにする危険な油。", cost: 200, img: 'oil.png' },
         'c_timer': { name:"クイックタイマー", short:"時計間隔半減", desc:"オート時計の間隔を半分にする。\n(ゲームオーバーまで持続。重複不可)", flavor:"時間を削り取る魔法のタイマー。", cost: 1500, img: 'watchup.png' },
         'c_cushion': { name:"防護クッション", short:"GameOver保護", desc:"ミスで終わる時に自動で持ち帰りを発動する。\n(発動まで持続。重複不可)", flavor:"落ちた時の衝撃を優しく吸収してくれる。", cost: 2500, img: 'bougo.png' },
-        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'tiket.png' },
+        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'ticket.png' },
         'c_magnet': { name:"磁石", short:"的MAX(5回)", desc:"次の5回、的の広さが最大になる。", flavor:"成功を強引に引き寄せる強力な磁力。", cost: 8000, img: 'magnet.png' },
         'c_last': { name:"背水の陣", short:"常時高難易度ボス(HP1の時のみ使用可)", desc:"ライフが1の時のみ使用可能。\n毎回少し難しいボス戦が発生するようになる。\n(ゲームオーバーまで持続。重複不可)", flavor:"退路を断ち、己の全力を解放せよ。", cost: 10000, img: 'haisui.png' }
     };
