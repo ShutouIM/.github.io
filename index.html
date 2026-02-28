@@ -164,7 +164,7 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.8); -webkit-overflow-scrolling: touch; 
         }
         
-        /* 強化ラボ・ショップは広く。※ここでdisplay:flexを消してバグを修正 */
+        /* 強化ラボ・ショップは広く。 */
         #modal-upgrade, #modal-shop { max-width: 720px; padding: 0; overflow: hidden; flex-direction: column; }
 
         /* わかりやすいスクロールバー設定（水色） */
@@ -188,7 +188,7 @@
             background: #222; color: #fff;
         }
 
-        /* ヘッダー上部固定 (内部スクロール用) */
+        /* ヘッダー上部固定 */
         .modal-header { 
             display: flex; flex-direction: column; align-items: stretch; gap: 10px;
             border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 20;
@@ -216,7 +216,7 @@
             padding-bottom: 10px;
         }
 
-        /* スマートなカテゴリ見出し (全幅) */
+        /* スマートなカテゴリ見出し  */
         .skill-category-title { 
             grid-column: 1 / -1;
             font-size: 14px; font-weight: bold; margin: 15px 0 0 0; 
@@ -243,7 +243,7 @@
         .list-title { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; color: #fff; }
         .list-title-wrapper { display: flex; flex-direction: column; gap: 2px; }
         
-        /* 強化説明文エリア（枠付きで見やすく） */
+        /* 強化説明文エリア */
         .list-desc-wrapper {
             background: rgba(0, 0, 0, 0.4); border-radius: 6px; 
             padding: 8px; margin-bottom: 12px; border: 1px solid #2a2a2a; flex-grow: 1;
@@ -1243,7 +1243,7 @@ function gameOver() {
     function openModal(id) { 
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); 
         
-        // 強化とショップはflex、それ以外はblockで表示してレイアウト崩れを防ぐ
+        // 強化とショップはflex、それ以外はblockで表示
         if(id === 'modal-upgrade' || id === 'modal-shop') {
             document.getElementById(id).style.display='flex'; 
         } else {
