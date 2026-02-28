@@ -166,6 +166,7 @@
             background: rgba(15, 15, 15, 0.98); border: 2px solid #555; padding: 20px;
             border-radius: 12px; width: 90%; max-width: 440px; z-index: 100; max-height: 85vh; overflow-y: auto;
             box-shadow: 0 0 30px rgba(0,0,0,0.8); -webkit-overflow-scrolling: touch; 
+            box-sizing: border-box; /* ★パディングによる見切れ防止 */
         }
         
         /* 強化ラボ・ショップは広く。 */
@@ -285,7 +286,6 @@
 
         /* --- スマホ専用の要素 --- */
         .mobile-only { display: none !important; }
-        #mobile-top-bar { display: none; }
 
         .mobile-btn {
             transition: transform 0.1s;
@@ -300,44 +300,26 @@
         /* --- ✨スマホ向け大幅アップデート（見やすさ・操作性向上）✨ --- */
         @media (max-width: 900px) {
             /* 余白の調整 */
-            .layout-container { padding: 0 10px 160px 10px; gap: 15px; flex-direction: column; }
+            .layout-container { padding: 10px 10px 160px 10px; gap: 15px; flex-direction: column; }
             .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; padding: 0; justify-content: flex-start; }
             
-            /* 表示順の変更（1.ステータス → 2.ゲーム画面 → 3.アイテム） */
-            .left-panel { order: 1; }
-            .center-panel { order: 2; }
+            /* ★ 表示順の変更（1.ゲーム画面とスコア → 2.ステータス → 3.アイテム） */
+            .center-panel { order: 1; }
+            .left-panel { order: 2; }
             .right-panel { order: 3; }
 
-            /* ★ スマホ専用の固定ヘッダー（ライフとスコアを画面上部に追従させる） */
-            #mobile-top-bar {
-                display: flex !important;
-                position: sticky; top: 0; z-index: 100;
-                background: rgba(15, 15, 15, 0.95);
-                border-bottom: 2px solid #333;
-                padding: 10px 15px;
-                padding-top: max(10px, env(safe-area-inset-top)); /* スマホのノッチ対策 */
-                justify-content: space-between;
-                align-items: center;
-                backdrop-filter: blur(5px);
-                margin: 0 -10px 15px -10px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            }
-            .mobile-top-item { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-
-            /* PC用の要素をスマホでは隠す（重複を防ぐため） */
-            .stats-box .stat-line:first-child { display: none; } /* ライフ */
-            #score-display { display: none; } /* スコア */
-            .pending-box { display: none; } /* 一時獲得ポイント */
-            .stats-box hr { display: none; }
-
+            /* ステータス周りを横並びに */
             .stats-box { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; padding: 10px 15px; gap: 10px; }
+            .stats-box hr { display: none; }
             .stat-line { margin: 0; font-size: 14px; }
             
-            .point-hud { min-height: auto; padding: 10px; flex-direction: row; flex-wrap: wrap; justify-content: space-around; align-items: center; margin-bottom: 0;}
-            .pts-val { font-size: 24px; margin: 0; }
+            /* ポイントの表示をコンパクトに */
+            .point-hud { min-height: auto; padding: 15px; flex-direction: row; flex-wrap: wrap; justify-content: space-around; align-items: center; margin-bottom: 0;}
+            .pts-val { font-size: 32px; margin: 0; }
+            .pending-box { margin-top: 0; border-top: none; padding-top: 0; display: flex; align-items: center; gap: 15px; }
 
             .record-box { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; justify-content: space-around; }
-            .record-line { margin-top: 0; font-size: 12px; }
+            .record-line { margin-top: 0; font-size: 14px; }
 
             /* ★ TAPボタンの小型化（押し間違え防止のピル型デザイン） */
             #mobile-tap-btn {
@@ -399,26 +381,11 @@
 
 <div id="modal-tutorial" class="modal" style="padding: 20px; text-align:center; border: 2px solid #00ffcc; z-index: 200;">
     <h3 id="tut-title" style="margin-top:0; margin-bottom:15px; color:#00ffcc; font-size:20px;">チュートリアル</h3>
-    <p id="tut-desc" style="font-size:15px; color:#ddd; line-height:1.6; margin-bottom:25px;"></p>
+    <p id="tut-desc" style="font-size:14px; color:#ddd; line-height:1.6; margin-bottom:20px; word-break: break-word;"></p>
     <button onclick="closeTutorial()" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">わかった！</button>
 </div>
 
 <div class="layout-container" id="main-ui">
-
-    <div id="mobile-top-bar" class="mobile-only">
-        <div class="mobile-top-item" style="align-items:flex-start;">
-            <span style="font-size:11px;color:#aaa;font-weight:bold;">LIFE</span>
-            <div class="life-container" id="mobile-val-life" style="justify-content:flex-start;"></div>
-        </div>
-        <div class="mobile-top-item">
-            <span style="font-size:11px;color:#aaa;font-weight:bold;letter-spacing:2px;">SCORE</span>
-            <div id="mobile-score-display" style="font-size:32px; font-weight:900; color:#ff0055; line-height:1; text-shadow:0 0 10px rgba(255,0,85,0.5);">0</div>
-        </div>
-        <div class="mobile-top-item" style="align-items:flex-end;">
-            <span style="font-size:11px;color:#aaa;font-weight:bold;">PENDING</span>
-            <div id="mobile-pending-display" style="font-size:22px; font-weight:bold; color:#ff5500;">0</div>
-        </div>
-    </div>
 
     <div class="panel left-panel">
         <div class="record-box">
@@ -501,7 +468,7 @@
             <button id="btn-upgrade" class="game-btn btn-upgrade">🔧 強化ラボ</button>
             <button id="btn-shop" class="game-btn btn-shop">🎁 ショップ</button>
             <div class="side-btns">
-                <button id="btn-sys" class="game-btn btn-small" title="設定">⚙️<span style="font-size:10px; margin-top:2px;">設定</span></button>
+                <button id="btn-sys" class="game-btn btn-small" title="設定">⚙️<span style="font-size:10px; margin-top:2px;">設定・セーブ</span></button>
                 <button id="btn-status" class="game-btn btn-small" title="ステータス">📊<span style="font-size:10px; margin-top:2px;">ステータス</span></button>
                 <button id="btn-help" class="game-btn btn-small" title="ヘルプ">❓<span style="font-size:10px; margin-top:2px;">ヘルプ</span></button>
             </div>
@@ -1146,7 +1113,6 @@
 
             if(!state.isFever) {
                 document.getElementById('score-display').innerText = state.score;
-                document.getElementById('mobile-score-display').innerText = state.score;
             }
             setTarget();
 
@@ -1192,8 +1158,6 @@
         playTone('square',1200,0.5); 
         document.getElementById('score-display').innerText="FEVER"; 
         document.getElementById('score-display').style.color="#ffeb3b";
-        document.getElementById('mobile-score-display').innerText="FEVER"; 
-        document.getElementById('mobile-score-display').style.color="#ffeb3b";
         if(state.isSlow) { state.isSlow=false; state.slowTimer=0; }
         updateUI();
     }
@@ -1211,7 +1175,6 @@ function gameOver() {
     state.pts += Math.min(state.pending, ins);
     
     document.getElementById('score-display').innerText = "LOST";
-    document.getElementById('mobile-score-display').innerText = "LOST";
     
     document.getElementById('pending-box').style.visibility='hidden';
     document.getElementById('row-withdraw').style.visibility='hidden';
@@ -1233,7 +1196,6 @@ function gameOver() {
     document.getElementById('click-here-msg').style.display = 'none';
 
     document.getElementById('score-display').innerText="SAFE"; 
-    document.getElementById('mobile-score-display').innerText="SAFE"; 
     updateUI(); 
     document.getElementById('pending-box').style.visibility='hidden';
     document.getElementById('row-withdraw').style.visibility='hidden';
@@ -1306,8 +1268,6 @@ function gameOver() {
                 state.isFever=false; state.feverG = 0;
                 document.getElementById('score-display').innerText=state.score;
                 document.getElementById('score-display').style.color="#ff0055"; 
-                document.getElementById('mobile-score-display').innerText=state.score;
-                document.getElementById('mobile-score-display').style.color="#ff0055"; 
                 setTarget();
             }
             document.getElementById('fever-bar').style.width = Math.max(0, state.feverG)+'%';
@@ -1413,7 +1373,6 @@ function gameOver() {
         
         let pendingText = Math.floor(state.pending);
         document.getElementById('ui-pending').innerText = pendingText;
-        document.getElementById('mobile-pending-display').innerText = pendingText; 
 
         document.getElementById('ui-ins').innerText = isA('ins') ? 15 + skills.ins.lv*10 : 15;
         
@@ -1429,7 +1388,6 @@ function gameOver() {
         for(let i=0; i<cTemp; i++) { lHtml += '<div class="life-box temp"></div>'; }
         
         document.getElementById('val-life').innerHTML = lHtml;
-        document.getElementById('mobile-val-life').innerHTML = lHtml; 
 
         document.getElementById('val-spd').innerText = ((state.buffs.oil>0 ? state.gameSpd*Math.pow(1.5, state.buffs.oil) : state.gameSpd)*20).toFixed(1);
         document.getElementById('val-slow').innerText = state.isPlaying?state.slowC : (isA('slow') ? skills.slow.lv + (skills.slow.lv>=3 ? skills.slow.lv-2 : 0) : 0);
