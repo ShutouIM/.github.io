@@ -305,8 +305,8 @@
             /* スマホの時は縦にスクロールさせる */
             body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
 
-            /* 余白の調整（下に大きな固定領域ができるため） */
-            .layout-container { height: auto; padding: 10px 10px 240px 10px; gap: 15px; flex-direction: column; }
+            /* 余白の調整（上にステータス、下にメニューの固定領域ができるため） */
+            .layout-container { height: auto; padding: 100px 10px 160px 10px; gap: 15px; flex-direction: column; }
             .panel { height: auto; justify-content: flex-start; }
             .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; padding: 0; }
             
@@ -326,32 +326,35 @@
             .record-box { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; justify-content: space-around; margin-bottom: 15px; }
             .record-line { margin-top: 0; font-size: 14px; }
 
-            /* ★ ライフやスピードの枠（stats-box）を下部メニューの上に固定 */
+            /* ★ ライフやスピードの枠（stats-box）を画面上部に完全固定 */
             .stats-box { 
                 position: fixed; 
-                bottom: calc(env(safe-area-inset-bottom, 10px) + 116px); /* メニューの高さ分浮かせる */
+                top: 0;
                 left: 0; width: 100%; 
                 background: rgba(15, 15, 15, 0.98); 
                 border: none;
-                border-top: 2px solid #00ffcc; /* メニュー群の一番上のライン */
+                border-bottom: 2px solid #333; 
                 border-radius: 0;
                 z-index: 1000;
                 display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; 
-                padding: 10px 15px; box-sizing: border-box; gap: 8px;
-                box-shadow: 0 -5px 15px rgba(0,0,0,0.8);
+                padding: max(10px, env(safe-area-inset-top)) 15px 10px 15px; 
+                box-sizing: border-box; gap: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+                margin: 0;
             }
             .stats-box hr { display: none; }
-            .stat-line { margin: 0; font-size: 14px; flex: 1 1 45%; } /* 2列で綺麗に並べる */
+            .stat-line { margin: 0; font-size: 14px; flex: 1 1 45%; } 
 
-            /* 強化メニュー・設定などを画面の一番下に固定配置 */
+            /* 強化メニュー・設定などを画面の一番下に固定配置 (前の仕様に戻す) */
             .menu-grid { 
                 position: fixed; bottom: 0; left: 0; width: 100%; 
                 background: rgba(15, 15, 15, 0.98); 
-                border-top: 1px dashed #333; 
+                border-top: 2px solid #00ffcc; 
                 padding: 10px; box-sizing: border-box; 
                 z-index: 1000; 
                 display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-                padding-bottom: env(safe-area-inset-bottom, 10px); /* iPhoneのバー対策 */
+                padding-bottom: env(safe-area-inset-bottom, 10px); 
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.8); 
             }
             .btn-upgrade, .btn-shop { grid-column: span 1; padding: 12px; font-size: 16px; border-radius: 8px; }
             .side-btns { grid-column: 1 / -1; display: flex; gap: 8px; }
@@ -361,9 +364,9 @@
             /* ★ TAPボタンの小型化（押し間違え防止のピル型デザイン） */
             #mobile-tap-btn {
                 flex: none !important;
-                width: 200px; /* 横幅を制限 */
-                height: 60px; /* 高さをスリムに */
-                border-radius: 30px !important; /* 丸みを帯びたデザイン */
+                width: 200px; 
+                height: 60px; 
+                border-radius: 30px !important; 
                 margin: 0 auto;
                 font-size: 20px !important;
                 letter-spacing: 2px;
@@ -757,7 +760,6 @@
         if(k==='slow') return lv===0 ? 'なし' : `${lv>=2 ? 2 : 1}秒/${lv + (lv>=3 ? lv-2 : 0)}回`;
         if(k==='discount') return `${lv === 0 ? 0 : [0, 5, 10, 25, 25][lv]}%`;
         
-        // ▼ コンボ強化のテキスト修正
         if(k==='comboBonus') return `コンボ毎に+${lv*3}%`;
         
         if(k==='ins') return `${15+lv*45}pt`;
@@ -838,11 +840,11 @@
     };
 
     // --- チュートリアルモーダルの表示処理 ---
-    let wasPausedBeforeTutorial = false; // ポーズ状態を記憶する変数
+    let wasPausedBeforeTutorial = false; 
     
     function showTutorial(type) {
-        wasPausedBeforeTutorial = state.isPaused; // 開く前のポーズ状態を記憶
-        state.isPaused = true; // チュートリアル中は確実にポーズする
+        wasPausedBeforeTutorial = state.isPaused; 
+        state.isPaused = true; 
         
         const modal = document.getElementById('modal-tutorial');
         const title = document.getElementById('tut-title');
@@ -871,14 +873,12 @@
             desc.innerHTML = "熱狂の<span style='color:#ffeb3b; font-weight:bold;'>「フィーバー」</span>機能が解放されました！<br><br>成功を重ねてゲージがMAXになると突入します！<br>フィーバー中は無敵になり、<br>連打した分だけ大量のポイントを稼げます！<br>（※ミスするとゲージが少し減ってしまいます）";
         }
         
-        // 他のモーダルを消さずに、上に重ねて表示する
         modal.style.display = 'block';
     }
     
     function closeTutorial() {
         playBtn();
         document.getElementById('modal-tutorial').style.display = 'none';
-        // チュートリアルを開く前のポーズ状態に戻す（勝手にゲームが再開するのを防ぐ）
         state.isPaused = wasPausedBeforeTutorial;
     }
 
@@ -1072,7 +1072,6 @@
             let gain = isA('pts') ? 1 + skills.pts.lv : 1;
             if(isA('ptsPlus')) gain *= (1 + skills.ptsPlus.lv); 
 
-            // ▼ コンボボーナス倍率の上方修正（1コンボごとに+3%増加する）
             if(isA('comboBonus')) gain *= 1 + (state.combo * 0.03 * skills.comboBonus.lv); 
             
             if(state.isBoss) {
@@ -1137,7 +1136,6 @@
             }
             setTarget();
 
-            // --- チュートリアル判定 ---
             if (state.score === 5 && !state.tutorials.withdraw) {
                 state.tutorials.withdraw = true;
                 setTimeout(() => showTutorial('withdraw'), 300);
