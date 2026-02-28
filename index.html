@@ -460,7 +460,7 @@
             </div>
         </div>
 
-        <div style="font-size: 12px; color: #777; text-align: center; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; user-select: none;">
+        <div style="font-size: 11px; color: #777; text-align: center; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; user-select: none;">
             [クリック / Space] ストップ <span id="guide-slow" style="display: none;">&nbsp;&nbsp; [S] スロー</span> &nbsp;&nbsp; [Esc] ポーズ
         </div>
 
@@ -862,19 +862,19 @@
         
         if(type === 'withdraw') {
             title.innerText = "💡 チュートリアル: 持ち帰り";
-            desc.innerHTML = "ライフが0になるとゲームオーバーになり、<br>稼いだポイントが大きく減ってしまいます！<br><br>ミスしそうになったら、手遅れになる前に<br><span style='color:#ff5500; font-weight:bold;'>「💰 ポイント持ち帰り」</span>を押して<br>安全にポイントを確定させましょう！";
+            desc.innerHTML = "ライフが0になるとゲームオーバーになり、<br>稼いだポイントは最低保証分しか持ち帰れません！<br><br>ミスしそうになったら、手遅れになる前に<br><span style='color:#ff5500; font-weight:bold;'>「💰 ポイント持ち帰り」</span>を押して<br>安全にポイントを確定させましょう！";
         } else if(type === 'boss') {
             title.innerText = "⚠️ チュートリアル: ボス戦";
             desc.innerHTML = "スコア10ごとに<span style='color:#ff0055; font-weight:bold;'>「ボス戦」</span>が発生します！<br><br>赤い的が動くようになり難易度が上がりますが、<br>成功すれば大量のボーナスポイントを獲得できます。<br>落ち着いてタイミングを合わせましょう！";
         } else if(type === 'upgrade') {
             title.innerText = "🔧 チュートリアル: 強化ラボ";
-            desc.innerHTML = "無事ポイントを持ち帰れましたね！<br><br>画面下部メニューの<span style='color:#0077ff; font-weight:bold;'>「🔧 強化ラボ」</span>から、<br>集めたポイントを使って能力を解放できます。<br>まずは「ライフ+」や「ポイントUP」がおすすめです！";
+            desc.innerHTML = "無事ポイントを持ち帰れたようだな！<br><br>画面下部メニューの<span style='color:#0077ff; font-weight:bold;'>「🔧 強化ラボ」</span>から、<br>集めたポイントを使って能力を解放できます。<br>まずは「ライフ+」や「ポイントUP」がおすすめです！";
         } else if(type === 'shop') {
             title.innerText = "🎁 チュートリアル: ショップ";
-            desc.innerHTML = "ショップでは、集めたポイントを使って<br>見た目やBGMなどをカスタマイズできます！<br><br>購入した後は、忘れずに<span style='color:#ff0055; font-weight:bold;'>「装備」</span>ボタンを押して<br>適用してくださいね！";
+            desc.innerHTML = "ショップでは、集めたポイントを使って<br>見た目などをカスタマイズできます。<br><br>購入したものは<span style='color:#ff0055; font-weight:bold;'>「装備」</span>ボタンを押して<br>装備できるぞ！";
         } else if(type === 'consume') {
             title.innerText = "🧸 チュートリアル: 消費アイテム";
-            desc.innerHTML = "「おもちゃ箱」を解放したことで、<br>使い捨ての<span style='color:#ff55cc; font-weight:bold;'>消費アイテム</span>が買えるようになりました！<br><br>購入したアイテムは、ゲーム画面の右側<br>（スマホなら画面下部）のインベントリから<br>タップして使用できます！";
+            desc.innerHTML = "「おもちゃ箱」を解放したことで、<br>使い捨ての<span style='color:#ff55cc; font-weight:bold;'>消費アイテム</span>が買えるようになったぞ！<br><br>購入したアイテムは、ゲーム画面の右側<br>（スマホなら画面下部）のインベントリから<br>タップして使用できます！";
         } else if(type === 'slow') {
             title.innerText = "⏱️ チュートリアル: スロー機能";
             desc.innerHTML = "強力な<span style='color:#00ffff; font-weight:bold;'>「スロー」</span>機能が解放されました！<br><br>ゲーム中にピンチになったら、<br>画面のスローボタン（またはSキー）を押しましょう。<br>一時的に針の動きが遅くなり、確実に狙えます！<br>（※1プレイごとの回数に制限があります）";
