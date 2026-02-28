@@ -2,14 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Timing Lock: Ultimate PC Edition</title>
     <style>
+        /* --- カスタムフォントの読み込み --- */
+        @font-face {
+            font-family: 'DenkiChip';
+            src: url('x8y12pxDenkiChip.ttf') format('truetype');
+        }
+
         body {
             margin: 0; background-color: #080808; color: white;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             min-height: 100vh; user-select: none; overflow-x: hidden;
             transition: font-family 0.3s;
             display: flex; flex-direction: column;
+            touch-action: manipulation; /* ダブルタップズーム防止 */
         }
 
         /* --- タイトル画面 --- */
@@ -19,8 +27,13 @@
             align-items: center; justify-content: center;
         }
         #title-name {
-            font-size: 60px; color: #ff0055; margin: 0 0 10px 0; text-shadow: 0 0 20px #ff0055;
+            font-family: 'DenkiChip', sans-serif; /* タイトルにフォント適用 */
+            font-size: clamp(40px, 8vw, 60px); color: #ff0055; margin: 0 0 10px 0; text-shadow: 0 0 20px #ff0055;
             letter-spacing: 4px; text-align: center;
+        }
+        #title-sub {
+            font-family: 'DenkiChip', sans-serif; /* サブタイトルにも適用 */
+            color:#d0ff00; font-size: clamp(18px, 4vw, 32px); margin-top:-10px; letter-spacing: 2px; text-align: center;
         }
         #btn-start {
             margin-top: 40px; padding: 15px 50px; font-size: 22px; background: linear-gradient(135deg, #00ffcc, #0088aa);
@@ -42,12 +55,6 @@
         .center-panel { width: 340px; align-items: center; justify-content: flex-start; padding-top: 5vh; }
         .right-panel { width: 280px; gap: 15px; justify-content: flex-end; }
 
-        @media (max-width: 900px) {
-            .layout-container { flex-direction: column; align-items: center; padding-top: 20px; }
-            .left-panel, .center-panel, .right-panel { width: 100%; max-width: 350px; justify-content: center; padding-top: 0; }
-            #clock-sidebar { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-        }
-
         /* --- 左パネル：レコード・時計・ステータス --- */
         .record-box { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; box-sizing: border-box; font-size: 16px; font-weight: bold; color: #aaa; margin-bottom: auto; }
         .record-line { display: flex; justify-content: space-between; margin-top: 8px; }
@@ -66,7 +73,7 @@
 
         /* --- 中央パネル：ポイント・ゲーム画面・持ち帰る --- */
         .point-hud { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-sizing: border-box; margin-bottom: 15px; min-height: 140px; display: flex; flex-direction: column; justify-content: flex-start; }
-        .pts-val { font-size: 32px; color: #ffeb3b; font-weight: bold; margin: 5px 0; }
+        .pts-val { font-size: 32px; color: #ffeb3b; font-weight: bold; margin: 5px 0; word-break: break-all; }
         .pending-box { margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; visibility: hidden; }
 
         #fever-container { width: 90%; height: 12px; min-height: 12px; flex-shrink: 0; background: #222; border-radius: 6px; overflow: hidden; border: 2px solid #444; visibility: hidden; margin-bottom: 10px; }
@@ -77,6 +84,13 @@
         .game-area { position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
         canvas { background: #000; border-radius: 50%; border: 4px solid #333; cursor: pointer; position: relative; z-index: 2; transition: border-color 0.2s, box-shadow 0.2s; }
         
+        #click-here-msg {
+            position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+            font-size: 20px; color: #ffeb3b; font-weight: bold; z-index: 20;
+            text-shadow: 0 0 10px #ffeb3b, 0 0 2px #000;
+            pointer-events: none; display: none; transition: 0.2s; white-space: nowrap;
+        }
+
         .fever-active { border-color: #ffeb3b !important; box-shadow: 0 0 30px #ffeb3b !important; animation: shake 0.1s infinite; }
         .slow-active { border-color: #00ffff !important; box-shadow: 0 0 30px #00ffff !important; }
         .boss-active { border-color: #ff0055 !important; box-shadow: 0 0 30px #ff0055 !important; }
@@ -102,7 +116,6 @@
         .pause-text { font-size: 30px; letter-spacing: 5px; color: #00ffcc; text-shadow: 0 0 10px #00ffcc; display: none; }
         @keyframes scrollUp { 0% {top:100%;} 100% { top: -40%; } }
 
-        /* カクつき防止のため visibility で制御し高さを固定 */
         .withdraw-row { display: flex; width: 100%; gap: 10px; visibility: hidden; align-items: center; min-height: 52px; }
         #btn-withdraw { flex: 1; background: linear-gradient(135deg, #ff5500, #cc2200); padding: 15px; font-size: 18px; }
         #tikuwa-img { width: 50px; height: 50px; object-fit: contain; display: none; cursor: pointer; }
@@ -114,31 +127,20 @@
         .consume-area { 
             background: #1a1a1a; border: 1px dashed #444; border-radius: 8px; padding: 10px; 
             width: 100%; box-sizing: border-box; display: none; 
-            max-height: 400px; display: flex; flex-direction: column;
-            margin-bottom: auto; 
+            max-height: 400px; display: flex; flex-direction: column; margin-bottom: auto; 
         }
         .consume-title { font-size: 12px; color: #aaa; margin-bottom: 8px; text-align: center; flex-shrink: 0; }
-        .consume-list { 
-            display: flex; flex-direction: column; gap: 8px; 
-            overflow-y: auto; flex-grow: 1; padding-right: 5px;
-        }
-        .consume-list::-webkit-scrollbar { width: 6px; }
-        .consume-list::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        .consume-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex-grow: 1; padding-right: 5px; }
         
         .consume-item-btn { background: #2a2a2a; border: 1px solid #555; color: #fff; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; text-align: left; }
         .consume-item-btn:hover { background: #333; }
         .consume-item-btn:disabled { cursor: not-allowed; opacity: 0.8; }
-        /* 重複可能なバフの光 */
         .consume-item-btn.active-buff { box-shadow: 0 0 10px #00ffcc; border-color: #00ffcc; }
-        /* 重複不可のバフの青い光 */
         .consume-item-btn.active-buff-unique { box-shadow: 0 0 10px #0077ff; border-color: #0077ff; }
 
-        /* アイテムの画像枠 */
         .item-icon-box {
-            width: 32px; height: 32px; flex-shrink: 0;
-            background: rgba(255, 255, 255, 0.05); border-radius: 6px; 
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden; margin-right: 10px;
+            width: 32px; height: 32px; flex-shrink: 0; background: rgba(255, 255, 255, 0.05); border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center; overflow: hidden; margin-right: 10px;
         }
         .item-icon-box img { width: 100%; height: 100%; object-fit: contain; }
 
@@ -146,45 +148,174 @@
         .gadget-btn { width: 50px; height: 50px; background: #222; border: 2px solid #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; display: none; }
 
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .game-btn { background: #333; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 14px; box-shadow: 0 4px 0 #111; transition: 0.1s; }
+        .game-btn { background: #333; border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 0 #111; transition: 0.1s; }
         .game-btn:active { transform: translateY(4px); box-shadow: none; }
         
         .btn-upgrade { background: linear-gradient(to bottom, #0077ff, #0055aa); grid-column: 1 / -1; padding: 15px; font-size: 16px; }
         .btn-shop { background: linear-gradient(to bottom, #9900ff, #6600cc); grid-column: 1 / -1; padding: 15px; font-size: 16px; }
         .side-btns { display: flex; gap: 10px; grid-column: 1 / -1; }
-        .btn-small { background: #444; flex:1; font-size: 20px; padding: 10px; } 
+        .btn-small { background: #444; flex:1; padding: 6px; flex-direction: column; font-size: 20px; } 
 
-        /* --- モーダル --- */
+        /* --- モーダル共通 --- */
         .modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(15, 15, 15, 0.98); border: 2px solid #555; padding: 20px;
-            border-radius: 12px; width: 90%; max-width: 400px; z-index: 100; max-height: 85vh; overflow-y: auto;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            border-radius: 12px; width: 90%; max-width: 440px; z-index: 100; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8); -webkit-overflow-scrolling: touch; 
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .close { font-size: 24px; background: #333; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        /* 強化ラボ・ショップは広く。※ここでdisplay:flexを消してバグを修正 */
+        #modal-upgrade, #modal-shop { max-width: 720px; padding: 0; overflow: hidden; flex-direction: column; }
 
+        /* わかりやすいスクロールバー設定（水色） */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; border-radius: 4px; border: 1px solid #222; }
+        ::-webkit-scrollbar-thumb { background: #00ffcc; border-radius: 4px; box-shadow: inset 0 0 2px rgba(0,0,0,0.5); }
+        ::-webkit-scrollbar-thumb:hover { background: #00ccaa; }
+
+        /* --- モーダル間のタブ移動 --- */
+        .modal-nav-tabs {
+            display: flex; gap: 2px; background: #0a0a0a; border-bottom: 2px solid #333; flex-shrink: 0;
+        }
+        .modal-nav-btn {
+            flex: 1; padding: 15px; background: #1a1a1a; color: #888; border: none; 
+            cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s;
+        }
+        .modal-nav-btn.active {
+            background: rgba(15, 15, 15, 0.98); color: #fff; border-bottom: 3px solid #00ffcc;
+        }
+        .modal-nav-btn:not(.active):hover {
+            background: #222; color: #fff;
+        }
+
+        /* ヘッダー上部固定 (内部スクロール用) */
+        .modal-header { 
+            display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+            border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 20;
+            background: rgba(15, 15, 15, 0.98); padding: 15px 25px 12px 25px;
+            backdrop-filter: blur(4px); flex-shrink: 0;
+        }
+        .modal-header-top { display: flex; justify-content: space-between; align-items: baseline; }
+        .close { font-size: 24px; background: #333; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: -5px; }
+
+        /* 内部のスクロールエリア */
+        .modal-scroll-area {
+            padding: 0 25px 20px 25px; overflow-y: auto; flex-grow: 1;
+        }
+
+        /* タブデザイン（ショップ用） */
         .shop-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
         .shop-tab-btn { flex: 1; padding: 10px; background: #222; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .shop-tab-btn.active { background: #00ffcc; color: #000; border-color: #00ffcc; }
 
-        .list-row { background: #222; padding: 12px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
-        .list-info { text-align: left; flex: 1; margin-right: 10px; display: flex; align-items: center; }
-        .list-title { font-weight: bold; font-size: 15px; margin-bottom: 4px; color: #fff; }
-        .list-desc { font-size: 12px; color: #aaa; white-space: pre-wrap; line-height: 1.4; }
-        .btn-group { display: flex; gap: 5px; }
-        .list-btn { background: #00ffcc; color: #000; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; min-width: 65px; }
+        /* --- 新デザイン：2カラムグリッド（強化・ショップ共通） --- */
+        #list-upgrade, #list-shop {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            padding-bottom: 10px;
+        }
+
+        /* スマートなカテゴリ見出し (全幅) */
+        .skill-category-title { 
+            grid-column: 1 / -1;
+            font-size: 14px; font-weight: bold; margin: 15px 0 0 0; 
+            padding: 6px 10px; background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
+            border-left: 4px solid; color: #fff; text-shadow: 0 0 5px rgba(0,0,0,0.5); border-radius: 4px;
+        }
+        .skill-category-title:first-child { margin-top: 5px; }
+
+        .lock-badge {
+            display: inline-block; background: #331111; color: #ff5555; font-size: 11px;
+            padding: 2px 6px; border-radius: 4px; border: 1px solid #ff0055; font-weight: bold;
+        }
+
+        /* カード型リストアイテム */
+        .list-row { 
+            background: #1a1a1a; padding: 12px;
+            border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column;
+            justify-content: space-between; transition: background 0.2s, transform 0.1s; 
+            margin-bottom: 0; 
+        }
+        .list-row:hover { background: #222; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        .list-row-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .list-title { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; color: #fff; }
+        .list-title-wrapper { display: flex; flex-direction: column; gap: 2px; }
+        
+        /* 強化説明文エリア（枠付きで見やすく） */
+        .list-desc-wrapper {
+            background: rgba(0, 0, 0, 0.4); border-radius: 6px; 
+            padding: 8px; margin-bottom: 12px; border: 1px solid #2a2a2a; flex-grow: 1;
+        }
+        .list-desc { font-size: 12px; color: #ddd; white-space: pre-wrap; line-height: 1.5; }
+        /* フレーバーテキスト */
+        .list-flavor { font-size: 10px; color: #777; font-style: italic; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #333; line-height: 1.3;}
+        
+        .list-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+
+        /* アイコン枠と効果量表示枠 */
+        .skill-icon-box {
+            width: 32px; height: 32px; flex-shrink: 0; background: rgba(255, 255, 255, 0.08); 
+            border-radius: 6px; display: flex; align-items: center; justify-content: center; 
+            font-size: 18px; border: 1px solid #444; overflow: hidden;
+        }
+        .skill-icon-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        .list-effect-box {
+            font-size: 11px; font-weight: bold; color: #00ffcc; 
+            background: rgba(0, 255, 204, 0.1); padding: 6px 10px; 
+            border-radius: 4px; margin-bottom: 12px; border: 1px dashed rgba(0,255,204,0.3);
+        }
+        .list-effect-box.secret {
+            color: #777; background: rgba(255,255,255,0.05); border-color: #444;
+        }
+
+        .list-btn { 
+            background: #00ffcc; color: #000; border: none; padding: 8px 16px; 
+            border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; min-width: 60px; 
+        }
         .list-btn:disabled { background: #444; color: #777; cursor: default; }
-        .toggle-btn { background: #444; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .toggle-btn { background: #444; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
         .toggle-btn.on { background: #ffeb3b; color: #000; }
+
+        /* --- スマホ向け最適化 --- */
+        @media (max-width: 900px) {
+            .layout-container { flex-direction: column; align-items: center; padding: 15px 10px; gap: 20px; }
+            .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; justify-content: center; padding-top: 0; }
+            .center-panel { max-width: 350px; } 
+            #clock-sidebar { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+            .game-btn { padding: 18px; font-size: 16px; }
+            .btn-small { padding: 8px; font-size: 24px; }
+            #btn-withdraw { padding: 20px; font-size: 20px; }
+            .list-btn { padding: 12px 15px; font-size: 14px; min-width: 80px; }
+            .toggle-btn { padding: 12px; font-size: 14px; }
+            .modal { padding: 15px; width: 95%; max-width: none; max-height: 90vh; }
+            
+            #list-upgrade, #list-shop { grid-template-columns: 1fr; }
+            #modal-upgrade, #modal-shop { padding: 0; }
+            .modal-header { padding: 15px; }
+            .modal-scroll-area { padding: 0 15px 20px 15px; }
+        }
     </style>
 </head>
 <body>
 
 <div id="title-screen">
     <h1 id="title-name">クロック ストッパー</h1>
-    <p style="color:#d0ff00; font-size:32px; margin-top:-10px; letter-spacing: 2px;">ULTIMATE VIP EDITION</p>
+    <p id="title-sub">ULTIMATE VIP EDITION</p>
     <button id="btn-start">GAME START</button>
+</div>
+
+<div id="modal-start-help" class="modal" style="padding: 20px;">
+    <div class="modal-header-top" style="margin-bottom:10px;"><h3 style="margin:0;">簡易マニュアル</h3></div>
+    <div style="font-size:14px; line-height:1.6; color:#ccc; margin-bottom:20px;">
+        <p>・回転する針が<strong>赤いエリア</strong>に来たら<span style="color:#00ffcc;">画面をタップ</span>または<span style="color:#00ffcc;">スペースキー</span>！</p>
+        <p>・左下のライフがなくなると<span style="color:#00ffcc;">ポイントが一部失われる！</span>ライフがなくなる前に<span style="color:#efb627;">ポイント持ち帰り</span>を押し、ポイントを保持しよう！</p>
+        <p>・ポイントが溜まったら右側の<span style="color:#00ffcc;">「強化ラボ」</span>でパワーアップや<span style="color:#00ffcc;">「ショップ」</span>で見た目のカスタマイズができるぞ！</p>
+        <p>・スロー機能解放後は<strong>Sキー</strong>で発動できるぞ！</p>
+    </div>
+    <button id="btn-close-start-help" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">ゲームスタート</button>
 </div>
 
 <div class="layout-container" id="main-ui">
@@ -211,12 +342,11 @@
     </div>
 
     <div class="panel center-panel">
-        
-
         <div id="fever-container"><div id="fever-bar"></div></div>
         <div id="score-display">0</div>
         
         <div class="game-area">
+            <div id="click-here-msg">CLICK HERE! ↓</div>
             <div id="pause-btn">⏸️</div>
             <canvas id="canvas" width="280" height="280"></canvas>
             <img id="bomb-gif" src="bakuhatu.gif" alt=""> 
@@ -224,14 +354,14 @@
             
             <div id="overlay-msg">
                 <div class="roll-text" id="ending-txt" style="position: absolute; width: 100%;">
-                    CONGRATULATIONS!<br><br>100 SCORE ACHIEVED<br><br>You have reached the realm of gods.<br><br>THANK YOU FOR PLAYING!
+                    おめでとう!<br><br>あなたはこのゲームをよく遊んでくれました<br><br>THANK YOU FOR PLAYING!<br><br><br><br>新たな扉が開かれたようだ…
                 </div>
                 <div class="pause-text" id="pause-txt">PAUSED</div>
             </div>
         </div>
 
         <div class="withdraw-row" id="row-withdraw">
-            <button id="btn-withdraw" class="game-btn">💰 持ち帰る</button>
+            <button id="btn-withdraw" class="game-btn">💰 ポイント持ち帰り</button>
             <img id="tikuwa-img" src="tikuwa.png" alt="🍢">
         </div>
         <div class="point-hud">
@@ -255,52 +385,85 @@
             <div id="gd-btn" class="gadget-btn">🔴</div>
             <div id="gd-metro" class="gadget-btn">⏱️</div>
             <div id="gd-bomb" class="gadget-btn">💣</div>
+            <div id="gd-neko" class="gadget-btn" style="transition: transform 0.2s;">🐱</div>
         </div>
 
         <div class="menu-grid">
             <button id="btn-upgrade" class="game-btn btn-upgrade">🔧 強化ラボ</button>
             <button id="btn-shop" class="game-btn btn-shop">🎁 ショップ</button>
             <div class="side-btns">
-                <button id="btn-sys" class="game-btn btn-small" title="設定">⚙️</button>
-                <button id="btn-status" class="game-btn btn-small" title="ステータス">📊</button>
-                <button id="btn-help" class="game-btn btn-small" title="ヘルプ">❓</button>
+                <button id="btn-sys" class="game-btn btn-small" title="設定">⚙️<span style="font-size:10px; margin-top:2px;">設定</span></button>
+                <button id="btn-status" class="game-btn btn-small" title="ステータス">📊<span style="font-size:10px; margin-top:2px;">ステータス</span></button>
+                <button id="btn-help" class="game-btn btn-small" title="ヘルプ">❓<span style="font-size:10px; margin-top:2px;">ヘルプ</span></button>
             </div>
         </div>
     </div>
 </div>
 
 <div id="modal-upgrade" class="modal">
-    <div class="modal-header"><h3>強化ラボ</h3><span class="close">×</span></div>
-    <div id="list-upgrade"></div>
+    <div class="modal-nav-tabs">
+        <button class="modal-nav-btn active">🔧 強化ラボ</button>
+        <button class="modal-nav-btn" onclick="openModal('modal-shop')">🎁 ショップ</button>
+    </div>
+    <div class="modal-header">
+        <div class="modal-header-top">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap: wrap;">
+                <h3 style="margin:0;">強化メニュー</h3>
+                <span style="font-size:13px; color:#00ffcc; font-weight:bold;">合計Lv: <span id="modal-total-lv">0</span></span>
+                <span style="font-size:13px; color:#ffeb3b; font-weight:bold;">所持: <span class="modal-pts-display">0</span> Pt</span>
+            </div>
+            <span class="close" onclick="closeAllModals()">×</span>
+        </div>
+    </div>
+    <div class="modal-scroll-area">
+        <div id="list-upgrade" style="min-height: 200px; margin-top: 5px;"></div>
+    </div>
 </div>
 
 <div id="modal-shop" class="modal">
-    <div class="modal-header"><h3>ショップ</h3><span class="close">×</span></div>
-    <div class="shop-tabs" id="shop-tabs" style="display:none;">
-        <button class="shop-tab-btn active" id="tab-skin" onclick="changeShopTab('skin')">スキン・施設</button>
-        <button class="shop-tab-btn" id="tab-item" onclick="changeShopTab('item')">消費アイテム</button>
+    <div class="modal-nav-tabs">
+        <button class="modal-nav-btn" onclick="openModal('modal-upgrade')">🔧 強化ラボ</button>
+        <button class="modal-nav-btn active">🎁 ショップ</button>
     </div>
-    <div style="text-align:right; margin-bottom:5px;"><button id="btn-reset-looks" onclick="resetLooks()" style="font-size:11px; padding:4px 8px;">見た目リセット</button></div>
-    <div id="list-shop"></div>
+    <div class="modal-header">
+        <div class="modal-header-top">
+            <div style="display:flex; align-items:baseline; gap:15px;">
+                <h3 style="margin:0;">アイテム購入</h3>
+                <span style="font-size:14px; color:#ffeb3b; font-weight:bold;">所持: <span class="modal-pts-display">0</span> Pt</span>
+            </div>
+            <span class="close" onclick="closeAllModals()">×</span>
+        </div>
+        <div class="shop-tabs" id="shop-tabs" style="display:none; margin-top:10px; margin-bottom:5px;">
+            <button class="shop-tab-btn active" id="tab-skin" onclick="changeShopTab('skin')">スキン・施設</button>
+            <button class="shop-tab-btn" id="tab-item" onclick="changeShopTab('item')">消費アイテム</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <div id="skin-caution" style="font-size:11px; color:#ff5555; font-weight:bold; display:none;">※購入後は「装備」しないと意味がないぜ！</div>
+            <button id="btn-reset-looks" onclick="resetLooks()" style="font-size:11px; padding:4px 8px; margin-left:auto;">見た目リセット</button>
+        </div>
+    </div>
+    <div class="modal-scroll-area">
+        <div id="list-shop"></div>
+    </div>
 </div>
 
-<div id="modal-help" class="modal">
-    <div class="modal-header"><h3>遊び方</h3><span class="close">×</span></div>
-    <div style="font-size:14px; line-height:1.6; color:#ccc;">
-        <p><strong>■ 基本ルール</strong><br>回転する針が赤いエリアに来たらクリックするとスコアとポイントがたまる！目指せ100スコア！<br>Escキーまたは画面中央右上のアイコンでポーズ。</p>
-        <p><strong>■ 持ち帰る</strong><br>ポイントはライフが０になると最低保証の分しか持って帰れません。ミスする前に押すことでポイントを全て持ち帰ることができます。<br>
+<div id="modal-help" class="modal" style="padding: 20px;">
+    <div class="modal-header-top" style="margin-bottom:10px;"><h3 style="margin:0;">遊び方</h3><span class="close" onclick="closeAllModals()">×</span></div>
+    <div style="font-size:14px; line-height:1.6; color:#ccc; margin-top:10px;">
+        <p><strong>■ 基本ルール</strong><br>回転する針が赤いエリアに来たらクリック（またはスペースキー）するとスコアとポイントがたまる！目指せ100スコア！<br>Escキーまたは画面中央右上のアイコンでポーズ。</p>
+        <p><strong>■ 持ち帰る</strong><br>ポイントはライフが０になると最低保証の分しか持って帰れません。ミスする前に押すことでポイントを全て持ち帰ることができます。</p>
         <p><strong>■ 強化ラボ</strong><br>たまったポイントを使ってパワーアップすることができます。<br>強化した機能はOFFにすることもできます</p>
         <p><strong>■ ショップ</strong><br>たまったポイントを使いスキンや施設を買う事ができます。おしゃれしている中にも役立つものもあるかも…？</p>
         <p><strong>■ ボス戦</strong><br>10回ごとに動く的が出現！難易度は高いがポイントも多くもらえるぞ！</p>
-        <p><strong>■ スロー機能</strong><br>強化後で開放すると、スペースキーを押すことで一定時間スローになります（回数消費）。</p>
+        <p><strong>■ スロー機能</strong><br>強化後で開放すると、<strong>Sキー</strong>を押すことで一定時間スローになります（回数消費）。</p>
         <p><strong>■ フィーバー</strong><br>強化後で開放すると、ゲージ満タンで突入。時間内クリックし放題になります！なおゲージはミスすると10%後退してしまいます。</p>
         <p><strong>■ 難易度の上昇</strong><br>スコア50以降は針が逆回転することがあります。<br>スコア75以降は成功判定の横に、触れると即死する青い💀エリアが出現することがあります。</p>
     </div>
 </div>
 
-<div id="modal-sys" class="modal">
-    <div class="modal-header"><h3>設定</h3><span class="close">×</span></div>
-    <div style="font-size:14px;">
+<div id="modal-sys" class="modal" style="padding: 20px;">
+    <div class="modal-header-top" style="margin-bottom:10px;"><h3 style="margin:0;">設定</h3><span class="close" onclick="closeAllModals()">×</span></div>
+    <div style="font-size:14px; margin-top:10px;">
         <label>SE音量</label><input type="range" id="vol-se" min="0" max="1" step="0.1" value="0.5" style="width:100%; margin-bottom: 10px;">
         <label>フィーバーの彩度 (%)</label><input type="range" id="vol-sat" min="0" max="100" step="1" value="100" style="width:100%; margin-bottom: 10px;">
         
@@ -322,15 +485,17 @@
         <button id="btn-play-ending" onclick="playEnding()" style="width:100%; margin-top:20px; background:#00ffcc; color:black; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; display:none;">🎞️ エンディングを見る</button>
         
         <button onclick="confirmFullReset()" style="width:100%; margin-top:20px; background:#ff0055; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">データ全削除 (リセット)</button>
+
+        <button onclick="openModal('modal-credit')" style="width:100%; margin-top:10px; background:#555; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">クレジットを見る</button>
     </div>
 </div>
 
-<div id="modal-status" class="modal">
-    <div class="modal-header"><h3>詳細ステータス</h3><span class="close">×</span></div>
-    <div id="status-content" style="font-size:14px; line-height:2.0; color:#ddd; background:#111; padding:15px; border-radius:8px; border:1px solid #333;"></div>
+<div id="modal-status" class="modal" style="padding: 20px;">
+    <div class="modal-header-top" style="margin-bottom:10px;"><h3 style="margin:0;">詳細ステータス</h3><span class="close" onclick="closeAllModals()">×</span></div>
+    <div id="status-content" style="font-size:14px; line-height:2.0; color:#ddd; background:#111; padding:15px; border-radius:8px; border:1px solid #333; margin-top:10px;"></div>
 </div>
 
-<div id="modal-confirm" class="modal" style="max-width:320px; text-align:center;">
+<div id="modal-confirm" class="modal" style="max-width:320px; text-align:center; padding: 20px;">
     <h3 style="color:#ff0055; margin-top:0;">⚠️ データ全削除</h3>
     <p style="font-size:14px; color:#ddd; margin-bottom:20px;">
         本当にすべてのデータを消去して<br>初期状態に戻しますか？<br>
@@ -342,8 +507,20 @@
     </div>
 </div>
 
+<div id="modal-credit" class="modal" style="padding: 20px;">
+    <div class="modal-header-top" style="margin-bottom:10px;"><h3 style="margin:0;">クレジット</h3><span class="close" onclick="closeAllModals()">×</span></div>
+    <div style="font-size:14px; line-height:1.8; color:#ccc; margin-top:10px; text-align:center;">
+        <h2 style="color:#00ffcc; font-family:'DenkiChip', sans-serif; letter-spacing: 2px;">Timing Lock: Ultimate</h2>
+        <p><strong>[ 制作・消費アイテムイラスト・プログラム ]</strong><br>秋冬IM</p>
+        <p><strong>[ 制作ツール ]</strong><br>VScode</p>
+        <p><strong>[ フォント ]</strong><br>x8y12pxDenkiChip.ttf</p>
+        <p><strong>[ 素材・SE ]</strong><br>・OtoLogic<br>・効果音ラボ<br>・photo-ac<br>
+        <p style="margin-top:20px; font-size:12px; color:#888;">Thank you for playing!</p>
+    </div>
+</div>
+
 <script>
-    const DEBUG_POINTS = 0; 
+    const DEBUG_POINTS = 100000; 
 
     let owned = [];
     const canvas = document.getElementById('canvas');
@@ -352,93 +529,148 @@
     const sBtn = new Audio('button.mp3');
     const sClick = new Audio('click.mp3');
     const sInterhon = new Audio('interhon.mp3');
+    const sRezi = new Audio('rezi.mp3'); 
 
     let state = {
         pts: DEBUG_POINTS, pending: 0, isPlaying: false, isPaused: false,
-        isFever: false, isSlow: false, isBoss: false, hasReached100: false,
+        isFever: false, isSlow: false, isBoss: false, hasReached100: false, hasTutorialDone: false, 
         feverG: 0, combo: 0, score: 0, life: 1, tempLife: 0, gameSpd: 0.05, 
         slowC: 0, slowTimer: 0, heartTimer: 0, ticketTimer: 0, angle: 0, targetA: 0, targetW: 0.7, critOff: 0, bossDir: 1, bossSpeed: 0.01,
         bossShieldLeft: 0, direction: 1, hasDeath: false, deathA: 0, deathW: 0.3,
         maxScore: 0, maxCombo: 0,
-        skin: { ring:'#333', effect:'none', sound:'default', needle:'default', g_btn:false, g_met:false, i_tikuwa:false, g_bomb:false, f_gorg:false, f_bg:false },
+        skin: { ring:'#333', effect:'none', sound:'default', needle:'default', g_btn:false, g_met:false, i_tikuwa:false, g_bomb:false, f_gorg:false, f_bg:false, g_neko:false },
         consumes: { c_heart: 0, c_pot: 0, c_oil: 0, c_timer: 0, c_cushion: 0, c_ticket: 0, c_magnet: 0, c_last: 0 },
         unlockedConsumes: {}, 
         buffs: { pot: 0, oil: 0, qTimer: false, cushion: 0, magnet: 0, last: false },
         settings: { vol: 0.5, showNum: true, feverSat: 100 },
         shopTab: 'skin'
     };
-
+    
     let particles = [];
 
-    // カテゴリごとの色分け設定
     function getCatColor(cat) {
         switch(cat) {
-            case 'basic': return '#00ffcc'; // 水色 (基本)
-            case 'fever': return '#ffeb3b'; // 黄色 (フィーバー系)
-            case 'boss':  return '#ff0055'; // 赤 (ボス系)
-            case 'rng':   return '#ff8800'; // オレンジ (確率系)
-            case 'system':return '#cc00ff'; // 紫 (システム・おもちゃ箱)
-            case 'god':   return '#ffffff'; // 白 (神系)
+            case 'basic': return '#00ffcc';
+            case 'fever': return '#ffeb3b';
+            case 'boss':  return '#ff0055';
+            case 'rng':   return '#ff8800';
+            case 'system':return '#cc00ff';
+            case 'toybox':return '#ff55cc'; 
+            case 'god':   return '#ffffff';
             default:      return '#444';
         }
     }
 
-    // --- 強化データ ---
     const skills = {
-        life: { name:"ライフ+", desc:"ミスの許容回数UP", base:30, step:20, max:5, lv:0, tier:0, active:true, cat:'basic' },
-        pts:  { name:"ポイントUP", desc:"基礎獲得量UP", base:20, step:15, max:20, lv:0, tier:0, active:true, cat:'basic' },
-        wide: { name:"エリア拡大", desc:"的を広くする", base:20, step:10, max:10, lv:0, tier:0, active:true, cat:'basic' },
-        antiReverse: { name:"誤作動防止", desc:"逆回転確率-10%", base:300, step:200, max:3, lv:0, tier:0, active:true, cat:'basic' },
-        slow: { name:"スロー", desc:"スペースで一時減速", base:60, step:50, max:5, lv:0, tier:3, active:true, cat:'system' },
-        lucky:{ name:"ラッキー", desc:"0.5%でpt3倍", base:250, step:0, max:1, lv:0, tier:3, active:true, cat:'rng' },
-        discount: { name:"割引", desc:"他の強化必要Ptダウン", base:500, step:400, max:3, lv:0, tier:4, active:true, cat:'system' },
-        comboBonus: { name:"コンボ強化", desc:"コンボ数×1% Pt増", base:150, step:80, max:5, lv:0, tier:4, active:true, cat:'system' }, 
-        ins:  { name:"保険", desc:"ミス時の最低保証", base:30, step:20, max:20, lv:0, tier:5, active:true, cat:'system' },
-        crit: { name:"クリティカル", desc:"1.5倍エリア出現", base:80, step:0, max:1, lv:0, tier:5, active:true, cat:'rng' },
-        critRate: { name:"クリ率UP", desc:"判定外でも確率でCrit", base:200, step:150, max:10, lv:0, tier:6, active:true, cat:'rng' }, 
-        recovery: { name:"リカバリー", desc:"ミス時確率でライフ保護", base:250, step:200, max:5, lv:0, tier:7, active:true, cat:'rng' },
-        bossShield: { name:"ボスシールド", desc:"ボス時のミスを無効化", base:600, step:600, max:2, lv:0, tier:8, active:true, cat:'boss' },
-        bossSlow: { name:"ボス威圧", desc:"ボス時確率でスロー発動", base:800, step:600, max:5, lv:0, tier:9, active:true, cat:'boss' },
-        wideKeep: { name:"ワイドキープ", desc:"的の縮小を抑える", base:400, step:300, max:5, lv:0, tier:9, active:true, cat:'system' }, 
-        auto: { name:"オート時計", desc:"放置で稼ぐ(LvUPで増設)", base:200, step:150, max:15, lv:0, tier:10, active:true, cat:'system' },
-        toybox: { name:"おもちゃ箱", desc:"ショップに消費アイテム追加", base:1000, step:0, max:1, lv:0, tier:10, active:true, noToggle:true, cat:'system' },
-        gear: { name:"軽量ギア", desc:"針の加速スピードを抑える", base:400, step:300, max:5, lv:0, tier:11, active:true, cat:'basic' }, 
-        fever:{ name:"フィーバー", desc:"ゲージMAXで無敵連打", base:300, step:300, max:5, lv:0, tier:15, active:true, cat:'fever' },
-        feverTime: { name:"Fタイム延長", desc:"フィーバー時間+1秒", base:600, step:600, max:5, lv:0, tier:16, active:true, cat:'fever' },
-        feverBoost: { name:"Fボーナス", desc:"フィーバー中の獲得Pt倍率UP", base:500, step:500, max:5, lv:0, tier:18, active:true, cat:'fever' }, 
-        widePlus: { name:"エリア拡大+", desc:"的をさらに広くする", base:1000, step:800, max:10, lv:0, tier:50, active:true, cat:'basic' }, 
-        ptsPlus:  { name:"ポイントUP+", desc:"基礎獲得量を大幅に乗算", base:2000, step:1500, max:5, lv:0, tier:50, active:true, cat:'basic' },
-        ending: { name:"真実の扉", desc:"エンディングを解放", base:3000, step:0, max:1, lv:0, tier:12, active:true, cat:'god' }, 
-        godMode: { name:"神の領域", desc:"絶対成功領域&Pt10倍", base:50000, step:0, max:1, lv:0, tier:17, active:true, cat:'god' } 
+        life: { icon: "❤️", name:"ライフ+", desc:"ミスの許容回数を増やします。", flavor:"心の余裕、欲しくない？", base:30, step:30, defaultMax:5, max:5, lv:0, tier:0, active:true, cat:'basic' },
+        pts:  { icon: "P", name:"ポイントUP", desc:"基礎獲得量を増加させます。", flavor:"小さな積み重ねが、やがて莫大な富へと変わる。", base:20, step:20, defaultMax:20, max:20, lv:0, tier:0, active:true, cat:'basic', isLB:true },
+        wide: { icon: "🎯", name:"エリア拡大", desc:"成功判定となる赤いエリアを少し広くします。", flavor:"成功への的を広げていく。", base:20, step:10, defaultMax:10, max:10, lv:0, tier:0, active:true, cat:'basic' },
+        gear: { icon: "⚙️", name:"軽量ギア", desc:"成功を重ねた時の、針の加速スピードを抑えます。", flavor:"精密な歯車が、時の暴走を優しくなだめる。", base:400, step:400, defaultMax:5, max:5, lv:0, tier:11, active:true, cat:'basic', isLB:true }, 
+        widePlus: { icon: "🏹", name:"エリア拡大+", desc:"赤いエリアをさらに広くして、難易度を大幅に下げます。", flavor:"もはや外すことすら難しい。絶対的な自信の現れ。", base:1000, step:800, defaultMax:10, max:10, lv:0, tier:50, active:true, cat:'basic', isLB:true }, 
+        ptsPlus:  { icon: "💰", name:"ポイントUP+", desc:"基礎獲得量を大幅に乗算し、爆発的に稼げるようにします。", flavor:"世界の理に介入し、富の増幅を加速させる。", base:2000, step:1500, defaultMax:5, max:5, lv:0, tier:50, active:true, cat:'basic', isLB:true },
+        antiReverse: { icon: "🔄", name:"誤作動防止", desc:"スコア50以降に発生する「逆回転」の確率を下げます。", flavor:"運命の逆流に抗う、強靭な意志の力。", base:300, step:200, defaultMax:2, max:2, lv:0, tier:0, active:true, cat:'basic' },
+
+        crit: { icon: "⚡", name:"クリティカル", desc:"ポイントが1.5倍になる黄色いクリティカルエリアが出現します。", flavor:"一瞬の隙を突く、研ぎ澄まされた集中力。", base:80, step:0, defaultMax:1, max:1, lv:0, tier:5, active:true, cat:'rng' },
+        critRate: { icon: "📈", name:"クリ率UP", desc:"エリア外でも、確率でクリティカル判定になります。", flavor:"奇跡を必然に変える、恐るべき洞察。", base:200, step:150, defaultMax:10, max:10, lv:0, tier:6, active:true, cat:'rng', parent:'crit' }, 
+        lucky:{ icon: "🍀", name:"ラッキー", desc:"0.5%で獲得ポイントが3倍になるラッキーが発生します。", flavor:"運命の女神が、あなたに微笑みかけている。", base:250, step:0, defaultMax:1, max:1, lv:0, tier:5, active:true, cat:'rng' },
+        recovery: { icon: "💊", name:"リカバリー", desc:"ミスした時に、確率でライフが減らないことがあります。", flavor:"死の淵から蘇る、不屈の精神。", base:250, step:200, defaultMax:5, max:5, lv:0, tier:7, active:true, cat:'rng' },
+
+        slow: { icon: "⏱️", name:"スロー", desc:"ゲーム中にSキーを押すと、一定時間針がスローになります。", flavor:"世界が色褪せ、時の流れが泥のように遅くなる。", base:60, step:50, defaultMax:5, max:5, lv:0, tier:3, active:true, cat:'system' },
+        discount: { icon: "🎫", name:"割引", desc:"他のすべての強化に必要なポイントが減少します。", flavor:"取引の極意。全ての対価は、交渉次第で下がる。", base:500, step:400, defaultMax:3, max:3, lv:0, tier:4, active:true, cat:'system' },
+        comboBonus: { icon: "🔥", name:"コンボ強化", desc:"コンボ数が続くほど、獲得ポイントにボーナスが付きます。", flavor:"止まらない連撃が、かつてない熱狂を呼ぶ。", base:150, step:80, defaultMax:5, max:5, lv:0, tier:4, active:true, cat:'system' }, 
+        ins:  { icon: "🏦", name:"死亡保険", desc:"ゲームオーバーになった時に必ず持ち帰れる最低保証ポイントが増えます。", flavor:"最悪の事態に備える。それがプロの流儀だ。", base:30, step:20, defaultMax:25, max:25, lv:0, tier:5, active:true, cat:'system' },
+        wideKeep: { icon: "🛡️", name:"ワイドキープ", desc:"スコアが進むにつれてエリアが狭くなるのを抑えます。", flavor:"どんなに追い詰められても、決して視野を狭めない。", base:400, step:300, defaultMax:5, max:5, lv:0, tier:9, active:true, cat:'system' }, 
+        auto: { icon: "🕰️", name:"オート時計", desc:"放置しているだけで自動的にポイントを稼いでくれます。", flavor:"あなたが休んでいる間も、時計はチクタクと時を刻む。", base:200, step:150, defaultMax:15, max:15, lv:0, tier:10, active:true, cat:'system' },
+        autoEff: { icon: "🔋", name:"オート時計効率", desc:"オート時計から得られるポイントを増加させます。", flavor:"歯車に油を注ぎ、全自動の恩恵を極限まで高める。", base:300, step:250, defaultMax:20, max:20, lv:0, tier:11, active:true, cat:'system', parent:'auto' },
+        
+        toybox: { icon: "🧸", name:"おもちゃ箱", desc:"ショップに「消費アイテム」のカテゴリが追加されます。", flavor:"「ガラクタか、宝物か。とにかく役立つ新商品をそろえてみたぜ。」byショップ店長", base:1000, step:0, defaultMax:1, max:1, lv:0, tier:10, active:true, noToggle:true, cat:'toybox' },
+
+        bossShield: { icon: "🛡️", name:"ボスシールド", desc:"ボス戦でのミスを回数分だけ無効化してくれます。", flavor:"強大な敵の一撃を、見えない障壁が弾き返す。", base:600, step:600, defaultMax:2, max:2, lv:0, tier:8, active:true, cat:'boss' },
+        bossSlow: { icon: "👁️", name:"ボス威圧", desc:"ボス戦突入時に、確率で自動的にスローが発動します。", flavor:"あなたの放つ威圧感が、敵の動きを鈍らせる。", base:800, step:600, defaultMax:5, max:5, lv:0, tier:9, active:true, cat:'boss' },
+
+        fever:{ icon: "🌟", name:"フィーバー", desc:"ゲージが満タンになると、一定時間無敵で連打し放題になります。", flavor:"限界を超えた先にある、黄金色に輝く熱狂の領域。", base:300, step:300, defaultMax:5, max:5, lv:0, tier:15, active:true, cat:'fever' },
+        feverTime: { icon: "⏳", name:"Fタイム延長", desc:"フィーバー状態の持続時間を延長します。", flavor:"終わらない狂宴。この熱狂はまだ冷めやらない。", base:600, step:600, defaultMax:5, max:5, lv:0, tier:16, active:true, cat:'fever', parent:'fever' },
+        feverBoost: { icon: "💥", name:"Fボーナス", desc:"フィーバー中に獲得できるポイントの倍率が上がります。", flavor:"熱狂の渦の中で、富は爆発的に膨れ上がる。", base:500, step:500, defaultMax:5, max:5, lv:0, tier:18, active:true, cat:'fever', parent:'fever' }, 
+
+        ending: { icon: "🎬", name:"真実の扉", desc:"設定画面からゲームのエンディングを見ることができます。", flavor:"すべての針が重なる時、本当の結末が目を覚ます。", base:3000, step:0, defaultMax:1, max:1, lv:0, tier:12, active:true, cat:'god' }, 
+        godMode: { icon: "👑", name:"神の領域", desc:"絶対成功領域を展開し、ポイントが常時10倍になります。", flavor:"もはやゲームではない。あなたがこの世界のルールだ。", base:50000, step:0, defaultMax:1, max:1, lv:0, tier:17, active:true, cat:'god', parent:'ending' },
+        limitBreak: { icon: "🔥", name:"限界突破", desc:"一部の強化(Pt系、ギア、エリア拡大+)のLv上限を999まで引き上げる。", flavor:"限界の先へ。神すらも踏み入らぬ無限の領域。", base:100000, step:0, defaultMax:1, max:1, lv:0, tier:20, active:true, cat:'god', parent:'ending' } 
     };
 
     const shopItems = {
-        's_blue': { name:"ブルーネオン", type:'skin', cost:400, desc:"リングを青にする", val:'#00ccff' },
-        's_gold': { name:"ゴールドリム", type:'skin', cost:800, desc:"リングを金にする(常時発光)", val:'#ffd700' },
-        's_white':{ name:"ホワイト", type:'skin', cost:400, desc:"リングを白にする(常時発光)", val:'#ffffff' },
-        's_real_n':{ name:"黄金の針", type:'needle', cost:2500, desc:"針を黄金にする", val:'real_needle' },
-        'e_thun': { name:"雷エフェクト", type:'effect', cost:2500, desc:"クリティカルヒット時に雷発生", val:'thunder' },
-        'e_party':{ name:"パーティクル", type:'effect', cost:4000, desc:"ヒット時に星屑が散る", val:'particle' }, 
-        'f_bg':   { name:"サイバー背景", type:'facility', cost:4000, desc:"背景にデジタルグリッドを描画", val:'cyber_bg' }, 
-        'sd_clk': { name:"カチッ音", type:'sound', cost:800, desc:"クリック音変更", val:'click_file' },
-        'g_btn':  { name:"インターホン", type:'gadget', cost:1500, desc:"右側にボタン追加", val:'g_btn' },
-        'g_met':  { name:"メトロノーム", type:'gadget', cost:1500, desc:"リズムを刻む", val:'g_met' },
-        'g_bomb': { name:"爆弾ボタン", type:'gadget', cost:3000, desc:"これから毎日爆破しようぜ？", val:'g_bomb' },
-        'f_gorg': { name:"豪華なフォント", type:'font', cost:4000, desc:"文字がとても豪華になる", val:'f_gorg' },
-        'i_tikuwa':{ name:"ちくわ", type:'item', cost:7000, desc:"高級なちくわ", val:'i_tikuwa' }
+        's_blue': { icon:"🟦", name:"ブルーネオン", type:'skin', cost:400, desc:"リングを青にする", flavor:"クールな静寂。", val:'#00ccff' },
+        's_gold': { icon:"🟨", name:"ゴールドリム", type:'skin', cost:800, desc:"リングを金にする(常時発光)", flavor:"成金趣味とは言わせない。", val:'#ffd700' },
+        's_white':{ icon:"⬜", name:"ホワイト", type:'skin', cost:400, desc:"リングを白にする(常時発光)", flavor:"純白の輝き。", val:'#ffffff' },
+        's_red':  { icon:"🟥", name:"レッドフレア", type:'skin', cost:400, desc:"リングを赤にする", flavor:"燃え盛る闘志の赤。", val:'#ff0055' },
+        's_real_n':{ icon:"🗡️", name:"黄金の針", type:'needle', cost:2500, desc:"針を黄金にする", flavor:"時を刻むのにふさわしい逸品。", val:'real_needle' },
+        'e_thun': { icon:"⚡", name:"雷エフェクト", type:'effect', cost:2500, desc:"クリティカルヒット時に雷発生", flavor:"ビリビリくるぜ。", val:'thunder' },
+        'e_party':{ icon:"✨", name:"パーティクル", type:'effect', cost:4000, desc:"ヒット時に星屑が散る", flavor:"画面を鮮やかに彩る星屑。", val:'particle' }, 
+        'f_bg':   { icon:"🌐", name:"サイバー背景", type:'facility', cost:4000, desc:"背景にデジタルグリッドを描画", flavor:"ハッカー気分を味わえる電脳空間。", val:'cyber_bg' }, 
+        'sd_clk': { icon:"🖱️", name:"カチッ音", type:'sound', cost:800, desc:"クリック音変更", flavor:"心地よいメカニカルスイッチの響き。", val:'click_file' },
+        'g_btn':  { icon:"🔴", name:"インターホン", type:'gadget', cost:1500, desc:"右側にボタン追加", flavor:"無性に押したくなるあのボタン。", val:'g_btn' },
+        'g_met':  { icon:"⏱️", name:"メトロノーム", type:'gadget', cost:1500, desc:"リズムを刻む", flavor:"一定のテンポが集中力を高める。", val:'g_met' },
+        'g_bomb': { icon:"💣", name:"爆弾ボタン", type:'gadget', cost:3000, desc:"これから毎日爆破しようぜ？", flavor:"押すと爆発する。ただそれだけだ。", val:'g_bomb' },
+        'f_gorg': { icon:"🔤", name:"チップ風フォント", type:'font', cost:4000, desc:"文字がチップ風のフォントになる", flavor:"レトロな雰囲気を醸し出す。", val:'f_gorg' },
+        'i_tikuwa':{ icon:"🍢", name:"ちくわ", type:'item', cost:7000, desc:"高級なちくわ", flavor:"なぜちくわ？考えるな、感じろ。", val:'i_tikuwa' },
+        'g_neko': { icon:"🐱", name:"招き猫", type:'gadget', cost:5000, desc:"右側に鎮座する。たまにポイントを拾う。", flavor:"チリも積もればなんとやら。自動で時々1Ptもらえるぞ。", val:'g_neko' }
     };
 
-    // --- アイテム画像追加 ---
     const consumeItems = {
-        'c_heart': { name:"とんこつラーメン", short:"ライフ+1(60秒)", desc:"一時的にライフ枠を+1する。\n(1分間持続。重複可能)", cost: 600, img: 'lamen.png' },
-        'c_pot': { name:"高そうな壺", short:"ラッキー率+15%", desc:"ラッキー発動率+15%。重複可。\n(発動すると1つ壊れる)", cost: 1200, img: 'tubo.png' },
-        'c_oil': { name:"よく滑る油", short:"針速度x1.5", desc:"針の基本スピードが1.5倍になる。重複可。\n(ゲームオーバーまで持続)", cost: 800, img: 'oil.png' },
-        'c_timer': { name:"クイックタイマー", short:"時計間隔半減", desc:"オート時計の間隔を半分にする。\n(ゲームオーバーまで持続。重複不可)", cost: 1500, img: 'watchup.png' },
-        'c_cushion': { name:"防護クッション", short:"GameOver保護", desc:"ミスで終わる時に自動で持ち帰りを発動する。\n(発動まで持続。重複不可)", cost: 2500, img: 'bougo.png' },
-        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", cost: 4000, img: 'ticket.png' },
-        'c_magnet': { name:"磁石", short:"的MAX(5回)", desc:"次の5回、的の広さが最大になる。", cost: 1200, img:'magnet.png' },
-        'c_last': { name:"背水の陣", short:"常時高難易度ボス(HP1の時のみ使用可)", desc:"ライフが1の時のみ使用可能。\n毎回少し難しいボス戦が発生するようになる。\n(ゲームオーバーまで持続。重複不可)", cost: 3000, img:'haisui.png' }
+        'c_heart': { name:"とんこつラーメン", short:"ライフ+1(60秒)", desc:"一時的にライフ枠を+1する。\n(1分間持続。重複可能)", flavor:"こってりスープが体に染み渡る。", cost: 1500, img: 'lamen.png' },
+        'c_pot': { name:"高そうな壺", short:"ラッキー率+15%", desc:"ラッキー発動率+15%。重複可。\n(発動すると1つ壊れる)", flavor:"怪しい光を放つ壺。ご利益があるらしい。", cost: 1200, img: 'tubo.png' },
+        'c_oil': { name:"よく滑る油", short:"針速度x1.5", desc:"針の基本スピードが1.5倍になる。重複可。\n(ゲームオーバーまで持続)", flavor:"歯車をツルツルにする危険な油。", cost: 200, img: 'oil.png' },
+        'c_timer': { name:"クイックタイマー", short:"時計間隔半減", desc:"オート時計の間隔を半分にする。\n(ゲームオーバーまで持続。重複不可)", flavor:"時間を削り取る魔法のタイマー。", cost: 1500, img: 'watchup.png' },
+        'c_cushion': { name:"防護クッション", short:"GameOver保護", desc:"ミスで終わる時に自動で持ち帰りを発動する。\n(発動まで持続。重複不可)", flavor:"落ちた時の衝撃を優しく吸収してくれる。", cost: 2500, img: 'bougo.png' },
+        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'ticket.png' },
+        'c_magnet': { name:"磁石", short:"的MAX(5回)", desc:"次の5回、的の広さが最大になる。", flavor:"成功を強引に引き寄せる強力な磁力。", cost: 8000, img: 'magnet.png' },
+        'c_last': { name:"背水の陣", short:"常時高難易度ボス(HP1の時のみ使用可)", desc:"ライフが1の時のみ使用可能。\n毎回少し難しいボス戦が発生するようになる。\n(ゲームオーバーまで持続。重複不可)", flavor:"退路を断ち、己の全力を解放せよ。", cost: 10000, img: 'haisui.png' }
     };
+
+    function getCost(s) {
+        let l = s.lv;
+        let c = s.base + l * s.step;
+        let maxVal = (isA('limitBreak') && s.isLB) ? 999 : (s.defaultMax || s.max);
+        
+        if (s.isLB && l >= s.defaultMax) {
+            let over = l - s.defaultMax;
+            let baseMaxCost = s.base + s.defaultMax * s.step;
+            c = baseMaxCost + (over + 1) * (s.step * 5) + Math.pow(over, 2) * 100;
+        }
+
+        let rates = [0, 0.05, 0.10, 0.25];
+        let discount = isA('discount') ? (rates[skills.discount.lv] || 0) : 0;
+        return Math.floor(c * (1 - discount));
+    }
+
+    function getEffectVal(k, lv) {
+        if(k==='life') return `+${lv}`;
+        if(k==='pts') return `+${lv}`;
+        if(k==='ptsPlus') return `x${1+lv}`;
+        if(k==='wide' || k==='widePlus') return `+${lv*5}%`;
+        if(k==='gear') return `緩和Lv${lv}`;
+        if(k==='antiReverse') return `-${lv*10}%`;
+        
+        if(k==='crit' || k==='lucky' || k==='toybox' || k==='ending' || k==='godMode' || k==='limitBreak') return lv>0 ? '解放済' : '未解放';
+        if(k==='critRate') return `+${(lv*0.2).toFixed(1)}%`;
+        if(k==='recovery') return `${lv*5}%`;
+        
+        if(k==='slow') return lv===0 ? 'なし' : (lv===1 ? '1秒/1回' : (lv===2 ? '2秒/1回' : `2秒/${lv-1}回`));
+        if(k==='discount') return `${lv === 0 ? 0 : [0, 5, 10, 25, 25][lv]}%`;
+        if(k==='comboBonus') return `+${lv*1}%コンボ率`;
+        if(k==='ins') return `${15+lv*45}pt`;
+        if(k==='wideKeep') return `維持Lv${lv}`;
+        if(k==='auto') return lv===0 ? 'なし' : `${1+Math.floor((lv-1)/5)}個(${(10000-((lv-1)%5)*1800)/1000}s)`;
+        if(k==='autoEff') return lv===0 ? '+0pt' : `+${9 + (lv - 1) * 10}pt`;
+        
+        if(k==='bossShield') return `${lv}回`;
+        if(k==='bossSlow') return `${lv*20}%`;
+        
+        if(k==='fever') return `ゲージ増加量 +${(lv*0.5).toFixed(1)}`;
+        if(k==='feverTime') return `+${lv}秒`;
+        if(k==='feverBoost') return `+${lv*20}%`;
+        
+        return `Lv${lv}`;
+    }
 
     function isA(k) { return skills[k] && skills[k].lv > 0 && skills[k].active; }
 
@@ -452,6 +684,7 @@
         o.start(); o.stop(audioCtx.currentTime+decay);
     }
     function playBtn(){ sBtn.volume=state.settings.vol; sBtn.currentTime=0; sBtn.play().catch(()=>playTone('sine',600,0.1)); }
+    function playRezi(){ sRezi.volume=state.settings.vol; sRezi.currentTime=0; sRezi.play().catch(()=>playTone('triangle',1200,0.1)); }
     function playHit(crit, fever){
         if(fever){ playTone('square', 800 + Math.random()*800, 0.08); return; }
         if(state.skin.sound==='click_file'){ sClick.volume=state.settings.vol; sClick.currentTime=0; sClick.play().catch(()=>playTone('triangle',1000,0.05)); }
@@ -461,13 +694,8 @@
         }
     }
     
-    function applyFont() { document.body.style.fontFamily = state.skin.f_gorg ? "'Palatino Linotype', 'Book Antiqua', Palatino, serif" : "'Helvetica Neue', Arial, sans-serif"; }
-
-    function getCost(s) {
-        let baseCost = s.base + s.lv * s.step;
-        let rates = [0, 0.05, 0.10, 0.25];
-        let discount = isA('discount') ? (rates[skills.discount.lv] || 0) : 0;
-        return Math.floor(baseCost * (1 - discount));
+    function applyFont() { 
+        document.body.style.fontFamily = state.skin.f_gorg ? "'DenkiChip', 'Helvetica Neue', Arial, sans-serif" : "'Helvetica Neue', Arial, sans-serif"; 
     }
 
     function showFloatingText(txt, color) {
@@ -491,6 +719,12 @@
     document.getElementById('btn-start').onclick = () => {
         playBtn();
         document.getElementById('title-screen').style.display = 'none';
+        document.getElementById('modal-start-help').style.display = 'block';
+    };
+
+    document.getElementById('btn-close-start-help').onclick = () => {
+        playBtn();
+        document.getElementById('modal-start-help').style.display = 'none';
         document.getElementById('main-ui').style.display = 'flex';
         updateUI();
         init();
@@ -526,6 +760,13 @@
         document.getElementById('ending-txt').style.display='none';
         document.getElementById('score-display').innerText = "0";
         document.getElementById('score-display').style.color = "#ff0055";
+
+        if (!state.hasTutorialDone) {
+            document.getElementById('click-here-msg').innerText = "CLICK HERE! ↓";
+            document.getElementById('click-here-msg').style.display = 'block';
+        } else {
+            document.getElementById('click-here-msg').style.display = 'none';
+        }
         
         applyFont(); setTarget(); updateUI();
     }
@@ -540,7 +781,6 @@
         state.targetA = Math.random()*Math.PI*2;
         state.critOff = (Math.random()-0.5)*(state.targetW*0.6);
         
-        // 誤作動防止(逆回転)
         let reverseProb = 0.3;
         if(isA('antiReverse')) reverseProb -= skills.antiReverse.lv * 0.1;
         if(reverseProb < 0) reverseProb = 0;
@@ -551,12 +791,10 @@
             state.direction = 1;
         }
 
-        // 即死エリア生成 (成功判定の隣に配置)
         state.hasDeath = false;
         if(state.score >= 75 && Math.random() < 0.3) {
             state.hasDeath = true;
             state.deathW = 0.3; 
-            // 右隣か左隣にランダムで配置
             if(Math.random() < 0.5) {
                 state.deathA = (state.targetA + state.targetW/2 + state.deathW/2) % (Math.PI*2);
             } else {
@@ -585,22 +823,32 @@
         else { ov.style.display='none'; txt.style.display='none'; }
     }
 
+    let isTikuwaSpinning = false;
     document.getElementById('tikuwa-img').onclick = function() {
-        if(!state.isPlaying || state.isPaused) return;
+        if(!state.isPlaying || state.isPaused || isTikuwaSpinning) return;
+        isTikuwaSpinning = true;
         playTone('sine', 1500, 0.1); setTimeout(()=>playTone('triangle', 2000, 0.2), 100);
         this.style.transform = 'rotate(360deg) scale(1.5)'; this.style.transition = 'transform 0.3s';
         
         let gain = 100;
         if(state.ticketTimer > 0) gain *= 2;
         state.pending += gain; updateUI(); showFloatingText("+" + gain, "#ffeb3b");
-        setTimeout(() => { this.style.transition = 'none'; this.style.transform = 'rotate(0deg) scale(1)'; }, 300);
+        
+        setTimeout(() => { 
+            this.style.transition = 'none'; 
+            this.style.transform = 'rotate(0deg) scale(1)'; 
+            setTimeout(() => isTikuwaSpinning = false, 50); 
+        }, 300);
     };
 
     function handleInput() {
         if(!state.isPlaying || state.isPaused) { if(!state.isPlaying) init(); return; }
+        
+        if (state.hasTutorialDone) document.getElementById('click-here-msg').style.display = 'none';
+
         if(state.isFever) {
             let ptsM = isA('pts') ? 1 + skills.pts.lv : 1;
-            if(isA('ptsPlus')) ptsM *= (1 + skills.ptsPlus.lv); // ポイントUP+ の乗算
+            if(isA('ptsPlus')) ptsM *= (1 + skills.ptsPlus.lv); 
             let fbM = isA('feverBoost') ? 1 + skills.feverBoost.lv * 0.2 : 1;
             let fgain = ptsM * 1.5 * fbM;
             if(state.ticketTimer > 0) fgain *= 2;
@@ -612,7 +860,6 @@
             updateUI(); return;
         }
 
-        // 即死エリア判定
         let isDeathClick = false;
         if (state.hasDeath) {
             let dDiff = Math.abs(state.angle - state.deathA);
@@ -623,7 +870,7 @@
         if (isDeathClick) {
             playTone('sawtooth', 50, 1.0);
             showFloatingText("INSTANT DEATH!", "#0055ff");
-            state.life = 0; state.tempLife = 0; // 問答無用でライフ0
+            state.life = 0; state.tempLife = 0;
             if(state.buffs.cushion > 0) {
                 state.buffs.cushion--; renderConsumeSidebar();
                 showFloatingText("CUSHION!", "#00ffcc");
@@ -634,7 +881,6 @@
             return;
         }
 
-        // 通常の的判定
         let diff = Math.abs(state.angle - state.targetA);
         if(diff>Math.PI) diff=(Math.PI*2)-diff;
         
@@ -651,6 +897,12 @@
         }
 
         if(isSuccess) {
+            if (!state.hasTutorialDone) {
+                state.hasTutorialDone = true;
+                showFloatingText("NICE!", "#00ffcc");
+                document.getElementById('click-here-msg').style.display = 'none';
+            }
+
             state.score++; state.combo++;
             
             if(state.score > state.maxScore) state.maxScore = state.score;
@@ -666,7 +918,7 @@
             }
             
             let gain = isA('pts') ? 1 + skills.pts.lv : 1;
-            if(isA('ptsPlus')) gain *= (1 + skills.ptsPlus.lv); // ポイントUP+ の乗算
+            if(isA('ptsPlus')) gain *= (1 + skills.ptsPlus.lv); 
 
             if(isA('comboBonus')) gain *= 1 + (state.combo * 0.01 * skills.comboBonus.lv); 
             
@@ -696,7 +948,7 @@
             if(state.skin.effect==='particle') generateParticles();
             
             if(isA('fever')) {
-                state.feverG += (isCrit?6:3) + skills.fever.lv;
+                state.feverG += (isCrit ? 4 : 2) + (skills.fever.lv * 0.5);
                 if(state.feverG>=100) { startFever(); }
             }
 
@@ -722,7 +974,9 @@
             }
 
             let spdInc = 0.002;
-            if(isA('gear')) spdInc = Math.max(0.0005, 0.002 - (skills.gear.lv * 0.0002));
+            if(isA('gear')) {
+                spdInc = skills.gear.lv <= 5 ? 0.002 - (skills.gear.lv * 0.0002) : 0.0010 * Math.pow(0.9, skills.gear.lv - 5);
+            }
             state.gameSpd += spdInc;
 
             if(!state.isFever) document.getElementById('score-display').innerText = state.score;
@@ -763,33 +1017,39 @@
         updateUI();
     }
 
-    function gameOver() {
-        state.isPlaying=false; state.isFever=false; state.isPaused=false;
-        state.isBoss=false; canvas.classList.remove('boss-active'); 
-        
-        state.buffs.oil = 0; state.buffs.qTimer = false; state.tempLife = 0;
-        state.buffs.last = false;
-        if(state.buffs.pot > 0) state.buffs.pot = 0; 
+function gameOver() {
+    state.isPlaying=false; state.isFever=false; state.isPaused=false;
+    state.isBoss=false; canvas.classList.remove('boss-active'); 
+    
+    state.buffs.oil = 0; state.buffs.qTimer = false; state.tempLife = 0;
+    state.buffs.last = false;
+    if(state.buffs.pot > 0) state.buffs.pot = 0; 
 
-        playTone('sawtooth',80,0.6);
-        let ins = isA('ins') ? 15 + skills.ins.lv*10 : 15;
-        state.pts += Math.min(state.pending, ins);
-        document.getElementById('score-display').innerText = "LOST";
-        
-        document.getElementById('pending-box').style.visibility='hidden';
-        document.getElementById('row-withdraw').style.visibility='hidden';
-        
-        renderConsumeSidebar(); updateUI(); updateClocks(true); 
-    }
+    playTone('sawtooth',80,0.6);
+    let ins = isA('ins') ? 15 + skills.ins.lv*10 : 15;
+    state.pts += Math.min(state.pending, ins);
+    document.getElementById('score-display').innerText = "LOST";
+    
+    document.getElementById('pending-box').style.visibility='hidden';
+    document.getElementById('row-withdraw').style.visibility='hidden';
+
+    document.getElementById('click-here-msg').style.display = 'none';
+    
+    renderConsumeSidebar(); updateUI(); updateClocks(true); 
+}
 
     function forceWithdraw() {
-        playBtn(); state.pts+=state.pending; state.isPlaying=false; 
-        document.getElementById('score-display').innerText="SAFE"; updateUI(); 
-        document.getElementById('pending-box').style.visibility='hidden';
-        document.getElementById('row-withdraw').style.visibility='hidden';
-        state.feverG=0; canvas.className=''; 
-        updateClocks(true);
-    }
+    playBtn(); state.pts+=state.pending; state.isPlaying=false; 
+    
+    state.hasTutorialDone = true; 
+    document.getElementById('click-here-msg').style.display = 'none';
+
+    document.getElementById('score-display').innerText="SAFE"; updateUI(); 
+    document.getElementById('pending-box').style.visibility='hidden';
+    document.getElementById('row-withdraw').style.visibility='hidden';
+    state.feverG=0; canvas.className=''; 
+    updateClocks(true);
+}
 
     let thFrames = 0;
     function drawThunder(){ thFrames=5; }
@@ -864,6 +1124,7 @@
         let shadow = 'none';
         if(state.skin.ring === '#ffd700') shadow = '0 0 30px rgba(255, 215, 0, 0.7)';
         else if(state.skin.ring === '#ffffff') shadow = '0 0 30px rgba(255, 255, 255, 0.7)';
+        else if(state.skin.ring === '#ff0055') shadow = '0 0 30px rgba(255, 0, 85, 0.7)';
         canvas.style.boxShadow = shadow;
 
         ctx.beginPath(); ctx.arc(140,140,110,0,Math.PI*2);
@@ -886,7 +1147,6 @@
             ctx.strokeStyle='#ffeb3b'; ctx.stroke();
         }
 
-        // 青い即死エリアの描画
         if(state.hasDeath && !state.isFever) {
             ctx.beginPath();
             ctx.arc(140, 140, 110, state.deathA - state.deathW/2, state.deathA + state.deathW/2);
@@ -896,6 +1156,21 @@
         }
 
         let currentSpd = state.gameSpd * Math.pow(1.5, state.buffs.oil);
+        
+        if (!state.hasTutorialDone && state.score === 0) {
+            let tDiff = Math.abs(state.angle - state.targetA);
+            if(tDiff>Math.PI) tDiff=(Math.PI*2)-tDiff;
+            if (tDiff <= state.targetW/2 + 0.05) {
+                document.getElementById('click-here-msg').style.color = "#ff0055";
+                document.getElementById('click-here-msg').style.transform = "translateX(-50%) scale(1.2)";
+                currentSpd = 0; 
+            } else {
+                document.getElementById('click-here-msg').style.color = "#ffeb3b";
+                document.getElementById('click-here-msg').style.transform = "translateX(-50%) scale(1)";
+                currentSpd = 0.02; 
+            }
+        }
+
         let step = (state.isSlow ? currentSpd*0.3 : currentSpd) * state.direction;
         state.angle = (state.angle + step + Math.PI*2) % (Math.PI*2);
         
@@ -960,13 +1235,24 @@
         document.getElementById('slow-wrapper').style.display = isA('slow') ? 'flex' : 'none';
         document.getElementById('btn-play-ending').style.display = isA('ending') ? 'block' : 'none';
 
+        document.querySelectorAll('.modal-pts-display').forEach(el => el.innerText = Math.floor(state.pts));
+
         updateClocks();
     }
 
     function openModal(id) { 
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); 
-        document.getElementById(id).style.display='block'; 
-        if(id === 'modal-upgrade') renderSkills();
+        
+        // 強化とショップはflex、それ以外はblockで表示してレイアウト崩れを防ぐ
+        if(id === 'modal-upgrade' || id === 'modal-shop') {
+            document.getElementById(id).style.display='flex'; 
+        } else {
+            document.getElementById(id).style.display='block'; 
+        }
+
+        if(id === 'modal-upgrade') {
+            renderSkills();
+        }
         if(id === 'modal-shop') {
             let hasToybox = isA('toybox');
             document.getElementById('shop-tabs').style.display = hasToybox ? 'flex' : 'none';
@@ -974,6 +1260,11 @@
             changeShopTab(state.shopTab, false);
         }
         if(id === 'modal-status') renderStatus();
+    }
+
+    function closeAllModals() {
+        playBtn(); 
+        document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
     }
     
     function toggleSkill(k) {
@@ -983,58 +1274,116 @@
     function renderSkills() {
         const div = document.getElementById('list-upgrade'); div.innerHTML = '';
         let total = Object.values(skills).reduce((a,b)=>a+b.lv,0);
-        for(let k in skills) {
-            const s = skills[k];
-            let locked = total < s.tier;
-            if(k==='feverTime' && skills.fever.lv===0) locked = true;
-            if(k==='feverBoost' && skills.fever.lv===0) locked = true;
-            if(k==='critRate' && skills.crit.lv===0) locked = true;
-            if(k==='ending' && !state.hasReached100) locked = true;
-            if(k==='godMode' && skills.ending.lv===0) locked = true; 
-            if(k==='antiReverse' && state.maxScore < 50) locked = true;
+        
+        document.getElementById('modal-total-lv').innerText = total;
 
-            const cost = getCost(s); const max = s.lv >= s.max;
-            
-            let descText = s.desc;
-            if(locked) {
-                if(k==='feverTime') descText="フィーバー取得で解放";
-                else if(k==='feverBoost') descText="フィーバー取得で解放";
-                else if(k==='critRate') descText="クリティカル取得で解放";
-                else if(k==='ending') descText="100スコア達成で解放";
-                else if(k==='godMode') descText="エンディング到達で解放";
-                else if(k==='antiReverse') descText="スコア50達成で解放";
-                else descText=`合計Lv${s.tier}で解放`;
+        const categories = [
+            { id: 'basic', name: '🔵 基本強化' },
+            { id: 'rng', name: '🟠 確率・特殊' },
+            { id: 'system', name: '🟣 システム・補助' },
+            { id: 'boss', name: '🔴 ボス対策' },
+            { id: 'fever', name: '🟡 フィーバー' },
+            { id: 'toybox', name: '📦 ショップ強化' },
+            { id: 'god', name: '⚪ ？？？' }
+        ];
+
+        let html = '';
+
+        categories.forEach(cat => {
+            let catSkills = Object.keys(skills).filter(k => skills[k].cat === cat.id && !skills[k].parent);
+            if(catSkills.length === 0) return;
+
+            if(cat.id === 'god' && !state.hasReached100 && skills.ending.lv === 0) {
+                html += `<div class="skill-category-title" style="border-left-color: #444; color: #777;">⚪ ？？？</div>`;
             } else {
-                if(k==='slow') {
-                    if(s.lv===0) descText="スペースで減速(1秒/1回)";
-                    else if(s.lv===1) descText="時間:1秒 回数:1回";
-                    else if(s.lv===2) descText="時間:2秒 回数:1回";
-                    else descText=`時間:2秒 回数:${s.lv-1}回`;
-                } else if(k==='auto') {
-                    if(s.lv>0) {
-                        let c = 1 + Math.floor((s.lv-1)/5);
-                        let ms = (10000 - ((s.lv-1)%5)*1800)/1000;
-                        descText = `時計${c}個 (${ms.toFixed(1)}秒/回)`;
-                    }
-                } else if(k==='discount') {
-                    let rates = [0, 5, 10, 25];
-                    descText = s.lv < 3 ? `次: ${rates[s.lv+1]}%OFF` : "最大割引(25%OFF)適用中";
-                } else if(k==='bossShield') {
-                    descText = s.lv>0 ? `ボス戦ミス無効: ${s.lv}回` : descText;
-                } else if(k==='ptsPlus') {
-                    descText = s.lv>0 ? `基礎獲得量を x${1 + s.lv} に乗算` : descText;
-                }
+                let catColor = getCatColor(cat.id);
+                let catName = cat.id === 'god' ? '⚪ 神の領域' : cat.name;
+                html += `<div class="skill-category-title" style="border-left-color: ${catColor}; color: ${catColor};">${catName}</div>`;
             }
 
-            let lvText = max ? 'MAX' : `Lv.${s.lv}/${s.max}`;
-            let toggleHtml = (s.lv > 0 && !s.noToggle) ? `<button class="toggle-btn ${s.active?'on':''}" onclick="toggleSkill('${k}')">${s.active?'ON':'OFF'}</button>` : '';
-            let catColor = getCatColor(s.cat);
+            catSkills.forEach(k => {
+                html += createSkillRowHTML(k, total, false);
+                let children = Object.keys(skills).filter(childKey => skills[childKey].parent === k);
+                children.forEach(childKey => {
+                    html += createSkillRowHTML(childKey, total, true);
+                });
+            });
+        });
 
-            // カテゴリごとの色分け、左端の枠線
-            div.innerHTML += `<div class="list-row" style="opacity:${locked?0.5:1}; border-left: 5px solid ${catColor}; border-radius: 4px;">
-                <div class="list-info"><div class="list-title">${locked?'???':s.name} <span style="color:#ffeb3b">${lvText}</span></div><div class="list-desc" style="white-space:pre-wrap;">${descText}</div></div>
-                <div class="btn-group">${toggleHtml}<button class="list-btn" ${locked||max||state.pts<cost?'disabled':''} onclick="buySkill('${k}')">${max?'MAX':cost+'p'}</button></div></div>`;
+        div.innerHTML = html;
+    }
+
+    function createSkillRowHTML(k, totalLv, isChild) {
+        const s = skills[k];
+        let locked = totalLv < s.tier;
+        let lockReason = `合計Lv${s.tier}で解放`;
+
+        if(k==='ending') {
+            locked = !state.hasReached100;
+            lockReason = "スコア100到達で解放";
+        } else if(k==='antiReverse') {
+            locked = state.maxScore < 50;
+            lockReason = "最大スコア50達成で解放";
+        } else if(s.parent) {
+            if(skills[s.parent].lv === 0) {
+                locked = true;
+                lockReason = `前提スキル取得で解放`;
+            }
         }
+
+        const cost = getCost(s); 
+        let maxVal = (isA('limitBreak') && s.isLB) ? 999 : (s.defaultMax || s.max);
+        const max = s.lv >= maxVal;
+        
+        const alwaysVisible = ['crit', 'slow', 'bossShield', 'fever'];
+        const isSecret = locked && !alwaysVisible.includes(k);
+
+        let titleName = isSecret ? '？？？' : s.name;
+        let icon = isSecret ? '❓' : (s.icon || '✨');
+        let descText = isSecret ? '条件を満たすと詳細が表示されます' : s.desc;
+        let flavorText = isSecret ? '' : `"${s.flavor}"`;
+        
+        if(isChild && !isSecret) titleName = '↳ ' + titleName;
+        if(isChild && isSecret) titleName = '↳ ？？？';
+
+        let lvText = max ? 'MAX' : `Lv.${s.lv}/${maxVal}`;
+        let toggleHtml = (s.lv > 0 && !s.noToggle) ? `<button class="toggle-btn ${s.active?'on':''}" onclick="toggleSkill('${k}')">${s.active?'ON':'OFF'}</button>` : '';
+        let catColor = getCatColor(s.cat);
+
+        let lockBadgeHTML = locked ? `<div class="lock-badge" style="margin-bottom:0;">🔒 ${lockReason}</div>` : '';
+        let childStyle = isChild ? `border-left: 4px solid #555; background: #151515;` : `border-left: 4px solid ${catColor};`;
+
+        let effectText = '';
+        if (!isSecret) {
+            let curTxt = getEffectVal(k, s.lv);
+            let nxtTxt = max ? 'MAX' : getEffectVal(k, s.lv + 1);
+            effectText = `<div class="list-effect-box">効果: ${curTxt} <span style="color:#aaa;">→</span> ${nxtTxt}</div>`;
+        } else {
+            effectText = `<div class="list-effect-box secret">効果: ？？？</div>`;
+        }
+
+        return `<div class="list-row" style="opacity:${locked?0.5:1}; ${childStyle}">
+            <div class="list-row-top">
+                <div class="list-title">
+                    <div class="skill-icon-box">${icon}</div>
+                    <div class="list-title-wrapper">
+                        <div>${titleName} <span style="color:#ffeb3b; font-size:12px; margin-left:4px;">${lvText}</span></div>
+                    </div>
+                </div>
+                ${lockBadgeHTML}
+            </div>
+            
+            <div class="list-desc-wrapper">
+                <div class="list-desc">${descText}</div>
+                ${flavorText ? `<div class="list-flavor">${flavorText}</div>` : ''}
+            </div>
+
+            ${effectText}
+            <div class="list-bottom">
+                <div>${toggleHtml}</div>
+                <button class="list-btn" ${locked||max||state.pts<cost?'disabled':''} onclick="buySkill('${k}')">${max?'MAX':cost+'p'}</button>
+            </div>
+        </div>`;
     }
 
     function changeShopTab(tab, playSound=true) {
@@ -1042,7 +1391,15 @@
         state.shopTab = tab;
         document.getElementById('tab-skin').className = tab==='skin' ? "shop-tab-btn active" : "shop-tab-btn";
         document.getElementById('tab-item').className = tab==='item' ? "shop-tab-btn active" : "shop-tab-btn";
-        document.getElementById('btn-reset-looks').style.display = tab==='skin' ? 'inline-block' : 'none';
+        
+        if(tab === 'skin') {
+            document.getElementById('btn-reset-looks').style.display = 'inline-block';
+            document.getElementById('skin-caution').style.display = 'block';
+        } else {
+            document.getElementById('btn-reset-looks').style.display = 'none';
+            document.getElementById('skin-caution').style.display = 'none';
+        }
+
         renderShop();
     }
 
@@ -1052,7 +1409,6 @@
         if (state.shopTab === 'skin') {
             for(let k in shopItems) {
                 const i = shopItems[k]; const has = owned.includes(k);
-                let prev = (i.type==='skin' && i.val.startsWith('#')) ? `<span style="display:inline-block;width:10px;height:10px;background:${i.val};border-radius:50%;margin-right:5px;border:1px solid #fff"></span>` : '';
                 
                 let isEquipped = false;
                 if(i.type==='skin' && state.skin.ring===i.val) isEquipped = true;
@@ -1061,25 +1417,51 @@
                 if(i.type==='needle' && state.skin.needle===i.val) isEquipped = true;
                 if((i.type==='gadget'||i.type==='item'||i.type==='font'||i.type==='facility') && state.skin[k]) isEquipped = true;
 
-                div.innerHTML += `<div class="list-row ${has?'owned':''}" style="${has?'border-color:#00ffcc;background:#0a2222':''}"><div class="list-info"><div class="list-title">${prev}${i.name}</div><div class="list-desc">${i.desc}</div></div>
-                    ${has?`<button class="list-btn" onclick="useItem('${k}')" style="background:${isEquipped?'#ff0055':'#444'};color:#fff">${isEquipped?'装備中':'装備'}</button>`
-                    :`<button class="list-btn" onclick="buyItem('${k}')" ${state.pts<i.cost?'disabled':''}>${i.cost}p</button>`}</div>`;
+                div.innerHTML += `<div class="list-row" style="${has?'border-left: 4px solid #00ffcc; background:#0a2222;':'border-left: 4px solid #444;'}">
+                    <div class="list-row-top">
+                        <div class="list-title">
+                            <div class="skill-icon-box">${i.icon}</div>
+                            <div class="list-title-wrapper">
+                                <div>${i.name} <span style="font-size:12px; color:#ccc;">${isEquipped ? '装備中' : (has ? '所持' : '')}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-desc-wrapper">
+                        <div class="list-desc">${i.desc}</div>
+                        <div class="list-flavor">"${i.flavor}"</div>
+                    </div>
+                    <div class="list-bottom">
+                        <div style="font-size:12px; font-weight:bold; color:#ffeb3b;">${has ? '' : i.cost + ' Pt'}</div>
+                        ${has?`<button class="list-btn" onclick="useItem('${k}')" style="background:${isEquipped?'#ff0055':'#444'};color:#fff">${isEquipped?'外す':'装備'}</button>`
+                        :`<button class="list-btn" onclick="buyItem('${k}')" ${state.pts<i.cost?'disabled':''}>購入</button>`}
+                    </div>
+                </div>`;
             }
         } else {
             for(let k in consumeItems) {
                 const i = consumeItems[k];
                 let disabled = state.pts < i.cost;
-                let btnTxt = i.cost + 'p';
+                let btnTxt = '購入';
                 if(k === 'c_timer' && !isA('auto')) { disabled = true; btnTxt = '時計必須'; }
 
-                // ショップの画像挿入枠
-                let imgTag = i.img ? `<img src="${i.img}" alt="icon">` : '';
-                div.innerHTML += `<div class="list-row">
-                    <div class="list-info">
-                        <div class="item-icon-box">${imgTag}</div>
-                        <div><div class="list-title" style="color:#cc00ff">${i.name} <span style="font-size:12px;color:#fff;">(所持:${state.consumes[k]})</span></div><div class="list-desc" style="white-space:pre-wrap;">${i.desc}</div></div>
+                div.innerHTML += `<div class="list-row" style="border-left: 4px solid #ff55cc;">
+                    <div class="list-row-top">
+                        <div class="list-title">
+                            <div class="skill-icon-box"><img src="${i.img}" style="width:100%;height:100%;object-fit:contain;"></div>
+                            <div class="list-title-wrapper">
+                                <div>${i.name} <span style="font-size:12px;color:#ff55cc;">(所持: ${state.consumes[k]})</span></div>
+                            </div>
+                        </div>
                     </div>
-                    <button class="list-btn" onclick="buyConsume('${k}')" ${disabled?'disabled':''}>${btnTxt}</button></div>`;
+                    <div class="list-desc-wrapper">
+                        <div class="list-desc">${i.desc}</div>
+                        <div class="list-flavor">"${i.flavor}"</div>
+                    </div>
+                    <div class="list-bottom">
+                        <div style="font-size:12px; font-weight:bold; color:#ffeb3b;">${i.cost} Pt</div>
+                        <button class="list-btn" onclick="buyConsume('${k}')" ${disabled?'disabled':''}>${btnTxt}</button>
+                    </div>
+                </div>`;
             }
         }
     }
@@ -1102,7 +1484,6 @@
                 if(isActive && k==='c_heart' && state.heartTimer>0) countTxt = ` (${Math.ceil(state.heartTimer/1000)}s)`;
                 if(isActive && k==='c_magnet' && state.buffs.magnet>0) countTxt = ` (残り${state.buffs.magnet}回)`;
 
-                // サイドバーの画像挿入枠
                 let imgTag = consumeItems[k].img ? `<img src="${consumeItems[k].img}" alt="icon">` : '';
                 div.innerHTML += `<button class="consume-item-btn${actClass}" onclick="useConsumeInGame('${k}')" ${state.consumes[k] === 0 ? 'disabled' : ''}>
                     <div style="display:flex; align-items:center;">
@@ -1125,7 +1506,7 @@
             if(k === 'c_last') {
                 if(state.buffs.last) return;
                 if(state.life + state.tempLife !== 1) {
-                    showFloatingText("LIFE MUST BE 1!", "#ff0055");
+                    showFloatingText("使用不可", "#ff0055");
                     playTone('sawtooth', 200, 0.3);
                     return;
                 }
@@ -1136,19 +1517,19 @@
             if(k === 'c_heart') {
                 state.tempLife++; state.heartTimer = 60000; playTone('triangle', 1200, 0.2); showFloatingText("LIFE+1", "#ffeb3b");
             } else if (k === 'c_pot') {
-                state.buffs.pot++; playTone('sine', 1500, 0.2); showFloatingText("LUCKY RATE UP!", "#ff5500");
+                state.buffs.pot++; playTone('sine', 1500, 0.2); showFloatingText("ラッキーUP!", "#ff5500");
             } else if (k === 'c_oil') {
                 state.buffs.oil++; playTone('sine', 1500, 0.2); showFloatingText("SPEED UP!", "#fff"); 
             } else if (k === 'c_timer') {
                 state.buffs.qTimer = true; playTone('sine', 1500, 0.2); showFloatingText("CLOCK x2!", "#00ffcc"); updateClocks(true); 
             } else if (k === 'c_cushion') {
-                state.buffs.cushion++; playTone('sine', 1200, 0.2); showFloatingText("GUARD ON!", "#00ffcc");
+                state.buffs.cushion++; playTone('sine', 1200, 0.2); showFloatingText("防護発動!", "#00ffcc");
             } else if (k === 'c_ticket') {
-                state.ticketTimer += 60000; state.buffs.ticket++; playTone('triangle', 2000, 0.5); showFloatingText("TICKET ON!", "#ffd700");
+                state.ticketTimer += 60000; state.buffs.ticket++; playTone('triangle', 2000, 0.5); showFloatingText("ゴールデン!", "#ffd700");
             } else if (k === 'c_magnet') {
-                state.buffs.magnet += 5; playTone('sawtooth', 800, 0.2); showFloatingText("MAGNET!", "#ff0055"); setTarget();
+                state.buffs.magnet += 5; playTone('sawtooth', 800, 0.2); showFloatingText("マグネットパワー!", "#ff0055"); setTarget();
             } else if (k === 'c_last') {
-                state.buffs.last = true; playTone('square', 200, 0.5); showFloatingText("LAST STAND!", "#ff0055"); setTarget();
+                state.buffs.last = true; playTone('square', 200, 0.5); showFloatingText("背水!", "#ff0055"); setTarget();
             }
             renderConsumeSidebar(); updateUI();
         }
@@ -1157,7 +1538,7 @@
     function renderStatus() {
         let totalLv = Object.values(skills).reduce((a,b)=>a+b.lv,0);
         let ptsMult = isA('pts') ? 1 + skills.pts.lv : 1;
-        if(isA('ptsPlus')) ptsMult *= (1 + skills.ptsPlus.lv); // ポイントUP+分を加味
+        if(isA('ptsPlus')) ptsMult *= (1 + skills.ptsPlus.lv); 
         
         let critChance = isA('critRate') ? (skills.critRate.lv * 0.2).toFixed(1) : 0;
         let fTime = isA('feverTime') ? 10 + skills.feverTime.lv : 10;
@@ -1174,6 +1555,7 @@
         let godText = "";
         if (skills.ending.lv > 0) {
             godText = `<p><strong>■ 神の領域</strong>: ${isA('godMode') ? "<span style='color:#ffeb3b'>解放済 (常時ON)</span>" : (skills.godMode.lv>0?"<span style='color:#777'>無効化中</span>":"未解放")}</p>`;
+            godText += `<p><strong>■ 限界突破</strong>: ${isA('limitBreak') ? "<span style='color:#ff0055'>解放済</span>" : (skills.limitBreak.lv>0?"<span style='color:#777'>無効化中</span>":"未解放")}</p>`;
         } else {
             godText = `<p><strong>■ ？？？</strong>: <span style="color:#777">未解放</span></p>`;
         }
@@ -1188,7 +1570,7 @@
             <p><strong>■ フィーバー倍率</strong>: ${isA('fever') ? "x"+fBoost.toFixed(1) : "未解放"}</p>
             <p><strong>■ ランダムクリティカル率</strong>: ${critChance}%</p>
             <p><strong>■ ボス戦スロー発動率</strong>: ${bSlow}%</p>
-            <p><strong>■ 割引率</strong>: ${isA('discount') ? [0,5,10,25][skills.discount.lv] : 0}%</p>
+            <p><strong>■ 割引率</strong>: ${isA('discount') ? [0,5,10,25,25][skills.discount.lv] : 0}%</p>
             <p><strong>■ オート時計</strong>: ${isA('auto') ? (1+Math.floor((skills.auto.lv-1)/5)) : 0} 枠稼働中</p>
             <hr style="border:0; border-top:1px solid #333; margin:10px 0;">
             ${godText}
@@ -1204,11 +1586,17 @@
         } 
     }
     
-    function buyItem(k){ if(state.pts>=shopItems[k].cost){ playBtn(); state.pts-=shopItems[k].cost; owned.push(k); updateUI(); checkGadgets(); renderShop(); } }
+    function buyItem(k){ 
+        if(state.pts>=shopItems[k].cost){ 
+            playRezi(); 
+            state.pts-=shopItems[k].cost; owned.push(k); updateUI(); checkGadgets(); renderShop(); 
+        } 
+    }
     
     function buyConsume(k){ 
         if(state.pts>=consumeItems[k].cost){ 
-            playBtn(); state.pts-=consumeItems[k].cost; state.consumes[k]++; state.unlockedConsumes[k] = true; renderShop(); renderConsumeSidebar(); 
+            playRezi(); 
+            state.pts-=consumeItems[k].cost; state.consumes[k]++; state.unlockedConsumes[k] = true; updateUI(); renderShop(); renderConsumeSidebar(); 
         } 
     }
     
@@ -1273,6 +1661,7 @@
                     clkInt.push(setInterval(()=>{ 
                         if(!state.isPaused && state.isPlaying){ 
                             let gain = 1;
+                            if(isA('autoEff')) gain += 9 + (skills.autoEff.lv - 1) * 10;
                             if(state.ticketTimer > 0) gain *= 2;
                             state.pts += gain; updateUI(); 
                             if(state.settings.showNum) {
@@ -1288,10 +1677,24 @@
         }
     }
     
+    // 招き猫の定期的ポイント獲得
+    setInterval(() => {
+        if (state.skin['g_neko'] && state.isPlaying && !state.isPaused) {
+            state.pts += 1;
+            updateUI();
+            let gd = document.getElementById('gd-neko');
+            if (gd) {
+                gd.style.transform = 'translateY(-10px)';
+                setTimeout(() => gd.style.transform = 'translateY(0)', 200);
+            }
+        }
+    }, 2000);
+
     function checkGadgets(){
         document.getElementById('gd-btn').style.display = state.skin['g_btn'] ? 'flex' : 'none';
         document.getElementById('gd-metro').style.display = state.skin['g_met'] ? 'flex' : 'none';
         document.getElementById('gd-bomb').style.display = state.skin['g_bomb'] ? 'flex' : 'none';
+        document.getElementById('gd-neko').style.display = state.skin['g_neko'] ? 'flex' : 'none';
         document.getElementById('tikuwa-img').style.display = state.skin['i_tikuwa'] ? 'block' : 'none';
         renderConsumeSidebar();
     }
@@ -1315,9 +1718,13 @@
     };
 
     document.getElementById('pause-btn').onclick = togglePause;
+    
     canvas.addEventListener('mousedown', (e)=>{ e.preventDefault(); handleInput(); });
+    canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleInput(); }, {passive: false});
+
     window.addEventListener('keydown', (e)=>{ 
-        if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) triggerSlow(); } 
+        if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) handleInput(); } 
+        if((e.code==='KeyS' || e.key==='s')){ e.preventDefault(); if(!e.repeat) triggerSlow(); } 
         if(e.code==='Escape'){ togglePause(); } 
     });
     
@@ -1328,9 +1735,7 @@
     document.getElementById('btn-help').onclick=()=>{ playBtn(); openModal('modal-help'); };
     document.getElementById('btn-sys').onclick=()=>{ playBtn(); openModal('modal-sys'); };
     document.getElementById('btn-status').onclick=()=>{ playBtn(); openModal('modal-status'); };
-    document.querySelectorAll('.close').forEach(b=>b.onclick=()=>{ playBtn(); document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); });
 
-    // --- 新規追加：データ全削除周りの関数 ---
     function confirmFullReset(){ 
         playBtn(); 
         document.getElementById('modal-sys').style.display = 'none';
@@ -1348,11 +1753,10 @@
         localStorage.clear(); 
         location.reload(); 
     }
-    // ----------------------------------------
 
     function saveGame(s){ 
         localStorage.setItem('tl_pc_'+s, JSON.stringify({
-            pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, 
+            pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, hasTutorialDone:state.hasTutorialDone, 
             consumes:state.consumes, unlockedConsumes:state.unlockedConsumes, sets:state.settings, 
             recS:state.maxScore, recC:state.maxCombo
         })); 
@@ -1363,6 +1767,7 @@
         const d=JSON.parse(localStorage.getItem('tl_pc_'+s));
         if(d){ 
             state.pts=d.pts; owned=d.owned; state.skin=d.skin; state.hasReached100=d.reach100||false;
+            if(d.hasTutorialDone !== undefined) state.hasTutorialDone = d.hasTutorialDone;
             if(d.recS) state.maxScore = d.recS; if(d.recC) state.maxCombo = d.recC;
             
             if(d.consumes) state.consumes = { ...state.consumes, ...d.consumes };
