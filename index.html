@@ -295,26 +295,55 @@
             box-shadow: none !important;
         }
 
-        /* --- スマホ向け最適化 --- */
+        /* --- ✨スマホ向け大幅アップデート（見やすさ・操作性向上）✨ --- */
         @media (max-width: 900px) {
-            .layout-container { flex-direction: column; align-items: center; padding: 15px 10px; gap: 20px; }
-            .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; justify-content: center; padding-top: 0; }
-            .center-panel { max-width: 350px; } 
-            #clock-sidebar { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-            .game-btn { padding: 18px; font-size: 16px; }
-            .btn-small { padding: 8px; font-size: 24px; }
-            #btn-withdraw { padding: 20px; font-size: 20px; }
-            .list-btn { padding: 12px 15px; font-size: 14px; min-width: 80px; }
-            .toggle-btn { padding: 12px; font-size: 14px; }
-            .modal { padding: 15px; width: 95%; max-width: none; max-height: 90vh; }
+            /* 下に固定メニューを置くための余白 */
+            .layout-container { padding: 10px 10px 160px 10px; gap: 15px; flex-direction: column; }
+            .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; padding: 0; justify-content: flex-start; }
             
+            /* 表示順の変更（1.ステータス → 2.ゲーム画面 → 3.アイテム） */
+            .left-panel { order: 1; }
+            .center-panel { order: 2; }
+            .right-panel { order: 3; }
+
+            /* ステータス周りをコンパクトに並べる */
+            .stats-box { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; padding: 10px 15px; gap: 10px; }
+            .stats-box hr { display: none; }
+            .stat-line { margin: 0; font-size: 14px; }
+            
+            /* ポイントの表示をコンパクトに */
+            .point-hud { min-height: auto; padding: 10px; flex-direction: row; flex-wrap: wrap; justify-content: space-around; align-items: center; }
+            .pts-val { font-size: 24px; margin: 0; }
+            .pending-box { margin-top: 0; border-top: none; padding-top: 0; display: flex; align-items: center; gap: 10px; }
+
+            .record-box { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; justify-content: space-around; }
+            .record-line { margin-top: 0; font-size: 12px; }
+
+            /* 強化メニュー・設定などを画面の一番下に固定配置（アプリ風UI） */
+            .menu-grid { 
+                position: fixed; bottom: 0; left: 0; width: 100%; 
+                background: rgba(15, 15, 15, 0.98); 
+                border-top: 2px solid #00ffcc; 
+                padding: 10px; box-sizing: border-box; 
+                z-index: 1000; 
+                display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.8);
+                padding-bottom: env(safe-area-inset-bottom, 10px); /* iPhoneのバー対策 */
+            }
+            .btn-upgrade, .btn-shop { grid-column: span 1; padding: 12px; font-size: 16px; border-radius: 8px; }
+            .side-btns { grid-column: 1 / -1; display: flex; gap: 8px; }
+            .btn-small { flex: 1; padding: 8px; font-size: 16px; flex-direction: row; justify-content: center; align-items: center; }
+            .btn-small span { margin-top: 0; margin-left: 6px; font-size: 12px; }
+
+            /* スマホ専用ボタン表示 */
+            .mobile-only { display: flex !important; gap: 10px; margin-bottom: 15px; width: 100%; }
+
+            /* モーダルの調整 */
+            .modal { padding: 15px; width: 95%; max-width: none; max-height: 85vh; }
             #list-upgrade, #list-shop { grid-template-columns: 1fr; }
             #modal-upgrade, #modal-shop { padding: 0; }
             .modal-header { padding: 15px; }
             .modal-scroll-area { padding: 0 15px 20px 15px; }
-
-            /* スマホ専用エリアの表示設定 */
-            .mobile-only { display: flex !important; gap: 10px; margin-bottom: 15px; width: 100%; }
         }
     </style>
 </head>
@@ -501,13 +530,14 @@
         </div>
 
         <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+        <p style="font-size:12px; color:#aaa; margin-bottom:5px;">※プレイ状況は5秒ごとに自動セーブされます</p>
         <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <button onclick="saveGame(1)" style="flex:1; padding:12px; background:#444; color:#fff; border:none; border-radius:6px; cursor:pointer;">セーブ1</button>
-            <button onclick="loadGame(1)" style="flex:1; padding:12px; background:#0077ff; color:#fff; border:none; border-radius:6px; cursor:pointer;">ロード1</button>
+            <button onclick="saveGame(1)" style="flex:1; padding:12px; background:#444; color:#fff; border:none; border-radius:6px; cursor:pointer;">手動セーブ1</button>
+            <button onclick="loadGame(1)" style="flex:1; padding:12px; background:#0077ff; color:#fff; border:none; border-radius:6px; cursor:pointer;">手動ロード1</button>
         </div>
         <div style="display:flex; gap:10px;">
-            <button onclick="saveGame(2)" style="flex:1; padding:12px; background:#444; color:#fff; border:none; border-radius:6px; cursor:pointer;">セーブ2</button>
-            <button onclick="loadGame(2)" style="flex:1; padding:12px; background:#0077ff; color:#fff; border:none; border-radius:6px; cursor:pointer;">ロード2</button>
+            <button onclick="saveGame(2)" style="flex:1; padding:12px; background:#444; color:#fff; border:none; border-radius:6px; cursor:pointer;">手動セーブ2</button>
+            <button onclick="loadGame(2)" style="flex:1; padding:12px; background:#0077ff; color:#fff; border:none; border-radius:6px; cursor:pointer;">手動ロード2</button>
         </div>
         
         <button id="btn-play-ending" onclick="playEnding()" style="width:100%; margin-top:20px; background:#00ffcc; color:black; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; display:none;">🎞️ エンディングを見る</button>
@@ -1101,8 +1131,14 @@ function gameOver() {
     let lastTime = 0;
     function loop(timestamp) {
         if(!lastTime) lastTime = timestamp;
-        const deltaTime = timestamp - lastTime;
+        let deltaTime = timestamp - lastTime;
         lastTime = timestamp;
+
+        // タブ切り替え時などの巨大なジャンプを防ぐ
+        if(deltaTime > 50) deltaTime = 16.666; 
+
+        // リフレッシュレートの違い(60Hz, 120Hz等)を吸収する倍率
+        let dtMult = deltaTime / 16.666;
 
         if(!state.isPlaying || state.isPaused) { requestAnimationFrame(loop); return; }
 
@@ -1168,7 +1204,10 @@ function gameOver() {
         if(state.isFever) {
             ctx.arc(140,140,110,0,Math.PI*2); ctx.strokeStyle = `hsl(${Date.now()%360},${state.settings.feverSat}%,50%)`;
         } else {
-            if(state.isBoss) { state.targetA += state.bossSpeed * state.bossDir; if(Math.random()<0.02)state.bossDir*=-1; }
+            if(state.isBoss) { 
+                state.targetA += state.bossSpeed * state.bossDir * dtMult; 
+                if(Math.random()<0.02 * dtMult) state.bossDir*=-1; 
+            }
             ctx.arc(140,140,110,state.targetA-state.targetW/2, state.targetA+state.targetW/2);
             ctx.strokeStyle='#ff0055';
         }
@@ -1204,7 +1243,8 @@ function gameOver() {
             }
         }
 
-        let step = (state.isSlow ? currentSpd*0.3 : currentSpd) * state.direction;
+        // リフレッシュレートの違いを吸収して回転させる
+        let step = (state.isSlow ? currentSpd*0.3 : currentSpd) * state.direction * dtMult;
         state.angle = (state.angle + step + Math.PI*2) % (Math.PI*2);
         
         if (state.skin.needle === 'real_needle') {
@@ -1227,7 +1267,7 @@ function gameOver() {
 
         for(let i=particles.length-1; i>=0; i--) {
             let p = particles[i];
-            p.x += p.vx; p.y += p.vy; p.life -= 0.03;
+            p.x += p.vx * dtMult; p.y += p.vy * dtMult; p.life -= 0.03 * dtMult;
             ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
             ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life); ctx.fill();
             ctx.globalAlpha = 1.0;
@@ -1808,19 +1848,22 @@ function gameOver() {
         location.reload(); 
     }
 
-    function saveGame(s){ 
-        localStorage.setItem('tl_pc_'+s, JSON.stringify({
-            pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, hasTutorialDone:state.hasTutorialDone, 
-            consumes:state.consumes, unlockedConsumes:state.unlockedConsumes, sets:state.settings, 
-            recS:state.maxScore, recC:state.maxCombo
-        })); 
-        alert("保存しました"); 
+    // --- ✨ セーブ・ロード機能（オートセーブ対応） ✨ ---
+    function saveGame(s, silent=false){ 
+        try {
+            localStorage.setItem('tl_pc_'+s, JSON.stringify({
+                pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, hasTutorialDone:state.hasTutorialDone, 
+                consumes:state.consumes, unlockedConsumes:state.unlockedConsumes, sets:state.settings, 
+                recS:state.maxScore, recC:state.maxCombo
+            })); 
+            if(!silent) alert("保存しました"); 
+        } catch(e) { console.error("Save Error", e); }
     }
     
-    function loadGame(s){
+    function loadGame(s, silent=false){
         const d=JSON.parse(localStorage.getItem('tl_pc_'+s));
         if(d){ 
-            state.pts=d.pts; owned=d.owned; state.skin=d.skin; state.hasReached100=d.reach100||false;
+            state.pts=d.pts || 0; owned=d.owned || []; state.skin=d.skin; state.hasReached100=d.reach100||false;
             if(d.hasTutorialDone !== undefined) state.hasTutorialDone = d.hasTutorialDone;
             if(d.recS) state.maxScore = d.recS; if(d.recC) state.maxCombo = d.recC;
             
@@ -1838,9 +1881,24 @@ function gameOver() {
             Object.keys(skills).forEach(k=>{
                 if(d.skills[k]){ skills[k].lv=d.skills[k].lv; if(d.skills[k].active !== undefined) skills[k].active=d.skills[k].active; }
             }); 
-            applyFont(); updateUI(); checkGadgets(); alert("ロード完了"); 
+            applyFont(); updateUI(); checkGadgets(); 
+            if(!silent) alert("ロード完了"); 
+        } else {
+            if(!silent) alert("データがありません");
         }
     }
+
+    // 5秒ごとにバックグラウンドで自動セーブ
+    setInterval(() => {
+        if(state.hasTutorialDone || state.score > 0 || state.pts > 0) {
+            saveGame('auto', true);
+        }
+    }, 5000);
+
+    // 起動時に自動でオートセーブデータを読み込む
+    window.addEventListener('DOMContentLoaded', () => {
+        loadGame('auto', true);
+    });
     
     document.getElementById('vol-se').oninput=(e)=>{ state.settings.vol = e.target.value; };
     document.getElementById('vol-sat').oninput=(e)=>{ state.settings.feverSat = parseInt(e.target.value); };
