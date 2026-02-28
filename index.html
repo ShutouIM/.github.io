@@ -283,8 +283,10 @@
         .toggle-btn { background: #444; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
         .toggle-btn.on { background: #ffeb3b; color: #000; }
 
-        /* --- スマホ専用ボタンのデザイン --- */
+        /* --- スマホ専用の要素 --- */
         .mobile-only { display: none !important; }
+        #mobile-top-bar { display: none; }
+
         .mobile-btn {
             transition: transform 0.1s;
             user-select: none;
@@ -297,8 +299,8 @@
 
         /* --- ✨スマホ向け大幅アップデート（見やすさ・操作性向上）✨ --- */
         @media (max-width: 900px) {
-            /* 下に固定メニューを置くための余白 */
-            .layout-container { padding: 10px 10px 160px 10px; gap: 15px; flex-direction: column; }
+            /* 余白の調整 */
+            .layout-container { padding: 0 10px 160px 10px; gap: 15px; flex-direction: column; }
             .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; padding: 0; justify-content: flex-start; }
             
             /* 表示順の変更（1.ステータス → 2.ゲーム画面 → 3.アイテム） */
@@ -306,18 +308,47 @@
             .center-panel { order: 2; }
             .right-panel { order: 3; }
 
-            /* ステータス周りをコンパクトに並べる */
-            .stats-box { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; padding: 10px 15px; gap: 10px; }
+            /* ★ スマホ専用の固定ヘッダー（ライフとスコアを画面上部に追従させる） */
+            #mobile-top-bar {
+                display: flex !important;
+                position: sticky; top: 0; z-index: 100;
+                background: rgba(15, 15, 15, 0.95);
+                border-bottom: 2px solid #333;
+                padding: 10px 15px;
+                padding-top: max(10px, env(safe-area-inset-top)); /* スマホのノッチ対策 */
+                justify-content: space-between;
+                align-items: center;
+                backdrop-filter: blur(5px);
+                margin: 0 -10px 15px -10px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            }
+            .mobile-top-item { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+            /* PC用の要素をスマホでは隠す（重複を防ぐため） */
+            .stats-box .stat-line:first-child { display: none; } /* ライフ */
+            #score-display { display: none; } /* スコア */
+            .pending-box { display: none; } /* 一時獲得ポイント */
             .stats-box hr { display: none; }
+
+            .stats-box { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; padding: 10px 15px; gap: 10px; }
             .stat-line { margin: 0; font-size: 14px; }
             
-            /* ポイントの表示をコンパクトに */
-            .point-hud { min-height: auto; padding: 10px; flex-direction: row; flex-wrap: wrap; justify-content: space-around; align-items: center; }
+            .point-hud { min-height: auto; padding: 10px; flex-direction: row; flex-wrap: wrap; justify-content: space-around; align-items: center; margin-bottom: 0;}
             .pts-val { font-size: 24px; margin: 0; }
-            .pending-box { margin-top: 0; border-top: none; padding-top: 0; display: flex; align-items: center; gap: 10px; }
 
             .record-box { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; justify-content: space-around; }
             .record-line { margin-top: 0; font-size: 12px; }
+
+            /* ★ TAPボタンの小型化（押し間違え防止のピル型デザイン） */
+            #mobile-tap-btn {
+                flex: none !important;
+                width: 200px; /* 横幅を制限 */
+                height: 60px; /* 高さをスリムに */
+                border-radius: 30px !important; /* 丸みを帯びたデザイン */
+                margin: 0 auto;
+                font-size: 20px !important;
+                letter-spacing: 2px;
+            }
 
             /* 強化メニュー・設定などを画面の一番下に固定配置（アプリ風UI） */
             .menu-grid { 
@@ -335,8 +366,8 @@
             .btn-small { flex: 1; padding: 8px; font-size: 16px; flex-direction: row; justify-content: center; align-items: center; }
             .btn-small span { margin-top: 0; margin-left: 6px; font-size: 12px; }
 
-            /* スマホ専用ボタン表示 */
-            .mobile-only { display: flex !important; gap: 10px; margin-bottom: 15px; width: 100%; }
+            /* スマホ専用ボタンコンテナ表示 */
+            .mobile-only.control-row { display: flex !important; gap: 10px; margin-bottom: 15px; width: 100%; justify-content: center; }
 
             /* モーダルの調整 */
             .modal { padding: 15px; width: 95%; max-width: none; max-height: 85vh; }
@@ -366,7 +397,28 @@
     <button id="btn-close-start-help" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">ゲームスタート</button>
 </div>
 
+<div id="modal-tutorial" class="modal" style="padding: 20px; text-align:center; border: 2px solid #00ffcc; z-index: 200;">
+    <h3 id="tut-title" style="margin-top:0; margin-bottom:15px; color:#00ffcc; font-size:20px;">チュートリアル</h3>
+    <p id="tut-desc" style="font-size:15px; color:#ddd; line-height:1.6; margin-bottom:25px;"></p>
+    <button onclick="closeTutorial()" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">わかった！</button>
+</div>
+
 <div class="layout-container" id="main-ui">
+
+    <div id="mobile-top-bar" class="mobile-only">
+        <div class="mobile-top-item" style="align-items:flex-start;">
+            <span style="font-size:11px;color:#aaa;font-weight:bold;">LIFE</span>
+            <div class="life-container" id="mobile-val-life" style="justify-content:flex-start;"></div>
+        </div>
+        <div class="mobile-top-item">
+            <span style="font-size:11px;color:#aaa;font-weight:bold;letter-spacing:2px;">SCORE</span>
+            <div id="mobile-score-display" style="font-size:32px; font-weight:900; color:#ff0055; line-height:1; text-shadow:0 0 10px rgba(255,0,85,0.5);">0</div>
+        </div>
+        <div class="mobile-top-item" style="align-items:flex-end;">
+            <span style="font-size:11px;color:#aaa;font-weight:bold;">PENDING</span>
+            <div id="mobile-pending-display" style="font-size:22px; font-weight:bold; color:#ff5500;">0</div>
+        </div>
+    </div>
 
     <div class="panel left-panel">
         <div class="record-box">
@@ -412,9 +464,9 @@
             [クリック / Space] ストップ <span id="guide-slow" style="display: none;">&nbsp;&nbsp; [S] スロー</span> &nbsp;&nbsp; [Esc] ポーズ
         </div>
 
-        <div id="mobile-controls" class="mobile-only">
-            <button id="mobile-tap-btn" class="mobile-btn" style="flex: 2; padding: 15px; font-size: 20px; font-weight: bold; background: linear-gradient(135deg, #00ffcc, #0088aa); border: none; border-radius: 12px; box-shadow: 0 4px 0 #005577; cursor: pointer; color: #000;">👆 TAP 👆</button>
-            <button id="mobile-slow-btn" class="mobile-btn" style="flex: 1; padding: 15px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #00ffff, #0088aa); border: none; border-radius: 12px; box-shadow: 0 4px 0 #005577; cursor: pointer; color: #000; display: none;">⏱️ SLOW</button>
+        <div id="mobile-controls" class="mobile-only control-row">
+            <button id="mobile-slow-btn" class="mobile-btn" style="padding: 15px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #00ffff, #0088aa); border: none; border-radius: 12px; box-shadow: 0 4px 0 #005577; cursor: pointer; color: #000; display: none;">⏱️ SLOW</button>
+            <button id="mobile-tap-btn" class="mobile-btn" style="background: linear-gradient(135deg, #00ffcc, #0088aa); border: none; box-shadow: 0 4px 0 #005577; cursor: pointer; color: #000;">👆 TAP 👆</button>
         </div>
 
         <div class="withdraw-row" id="row-withdraw">
@@ -593,6 +645,7 @@
     let state = {
         pts: DEBUG_POINTS, pending: 0, isPlaying: false, isPaused: false,
         isFever: false, isSlow: false, isBoss: false, hasReached100: false, hasTutorialDone: false, 
+        tutorials: { boss: false, withdraw: false, upgrade: false, shop: false, consume: false, slow: false, fever: false }, 
         feverG: 0, combo: 0, score: 0, life: 1, tempLife: 0, gameSpd: 0.05, 
         slowC: 0, slowTimer: 0, heartTimer: 0, ticketTimer: 0, angle: 0, targetA: 0, targetW: 0.7, critOff: 0, bossDir: 1, bossSpeed: 0.01,
         bossShieldLeft: 0, direction: 1, hasDeath: false, deathA: 0, deathW: 0.3,
@@ -715,7 +768,10 @@
         
         if(k==='slow') return lv===0 ? 'なし' : `${lv>=2 ? 2 : 1}秒/${lv + (lv>=3 ? lv-2 : 0)}回`;
         if(k==='discount') return `${lv === 0 ? 0 : [0, 5, 10, 25, 25][lv]}%`;
-        if(k==='comboBonus') return `+${lv*1}%コンボ率`;
+        
+        // ▼ コンボ強化のテキスト修正
+        if(k==='comboBonus') return `コンボ毎に+${lv*3}%`;
+        
         if(k==='ins') return `${15+lv*45}pt`;
         if(k==='wideKeep') return `維持Lv${lv}`;
         if(k==='auto') return lv===0 ? 'なし' : `${1+Math.floor((lv-1)/5)}個(${(10000-((lv-1)%5)*1800)/1000}s)`;
@@ -792,6 +848,51 @@
         updateUI();
         init();
     };
+
+    // --- チュートリアルモーダルの表示処理 ---
+    let wasPausedBeforeTutorial = false; // ポーズ状態を記憶する変数
+    
+    function showTutorial(type) {
+        wasPausedBeforeTutorial = state.isPaused; // 開く前のポーズ状態を記憶
+        state.isPaused = true; // チュートリアル中は確実にポーズする
+        
+        const modal = document.getElementById('modal-tutorial');
+        const title = document.getElementById('tut-title');
+        const desc = document.getElementById('tut-desc');
+        
+        if(type === 'withdraw') {
+            title.innerText = "💡 チュートリアル: 持ち帰り";
+            desc.innerHTML = "ライフが0になるとゲームオーバーになり、<br>稼いだポイントが大きく減ってしまいます！<br><br>ミスしそうになったら、手遅れになる前に<br><span style='color:#ff5500; font-weight:bold;'>「💰 ポイント持ち帰り」</span>を押して<br>安全にポイントを確定させましょう！";
+        } else if(type === 'boss') {
+            title.innerText = "⚠️ チュートリアル: ボス戦";
+            desc.innerHTML = "スコア10ごとに<span style='color:#ff0055; font-weight:bold;'>「ボス戦」</span>が発生します！<br><br>赤い的が動くようになり難易度が上がりますが、<br>成功すれば大量のボーナスポイントを獲得できます。<br>落ち着いてタイミングを合わせましょう！";
+        } else if(type === 'upgrade') {
+            title.innerText = "🔧 チュートリアル: 強化ラボ";
+            desc.innerHTML = "無事ポイントを持ち帰れましたね！<br><br>画面下部メニューの<span style='color:#0077ff; font-weight:bold;'>「🔧 強化ラボ」</span>から、<br>集めたポイントを使って能力を解放できます。<br>まずは「ライフ+」や「ポイントUP」がおすすめです！";
+        } else if(type === 'shop') {
+            title.innerText = "🎁 チュートリアル: ショップ";
+            desc.innerHTML = "ショップでは、集めたポイントを使って<br>見た目やBGMなどをカスタマイズできます！<br><br>購入した後は、忘れずに<span style='color:#ff0055; font-weight:bold;'>「装備」</span>ボタンを押して<br>適用してくださいね！";
+        } else if(type === 'consume') {
+            title.innerText = "🧸 チュートリアル: 消費アイテム";
+            desc.innerHTML = "「おもちゃ箱」を解放したことで、<br>使い捨ての<span style='color:#ff55cc; font-weight:bold;'>消費アイテム</span>が買えるようになりました！<br><br>購入したアイテムは、ゲーム画面の右側<br>（スマホなら画面下部）のインベントリから<br>タップして使用できます！";
+        } else if(type === 'slow') {
+            title.innerText = "⏱️ チュートリアル: スロー機能";
+            desc.innerHTML = "強力な<span style='color:#00ffff; font-weight:bold;'>「スロー」</span>機能が解放されました！<br><br>ゲーム中にピンチになったら、<br>画面のスローボタン（またはSキー）を押しましょう。<br>一時的に針の動きが遅くなり、確実に狙えます！<br>（※1プレイごとの回数に制限があります）";
+        } else if(type === 'fever') {
+            title.innerText = "🌟 チュートリアル: フィーバー";
+            desc.innerHTML = "熱狂の<span style='color:#ffeb3b; font-weight:bold;'>「フィーバー」</span>機能が解放されました！<br><br>成功を重ねてゲージがMAXになると突入します！<br>フィーバー中は無敵になり、<br>連打した分だけ大量のポイントを稼げます！<br>（※ミスするとゲージが少し減ってしまいます）";
+        }
+        
+        // 他のモーダルを消さずに、上に重ねて表示する
+        modal.style.display = 'block';
+    }
+    
+    function closeTutorial() {
+        playBtn();
+        document.getElementById('modal-tutorial').style.display = 'none';
+        // チュートリアルを開く前のポーズ状態に戻す（勝手にゲームが再開するのを防ぐ）
+        state.isPaused = wasPausedBeforeTutorial;
+    }
 
     function init() {
         if(state.isPlaying) return;
@@ -983,7 +1084,8 @@
             let gain = isA('pts') ? 1 + skills.pts.lv : 1;
             if(isA('ptsPlus')) gain *= (1 + skills.ptsPlus.lv); 
 
-            if(isA('comboBonus')) gain *= 1 + (state.combo * 0.01 * skills.comboBonus.lv); 
+            // ▼ コンボボーナス倍率の上方修正（1コンボごとに+3%増加する）
+            if(isA('comboBonus')) gain *= 1 + (state.combo * 0.03 * skills.comboBonus.lv); 
             
             if(state.isBoss) {
                 let bossCount = Math.floor(state.score / 10);
@@ -1042,8 +1144,22 @@
             }
             state.gameSpd += spdInc;
 
-            if(!state.isFever) document.getElementById('score-display').innerText = state.score;
+            if(!state.isFever) {
+                document.getElementById('score-display').innerText = state.score;
+                document.getElementById('mobile-score-display').innerText = state.score;
+            }
             setTarget();
+
+            // --- チュートリアル判定 ---
+            if (state.score === 5 && !state.tutorials.withdraw) {
+                state.tutorials.withdraw = true;
+                setTimeout(() => showTutorial('withdraw'), 300);
+            }
+            if (state.score === 9 && !state.tutorials.boss) {
+                state.tutorials.boss = true;
+                setTimeout(() => showTutorial('boss'), 300);
+            }
+
         } else {
             if(isA('recovery') && Math.random() < skills.recovery.lv * 0.1) {
                 playTone('sine', 800, 0.2); setTarget(); 
@@ -1076,6 +1192,8 @@
         playTone('square',1200,0.5); 
         document.getElementById('score-display').innerText="FEVER"; 
         document.getElementById('score-display').style.color="#ffeb3b";
+        document.getElementById('mobile-score-display').innerText="FEVER"; 
+        document.getElementById('mobile-score-display').style.color="#ffeb3b";
         if(state.isSlow) { state.isSlow=false; state.slowTimer=0; }
         updateUI();
     }
@@ -1091,7 +1209,9 @@ function gameOver() {
     playTone('sawtooth',80,0.6);
     let ins = isA('ins') ? 15 + skills.ins.lv*10 : 15;
     state.pts += Math.min(state.pending, ins);
+    
     document.getElementById('score-display').innerText = "LOST";
+    document.getElementById('mobile-score-display').innerText = "LOST";
     
     document.getElementById('pending-box').style.visibility='hidden';
     document.getElementById('row-withdraw').style.visibility='hidden';
@@ -1099,6 +1219,11 @@ function gameOver() {
     document.getElementById('click-here-msg').style.display = 'none';
     
     renderConsumeSidebar(); updateUI(); updateClocks(true); 
+
+    if (!state.tutorials.upgrade && state.pts >= 20) {
+        state.tutorials.upgrade = true;
+        setTimeout(() => showTutorial('upgrade'), 800);
+    }
 }
 
     function forceWithdraw() {
@@ -1107,11 +1232,18 @@ function gameOver() {
     state.hasTutorialDone = true; 
     document.getElementById('click-here-msg').style.display = 'none';
 
-    document.getElementById('score-display').innerText="SAFE"; updateUI(); 
+    document.getElementById('score-display').innerText="SAFE"; 
+    document.getElementById('mobile-score-display').innerText="SAFE"; 
+    updateUI(); 
     document.getElementById('pending-box').style.visibility='hidden';
     document.getElementById('row-withdraw').style.visibility='hidden';
     state.feverG=0; canvas.className=''; 
     updateClocks(true);
+
+    if (!state.tutorials.upgrade && state.pts >= 20) {
+        state.tutorials.upgrade = true;
+        setTimeout(() => showTutorial('upgrade'), 800);
+    }
 }
 
     let thFrames = 0;
@@ -1134,10 +1266,7 @@ function gameOver() {
         let deltaTime = timestamp - lastTime;
         lastTime = timestamp;
 
-        // タブ切り替え時などの巨大なジャンプを防ぐ
         if(deltaTime > 50) deltaTime = 16.666; 
-
-        // リフレッシュレートの違い(60Hz, 120Hz等)を吸収する倍率
         let dtMult = deltaTime / 16.666;
 
         if(!state.isPlaying || state.isPaused) { requestAnimationFrame(loop); return; }
@@ -1176,7 +1305,10 @@ function gameOver() {
             if(state.feverG<=0) { 
                 state.isFever=false; state.feverG = 0;
                 document.getElementById('score-display').innerText=state.score;
-                document.getElementById('score-display').style.color="#ff0055"; setTarget();
+                document.getElementById('score-display').style.color="#ff0055"; 
+                document.getElementById('mobile-score-display').innerText=state.score;
+                document.getElementById('mobile-score-display').style.color="#ff0055"; 
+                setTarget();
             }
             document.getElementById('fever-bar').style.width = Math.max(0, state.feverG)+'%';
         } else if (state.feverG > 0) {
@@ -1243,7 +1375,6 @@ function gameOver() {
             }
         }
 
-        // リフレッシュレートの違いを吸収して回転させる
         let step = (state.isSlow ? currentSpd*0.3 : currentSpd) * state.direction * dtMult;
         state.angle = (state.angle + step + Math.PI*2) % (Math.PI*2);
         
@@ -1279,7 +1410,11 @@ function gameOver() {
 
     function updateUI() {
         document.getElementById('ui-pts').innerText = Math.floor(state.pts);
-        document.getElementById('ui-pending').innerText = Math.floor(state.pending);
+        
+        let pendingText = Math.floor(state.pending);
+        document.getElementById('ui-pending').innerText = pendingText;
+        document.getElementById('mobile-pending-display').innerText = pendingText; 
+
         document.getElementById('ui-ins').innerText = isA('ins') ? 15 + skills.ins.lv*10 : 15;
         
         document.getElementById('rec-score').innerText = state.maxScore;
@@ -1292,7 +1427,9 @@ function gameOver() {
         
         for(let i=0; i<cBase; i++) { lHtml += '<div class="life-box"></div>'; }
         for(let i=0; i<cTemp; i++) { lHtml += '<div class="life-box temp"></div>'; }
+        
         document.getElementById('val-life').innerHTML = lHtml;
+        document.getElementById('mobile-val-life').innerHTML = lHtml; 
 
         document.getElementById('val-spd').innerText = ((state.buffs.oil>0 ? state.gameSpd*Math.pow(1.5, state.buffs.oil) : state.gameSpd)*20).toFixed(1);
         document.getElementById('val-slow').innerText = state.isPlaying?state.slowC : (isA('slow') ? skills.slow.lv + (skills.slow.lv>=3 ? skills.slow.lv-2 : 0) : 0);
@@ -1307,7 +1444,6 @@ function gameOver() {
         document.getElementById('fever-container').style.visibility = isA('fever') ? 'visible' : 'hidden';
         document.getElementById('slow-wrapper').style.display = isA('slow') ? 'flex' : 'none';
         
-        // スローテキスト・スマホ用スローボタンの表示切替
         document.getElementById('guide-slow').style.display = isA('slow') ? 'inline' : 'none';
         document.getElementById('mobile-slow-btn').style.display = isA('slow') ? 'block' : 'none';
 
@@ -1321,7 +1457,6 @@ function gameOver() {
     function openModal(id) { 
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); 
         
-        // 強化とショップはflex、それ以外はblockで表示
         if(id === 'modal-upgrade' || id === 'modal-shop') {
             document.getElementById(id).style.display='flex'; 
         } else {
@@ -1336,6 +1471,11 @@ function gameOver() {
             document.getElementById('shop-tabs').style.display = hasToybox ? 'flex' : 'none';
             if(!hasToybox) state.shopTab = 'skin';
             changeShopTab(state.shopTab, false);
+
+            if(!state.tutorials.shop) {
+                state.tutorials.shop = true;
+                setTimeout(() => showTutorial('shop'), 300);
+            }
         }
         if(id === 'modal-status') renderStatus();
     }
@@ -1479,6 +1619,11 @@ function gameOver() {
         }
 
         renderShop();
+
+        if(tab === 'item' && !state.tutorials.consume) {
+            state.tutorials.consume = true;
+            setTimeout(() => showTutorial('consume'), 300);
+        }
     }
 
     function renderShop() {
@@ -1661,6 +1806,16 @@ function gameOver() {
         if(state.pts>=c){ 
             playBtn(); state.pts-=c; s.lv++; updateUI(); renderSkills(); 
             if(k==='ending') playEnding(); 
+            
+            // --- チュートリアル表示の追加 ---
+            if(k === 'slow' && s.lv === 1 && !state.tutorials.slow) {
+                state.tutorials.slow = true;
+                setTimeout(() => showTutorial('slow'), 300);
+            }
+            if(k === 'fever' && s.lv === 1 && !state.tutorials.fever) {
+                state.tutorials.fever = true;
+                setTimeout(() => showTutorial('fever'), 300);
+            }
         } 
     }
     
@@ -1853,6 +2008,7 @@ function gameOver() {
         try {
             localStorage.setItem('tl_pc_'+s, JSON.stringify({
                 pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, hasTutorialDone:state.hasTutorialDone, 
+                tutorials:state.tutorials,
                 consumes:state.consumes, unlockedConsumes:state.unlockedConsumes, sets:state.settings, 
                 recS:state.maxScore, recC:state.maxCombo
             })); 
@@ -1865,6 +2021,7 @@ function gameOver() {
         if(d){ 
             state.pts=d.pts || 0; owned=d.owned || []; state.skin=d.skin; state.hasReached100=d.reach100||false;
             if(d.hasTutorialDone !== undefined) state.hasTutorialDone = d.hasTutorialDone;
+            if(d.tutorials) state.tutorials = { ...state.tutorials, ...d.tutorials };
             if(d.recS) state.maxScore = d.recS; if(d.recC) state.maxCombo = d.recC;
             
             if(d.consumes) state.consumes = { ...state.consumes, ...d.consumes };
