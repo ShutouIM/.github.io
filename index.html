@@ -82,7 +82,11 @@
         #score-display { font-size: 70px; font-weight: 900; color: #ff0055; margin: 0 0 10px 0; line-height: 1; text-shadow: 0 0 20px rgba(255, 0, 85, 0.4); }
 
         .game-area { position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
-        canvas { background: #000; border-radius: 50%; border: 4px solid #333; cursor: pointer; position: relative; z-index: 2; transition: border-color 0.2s, box-shadow 0.2s; }
+        canvas { 
+            background: #000; border-radius: 50%; border: 4px solid #333; cursor: pointer; position: relative; z-index: 2; transition: border-color 0.2s, box-shadow 0.2s; 
+            -webkit-touch-callout: none; /* スマホ長押しメニュー禁止 */
+            -webkit-tap-highlight-color: transparent; /* タップ時の青枠を消去 */
+        }
         
         #click-here-msg {
             position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
@@ -279,6 +283,18 @@
         .toggle-btn { background: #444; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
         .toggle-btn.on { background: #ffeb3b; color: #000; }
 
+        /* --- スマホ専用ボタンのデザイン --- */
+        .mobile-only { display: none !important; }
+        .mobile-btn {
+            transition: transform 0.1s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-btn:active {
+            transform: translateY(4px);
+            box-shadow: none !important;
+        }
+
         /* --- スマホ向け最適化 --- */
         @media (max-width: 900px) {
             .layout-container { flex-direction: column; align-items: center; padding: 15px 10px; gap: 20px; }
@@ -296,6 +312,9 @@
             #modal-upgrade, #modal-shop { padding: 0; }
             .modal-header { padding: 15px; }
             .modal-scroll-area { padding: 0 15px 20px 15px; }
+
+            /* スマホ専用エリアの表示設定 */
+            .mobile-only { display: flex !important; gap: 10px; margin-bottom: 15px; width: 100%; }
         }
     </style>
 </head>
@@ -353,19 +372,24 @@
             <img id="needle-img" src="needle.png" style="display:none;" crossorigin="anonymous">
             
             <div id="overlay-msg">
-            <div class="roll-text" id="ending-txt" style="position: absolute; width: 100%;">
-                おめでとう!<br><br>あなたはこのゲームをよく遊んでくれました<br><br>THANK YOU FOR PLAYING!<br><br><br><br>新たな扉が開かれたようだ…
+                <div class="roll-text" id="ending-txt" style="position: absolute; width: 100%;">
+                    おめでとう!<br><br>あなたはこのゲームをよく遊んでくれました<br><br>THANK YOU FOR PLAYING!<br><br><br><br>新たな扉が開かれたようだ…
+                </div>
+                <div class="pause-text" id="pause-txt">PAUSED</div>
             </div>
-            <div class="pause-text" id="pause-txt">PAUSED</div>
         </div>
-    </div>
 
-    <div style="font-size: 11px; color: #acacac; text-align: center; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; user-select: none;">
-        [クリック / Space] ストップ <span id="guide-slow" style="display: none;">&nbsp;&nbsp; [S] スロー</span> &nbsp;&nbsp; [Esc] ポーズ
-    </div>
+        <div style="font-size: 12px; color: #777; text-align: center; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; user-select: none;">
+            [クリック / Space] ストップ <span id="guide-slow" style="display: none;">&nbsp;&nbsp; [S] スロー</span> &nbsp;&nbsp; [Esc] ポーズ
+        </div>
 
-    <div class="withdraw-row" id="row-withdraw">
-        <button id="btn-withdraw" class="game-btn">💰 ポイント持ち帰り</button>
+        <div id="mobile-controls" class="mobile-only">
+            <button id="mobile-tap-btn" class="mobile-btn" style="flex: 2; padding: 15px; font-size: 20px; font-weight: bold; background: linear-gradient(135deg, #00ffcc, #0088aa); border: none; border-radius: 12px; box-shadow: 0 4px 0 #005577; cursor: pointer; color: #000;">👆 TAP 👆</button>
+            <button id="mobile-slow-btn" class="mobile-btn" style="flex: 1; padding: 15px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #00ffff, #0088aa); border: none; border-radius: 12px; box-shadow: 0 4px 0 #005577; cursor: pointer; color: #000; display: none;">⏱️ SLOW</button>
+        </div>
+
+        <div class="withdraw-row" id="row-withdraw">
+            <button id="btn-withdraw" class="game-btn">💰 ポイント持ち帰り</button>
             <img id="tikuwa-img" src="tikuwa.png" alt="🍢">
         </div>
         <div class="point-hud">
@@ -396,7 +420,7 @@
             <button id="btn-upgrade" class="game-btn btn-upgrade">🔧 強化ラボ</button>
             <button id="btn-shop" class="game-btn btn-shop">🎁 ショップ</button>
             <div class="side-btns">
-                <button id="btn-sys" class="game-btn btn-small" title="設定">⚙️<span style="font-size:10px; margin-top:2px;">設定・セーブ</span></button>
+                <button id="btn-sys" class="game-btn btn-small" title="設定">⚙️<span style="font-size:10px; margin-top:2px;">設定</span></button>
                 <button id="btn-status" class="game-btn btn-small" title="ステータス">📊<span style="font-size:10px; margin-top:2px;">ステータス</span></button>
                 <button id="btn-help" class="game-btn btn-small" title="ヘルプ">❓<span style="font-size:10px; margin-top:2px;">ヘルプ</span></button>
             </div>
@@ -459,7 +483,7 @@
         <p><strong>■ 強化ラボ</strong><br>たまったポイントを使ってパワーアップすることができます。<br>強化した機能はOFFにすることもできます</p>
         <p><strong>■ ショップ</strong><br>たまったポイントを使いスキンや施設を買う事ができます。おしゃれしている中にも役立つものもあるかも…？</p>
         <p><strong>■ ボス戦</strong><br>10回ごとに動く的が出現！難易度は高いがポイントも多くもらえるぞ！</p>
-        <p><strong>■ スロー機能</strong><br>強化後で開放すると、<strong>Sキー</strong>を押すことで一定時間スローになります（回数消費）。</p>
+        <p><strong>■ スロー機能</strong><br>強化後で開放すると、<strong>Sキー</strong>または<strong>スローボタン</strong>を押すことで一定時間スローになります（回数消費）。</p>
         <p><strong>■ フィーバー</strong><br>強化後で開放すると、ゲージ満タンで突入。時間内クリックし放題になります！なおゲージはミスすると10%後退してしまいます。</p>
         <p><strong>■ 難易度の上昇</strong><br>スコア50以降は針が逆回転することがあります。<br>スコア75以降は成功判定の横に、触れると即死する青い💀エリアが出現することがあります。</p>
     </div>
@@ -531,10 +555,10 @@
     const ctx = canvas.getContext('2d');
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const sBtn = new Audio('button.mp3');
-    const sClick = new Audio('otoko.mp3'); 
+    const sClick = new Audio('otoko.mp3');
     const sInterhon = new Audio('interhon.mp3');
     const sRezi = new Audio('rezi.mp3'); 
-    const sEnd = new Audio('end.mp3')
+    const sEnd = new Audio('end.mp3');
 
     let state = {
         pts: DEBUG_POINTS, pending: 0, isPlaying: false, isPaused: false,
@@ -580,12 +604,12 @@
         lucky:{ icon: "🍀", name:"ラッキー", desc:"0.5%で獲得ポイントが3倍になるラッキーが発生します。", flavor:"運命の女神が、あなたに微笑みかけている。", base:250, step:0, defaultMax:1, max:1, lv:0, tier:5, active:true, cat:'rng' },
         recovery: { icon: "💊", name:"リカバリー", desc:"ミスした時に、確率でライフが減らないことがあります。", flavor:"死の淵から蘇る、不屈の精神。", base:250, step:200, defaultMax:5, max:5, lv:0, tier:7, active:true, cat:'rng' },
 
-        slow: { icon: "⏱️", name:"スロー", desc:"ゲーム中にSキーを押すと、一定時間針がスローになります。", flavor:"世界が色褪せ、時の流れが泥のように遅くなる。", base:60, step:200, defaultMax:5, max:5, lv:0, tier:3, active:true, cat:'system' },
+        slow: { icon: "⏱️", name:"スロー", desc:"ゲーム中にSキーを押すと、一定時間針がスローになります。", flavor:"世界が色褪せ、時の流れが泥のように遅くなる。", base:60, step:50, defaultMax:5, max:5, lv:0, tier:3, active:true, cat:'system' },
         discount: { icon: "🎫", name:"割引", desc:"他のすべての強化に必要なポイントが減少します。", flavor:"取引の極意。全ての対価は、交渉次第で下がる。", base:500, step:400, defaultMax:3, max:3, lv:0, tier:4, active:true, cat:'system' },
         comboBonus: { icon: "🔥", name:"コンボ強化", desc:"コンボ数が続くほど、獲得ポイントにボーナスが付きます。", flavor:"止まらない連撃が、かつてない熱狂を呼ぶ。", base:150, step:80, defaultMax:5, max:5, lv:0, tier:4, active:true, cat:'system' }, 
         ins:  { icon: "🏦", name:"死亡保険", desc:"ゲームオーバーになった時に必ず持ち帰れる最低保証ポイントが増えます。", flavor:"最悪の事態に備える。それがプロの流儀だ。", base:30, step:20, defaultMax:25, max:25, lv:0, tier:5, active:true, cat:'system' },
         wideKeep: { icon: "🛡️", name:"ワイドキープ", desc:"スコアが進むにつれてエリアが狭くなるのを抑えます。", flavor:"どんなに追い詰められても、決して視野を狭めない。", base:400, step:300, defaultMax:5, max:5, lv:0, tier:9, active:true, cat:'system' }, 
-        auto: { icon: "🕰️", name:"オート時計", desc:"放置しているだけで自動的にポイントを稼いでくれます。", flavor:"あなたが休んでいる間も、時計はチクタクと時を刻む。", base:200, step:170, defaultMax:15, max:15, lv:0, tier:10, active:true, cat:'system' },
+        auto: { icon: "🕰️", name:"オート時計", desc:"放置しているだけで自動的にポイントを稼いでくれます。", flavor:"あなたが休んでいる間も、時計はチクタクと時を刻む。", base:200, step:150, defaultMax:15, max:15, lv:0, tier:10, active:true, cat:'system' },
         autoEff: { icon: "🔋", name:"オート時計効率", desc:"オート時計から得られるポイントを増加させます。", flavor:"歯車に油を注ぎ、全自動の恩恵を極限まで高める。", base:300, step:250, defaultMax:20, max:20, lv:0, tier:15, active:true, cat:'system', parent:'auto' },
         
         toybox: { icon: "🧸", name:"おもちゃ箱", desc:"ショップに「消費アイテム」のカテゴリが追加されます。", flavor:"「ガラクタか、宝物か。とにかく役立つ新商品をそろえてみたぜ。」byショップ店長", base:1000, step:0, defaultMax:1, max:1, lv:0, tier:10, active:true, noToggle:true, cat:'toybox' },
@@ -611,13 +635,13 @@
         'e_thun': { icon:"⚡", name:"雷エフェクト", type:'effect', cost:2500, desc:"クリティカルヒット時に雷発生", flavor:"ビリビリくるぜ。", val:'thunder' },
         'e_party':{ icon:"✨", name:"パーティクル", type:'effect', cost:4000, desc:"ヒット時に星屑が散る", flavor:"画面を鮮やかに彩る星屑。", val:'particle' }, 
         'f_bg':   { icon:"🌐", name:"サイバー背景", type:'facility', cost:4000, desc:"背景にデジタルグリッドを描画", flavor:"ハッカー気分を味わえる電脳空間。", val:'cyber_bg' }, 
-        'sd_clk': { icon:"🖱️", name:"カチッ音", type:'sound', cost:800, desc:"クリック音変更", flavor:"心地よい騒がしさの響き。", val:'click_file' },
+        'sd_clk': { icon:"🖱️", name:"カチッ音", type:'sound', cost:800, desc:"クリック音変更", flavor:"心地よいメカニカルスイッチの響き。", val:'click_file' },
         'g_btn':  { icon:"🔴", name:"インターホン", type:'gadget', cost:1500, desc:"右側にボタン追加", flavor:"無性に押したくなるあのボタン。", val:'g_btn' },
         'g_met':  { icon:"⏱️", name:"メトロノーム", type:'gadget', cost:1500, desc:"リズムを刻む", flavor:"一定のテンポが集中力を高める。", val:'g_met' },
         'g_bomb': { icon:"💣", name:"爆弾ボタン", type:'gadget', cost:3000, desc:"これから毎日爆破しようぜ？", flavor:"押すと爆発する。ただそれだけだ。", val:'g_bomb' },
         'f_gorg': { icon:"🔤", name:"チップ風フォント", type:'font', cost:4000, desc:"文字がチップ風のフォントになる", flavor:"レトロな雰囲気を醸し出す。", val:'f_gorg' },
         'i_tikuwa':{ icon:"<img src='tikuwa.png'>", name:"ちくわ", type:'item', cost:7000, desc:"高級なちくわ", flavor:"なぜちくわ？考えるな、感じろ。", val:'i_tikuwa' },
-        'g_neko': { icon:"🐱", name:"招き猫", type:'gadget', cost:5000, desc:"右側に鎮座する。たまにポイントを拾う。", flavor:"チリも積もればなんとやら。", val:'g_neko' }
+        'g_neko': { icon:"🐱", name:"招き猫", type:'gadget', cost:5000, desc:"右側に鎮座する。たまにポイントを拾う。", flavor:"チリも積もればなんとやら。自動で時々1Ptもらえるぞ。", val:'g_neko' }
     };
 
     const consumeItems = {
@@ -626,7 +650,7 @@
         'c_oil': { name:"よく滑る油", short:"針速度x1.5", desc:"針の基本スピードが1.5倍になる。重複可。\n(ゲームオーバーまで持続)", flavor:"歯車をツルツルにする危険な油。", cost: 200, img: 'oil.png' },
         'c_timer': { name:"クイックタイマー", short:"時計間隔半減", desc:"オート時計の間隔を半分にする。\n(ゲームオーバーまで持続。重複不可)", flavor:"時間を削り取る魔法のタイマー。", cost: 1500, img: 'watchup.png' },
         'c_cushion': { name:"防護クッション", short:"GameOver保護", desc:"ミスで終わる時に自動で持ち帰りを発動する。\n(発動まで持続。重複不可)", flavor:"落ちた時の衝撃を優しく吸収してくれる。", cost: 2500, img: 'bougo.png' },
-        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'ticket.png' },
+        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'tiket.png' },
         'c_magnet': { name:"磁石", short:"的MAX(5回)", desc:"次の5回、的の広さが最大になる。", flavor:"成功を強引に引き寄せる強力な磁力。", cost: 8000, img: 'magnet.png' },
         'c_last': { name:"背水の陣", short:"常時高難易度ボス(HP1の時のみ使用可)", desc:"ライフが1の時のみ使用可能。\n毎回少し難しいボス戦が発生するようになる。\n(ゲームオーバーまで持続。重複不可)", flavor:"退路を断ち、己の全力を解放せよ。", cost: 10000, img: 'haisui.png' }
     };
@@ -692,7 +716,11 @@
     function playRezi(){ sRezi.volume=state.settings.vol; sRezi.currentTime=0; sRezi.play().catch(()=>playTone('triangle',1200,0.1)); }
     function playHit(crit, fever){
         if(fever){ playTone('square', 800 + Math.random()*800, 0.08); return; }
-        if(state.skin.sound==='click_file'){ sClick.volume=state.settings.vol* 0.5; sClick.currentTime=0; sClick.play().catch(()=>playTone('triangle',1000,0.05)); }
+        if(state.skin.sound==='click_file'){ 
+            sClick.volume=state.settings.vol * 0.5; // クリック音量を半減
+            sClick.currentTime=0; 
+            sClick.play().catch(()=>playTone('triangle',1000,0.05)); 
+        }
         else {
             if(crit) { playTone('triangle', 1046, 0.2); setTimeout(()=>playTone('sine', 1318, 0.3), 30); } 
             else { playTone('sine', 400+(state.score%10)*30, 0.1); }
@@ -1238,8 +1266,12 @@ function gameOver() {
 
         document.getElementById('fever-container').style.visibility = isA('fever') ? 'visible' : 'hidden';
         document.getElementById('slow-wrapper').style.display = isA('slow') ? 'flex' : 'none';
-        document.getElementById('btn-play-ending').style.display = isA('ending') ? 'block' : 'none';
+        
+        // スローテキスト・スマホ用スローボタンの表示切替
         document.getElementById('guide-slow').style.display = isA('slow') ? 'inline' : 'none';
+        document.getElementById('mobile-slow-btn').style.display = isA('slow') ? 'block' : 'none';
+
+        document.getElementById('btn-play-ending').style.display = isA('ending') ? 'block' : 'none';
 
         document.querySelectorAll('.modal-pts-display').forEach(el => el.innerText = Math.floor(state.pts));
 
@@ -1625,6 +1657,7 @@ function gameOver() {
         txt.style.display='block'; txt.style.animation = 'none'; void txt.offsetWidth; 
         txt.style.animation = 'scrollUp 15s linear forwards, shine 3s linear infinite';
         
+        // エンディング音声を再生（失敗時は電子音）
         sEnd.volume = state.settings.vol;
         sEnd.currentTime = 0;
         sEnd.play().catch(() => playTone('triangle', 600, 3));
@@ -1728,8 +1761,20 @@ function gameOver() {
 
     document.getElementById('pause-btn').onclick = togglePause;
     
+    /* キャンバスの右クリック（長押し）メニューを完全に無効化 */
+    canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+
     canvas.addEventListener('mousedown', (e)=>{ e.preventDefault(); handleInput(); });
     canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleInput(); }, {passive: false});
+
+    /* スマホ専用タップ・スローボタンの処理 */
+    const tapBtn = document.getElementById('mobile-tap-btn');
+    tapBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); handleInput(); });
+    tapBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleInput(); }, {passive: false});
+
+    const slowBtn = document.getElementById('mobile-slow-btn');
+    slowBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); triggerSlow(); });
+    slowBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); triggerSlow(); }, {passive: false});
 
     window.addEventListener('keydown', (e)=>{ 
         if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) handleInput(); } 
