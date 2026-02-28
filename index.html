@@ -168,7 +168,7 @@
         .modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(15, 15, 15, 0.98); border: 2px solid #555; padding: 20px;
-            border-radius: 12px; width: 90%; max-width: 440px; z-index: 100; max-height: 85vh; overflow-y: auto;
+            border-radius: 12px; width: 90%; max-width: 440px; z-index: 200; max-height: 85vh; overflow-y: auto;
             box-shadow: 0 0 30px rgba(0,0,0,0.8); -webkit-overflow-scrolling: touch; 
             box-sizing: border-box; /* 見切れ防止 */
         }
@@ -288,6 +288,11 @@
         .toggle-btn { background: #444; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
         .toggle-btn.on { background: #ffeb3b; color: #000; }
 
+        /* チュートリアル用の背景ブロックフィルム */
+        #tutorial-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: transparent; z-index: 2999; pointer-events: auto; 
+        }
         /* --- スマホ専用の要素 --- */
         .mobile-only { display: none !important; }
 
@@ -311,8 +316,26 @@
             .panel { height: auto; justify-content: flex-start; }
             .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; padding: 0; }
             
-            /* ★ 表示順の変更（1.ゲーム画面と巨大スコア → 2.アイテム・記録 → 3.固定領域へ） */
-            .center-panel { order: 1; }
+            /* ★ スマホ版の表示順序の最適化 (CSS Flexbox order) */
+            .center-panel { display: flex; flex-direction: column; order: 1; }
+            #score-display { order: 1; display: block; margin-top: 5px; }
+            .game-area { order: 2; margin-bottom: 5px; }
+            
+            /* ★ スマホ版限定：フィーバーゲージの配置と強調 */
+            #fever-container {
+                order: 3; /* TAPボタンの直上に配置 */
+                width: 90%;
+                height: 18px; /* ゲージを太く見やすく */
+                margin: 5px auto 15px auto;
+                border-radius: 9px;
+                border: 2px solid #555;
+                box-shadow: 0 0 10px rgba(0,0,0,0.8);
+            }
+            #guide-text { order: 4; }
+            #mobile-controls { order: 5; }
+            .withdraw-row { order: 6; }
+            .point-hud { order: 7; }
+
             .left-panel { order: 2; }
             .right-panel { order: 3; }
 
@@ -335,9 +358,7 @@
             .stats-box hr { display: none; }
             .stat-line { margin: 0; font-size: 14px; flex: 1 1 45%; } 
 
-            /* ★ スコアやHUDはPC版と同じく巨大に表示 */
             .stats-box .stat-line:first-child { display: flex; } 
-            #score-display { display: block; }
             
             /* ★ ポイント表示の横並びコンパクト化 */
             .point-hud { 
@@ -356,15 +377,25 @@
                 text-align: center; 
                 border-right: 1px dashed #333; 
             }
+            .pts-val { font-size: 26px; margin: 0; }
+            .pending-box { 
+                flex: 1;
+                display: flex !important; 
+                flex-direction: column; 
+                align-items: center; 
+                margin-top: 0; 
+                border-top: none; 
+                padding-top: 0; 
+                text-align: center; 
+            }
             .pending-box > div:nth-child(2) { font-size: 26px !important; margin-bottom: 2px; }
             .pending-box > div:nth-child(3) { margin-top: 0 !important; }
 
             .record-box { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; justify-content: space-around; margin-bottom: 15px; }
             .record-line { margin-top: 0; font-size: 14px; }
-            .game-area { margin-bottom: 5px; }
             canvas { transform: scale(0.95); margin: -5px 0; }
 
-            /* 強化メニュー・設定などを画面の一番下に固定配置 (前の仕様に戻す) */
+            /* 強化メニュー・設定などを画面の一番下に固定配置 */
             .menu-grid { 
                 position: fixed; bottom: 0; left: 0; width: 100%; 
                 background: rgba(15, 15, 15, 0.98); 
@@ -436,7 +467,9 @@
     <button id="btn-close-start-help" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">ゲームスタート</button>
 </div>
 
-<div id="modal-tutorial" class="modal" style="padding: 20px; text-align:center; border: 2px solid #00ffcc; z-index: 200;">
+<div id="tutorial-overlay"></div>
+
+<div id="modal-tutorial" class="modal" style="padding: 20px; text-align:center; border: 2px solid #00ffcc; z-index: 3000;">
     <h3 id="tut-title" style="margin-top:0; margin-bottom:15px; color:#00ffcc; font-size:20px;">チュートリアル</h3>
     <p id="tut-desc" style="font-size:14px; color:#ddd; line-height:1.6; margin-bottom:20px; word-break: break-word;"></p>
     <button onclick="closeTutorial()" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">わかった！</button>
@@ -484,7 +517,7 @@
             </div>
         </div>
 
-        <div style="font-size: 11px; color: #777; text-align: center; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; user-select: none;">
+        <div id="guide-text" style="font-size: 11px; color: #777; text-align: center; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; user-select: none;">
             [クリック / Space] ストップ <span id="guide-slow" style="display: none;">&nbsp;&nbsp; [S] スロー</span> &nbsp;&nbsp; [Esc] ポーズ
         </div>
 
@@ -493,7 +526,8 @@
                 <button id="mobile-slow-btn" class="mobile-btn" style="visibility: hidden; padding: 12px; font-size: 14px; font-weight: bold; background: linear-gradient(135deg, #00ffff, #0088aa); border: none; border-radius: 12px; box-shadow: 0 4px 0 #005577; cursor: pointer; color: #000; width: 80px;">⏱️ SLOW</button>
             </div>
             <button id="mobile-tap-btn" class="mobile-btn">👆 TAP 👆</button>
-            <div style="flex: 1;"></div> </div>
+            <div style="flex: 1;"></div> 
+        </div>
 
         <div class="withdraw-row" id="row-withdraw">
             <button id="btn-withdraw" class="game-btn">💰 ポイント持ち帰り</button>
@@ -659,7 +693,7 @@
 </div>
 
 <script>
-    const DEBUG_POINTS = 100000; 
+    const DEBUG_POINTS = 0; 
 
     let owned = [];
     const canvas = document.getElementById('canvas');
@@ -673,6 +707,7 @@
 
     let state = {
         pts: DEBUG_POINTS, pending: 0, isPlaying: false, isPaused: false,
+        isTutorial: false, // チュートリアル表示中の操作ブロック用フラグ
         isFever: false, isSlow: false, isBoss: false, hasReached100: false, hasTutorialDone: false, 
         tutorials: { boss: false, withdraw: false, upgrade: false, shop: false, consume: false, slow: false, fever: false }, 
         feverG: 0, combo: 0, score: 0, life: 1, tempLife: 0, gameSpd: 0.05, 
@@ -762,7 +797,7 @@
         'c_oil': { name:"よく滑る油", short:"針速度x1.5", desc:"針の基本スピードが1.5倍になる。重複可。\n(ゲームオーバーまで持続)", flavor:"歯車をツルツルにする危険な油。", cost: 200, img: 'oil.png' },
         'c_timer': { name:"クイックタイマー", short:"時計間隔半減", desc:"オート時計の間隔を半分にする。\n(ゲームオーバーまで持続。重複不可)", flavor:"時間を削り取る魔法のタイマー。", cost: 1500, img: 'watchup.png' },
         'c_cushion': { name:"防護クッション", short:"GameOver保護", desc:"ミスで終わる時に自動で持ち帰りを発動する。\n(発動まで持続。重複不可)", flavor:"落ちた時の衝撃を優しく吸収してくれる。", cost: 2500, img: 'bougo.png' },
-        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'ticket.png' },
+        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'tiket.png' },
         'c_magnet': { name:"磁石", short:"的MAX(5回)", desc:"次の5回、的の広さが最大になる。", flavor:"成功を強引に引き寄せる強力な磁力。", cost: 8000, img: 'magnet.png' },
         'c_last': { name:"背水の陣", short:"常時高難易度ボス(HP1の時のみ使用可)", desc:"ライフが1の時のみ使用可能。\n毎回少し難しいボス戦が発生するようになる。\n(ゲームオーバーまで持続。重複不可)", flavor:"退路を断ち、己の全力を解放せよ。", cost: 10000, img: 'haisui.png' }
     };
@@ -857,6 +892,7 @@
     }
 
     function toggleNumbers() {
+        if(state.isTutorial) return;
         playBtn(); state.settings.showNum = !state.settings.showNum;
         let btn = document.getElementById('toggle-num-btn');
         btn.innerText = state.settings.showNum ? "ON" : "OFF";
@@ -881,8 +917,10 @@
     let wasPausedBeforeTutorial = false; 
     
     function showTutorial(type) {
+        if(state.isTutorial) return;
         wasPausedBeforeTutorial = state.isPaused; 
         state.isPaused = true; 
+        state.isTutorial = true; // ★ 操作ブロックフラグをON
         
         const modal = document.getElementById('modal-tutorial');
         const title = document.getElementById('tut-title');
@@ -911,13 +949,16 @@
             desc.innerHTML = "熱狂の<span style='color:#ffeb3b; font-weight:bold;'>「フィーバー」</span>機能が解放されました！<br><br>成功を重ねてゲージがMAXになると突入します！<br>フィーバー中は無敵になり、<br>連打した分だけ大量のポイントを稼げます！<br>（※ミスするとゲージが少し減ってしまいます）";
         }
         
+        document.getElementById('tutorial-overlay').style.display = 'block';
         modal.style.display = 'block';
     }
     
     function closeTutorial() {
         playBtn();
         document.getElementById('modal-tutorial').style.display = 'none';
+        document.getElementById('tutorial-overlay').style.display = 'none';
         state.isPaused = wasPausedBeforeTutorial;
+        state.isTutorial = false; // ★ 操作ブロックを解除
     }
 
     function init() {
@@ -997,6 +1038,7 @@
     }
 
     function triggerSlow() {
+        if(state.isTutorial) return;
         if(state.isPlaying && !state.isPaused && !state.isFever && state.slowC > 0 && !state.isSlow) {
             state.slowC--; state.isSlow = true; 
             state.slowTimer = (skills.slow.lv >= 2 ? 2000 : 1000);
@@ -1005,6 +1047,7 @@
     }
 
     function togglePause() {
+        if(state.isTutorial) return;
         if(!state.isPlaying) return;
         state.isPaused = !state.isPaused;
         const ov = document.getElementById('overlay-msg');
@@ -1015,6 +1058,7 @@
 
     let isTikuwaSpinning = false;
     document.getElementById('tikuwa-img').onclick = function() {
+        if(state.isTutorial) return;
         if(!state.isPlaying || state.isPaused || isTikuwaSpinning) return;
         isTikuwaSpinning = true;
         playTone('sine', 1500, 0.1); setTimeout(()=>playTone('triangle', 2000, 0.2), 100);
@@ -1032,6 +1076,7 @@
     };
 
     function handleInput() {
+        if(state.isTutorial) return;
         if(!state.isPlaying || state.isPaused) { if(!state.isPlaying) init(); return; }
         
         if (state.hasTutorialDone) document.getElementById('click-here-msg').style.display = 'none';
@@ -1247,6 +1292,7 @@ function gameOver() {
 }
 
     function forceWithdraw() {
+    if(state.isTutorial) return;
     playBtn(); state.pts+=state.pending; state.isPlaying=false; 
     
     state.hasTutorialDone = true; 
@@ -1470,6 +1516,7 @@ function gameOver() {
     }
 
     function openModal(id) { 
+        if(state.isTutorial) return;
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); 
         
         if(id === 'modal-upgrade' || id === 'modal-shop') {
@@ -1496,11 +1543,13 @@ function gameOver() {
     }
 
     function closeAllModals() {
+        if(state.isTutorial) return;
         playBtn(); 
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
     }
     
     function toggleSkill(k) {
+        if(state.isTutorial) return;
         playBtn(); skills[k].active = !skills[k].active; updateUI(); renderSkills();
     }
 
@@ -1620,6 +1669,7 @@ function gameOver() {
     }
 
     function changeShopTab(tab, playSound=true) {
+        if(state.isTutorial) return;
         if(playSound) playBtn(); 
         state.shopTab = tab;
         document.getElementById('tab-skin').className = tab==='skin' ? "shop-tab-btn active" : "shop-tab-btn";
@@ -1735,6 +1785,7 @@ function gameOver() {
     }
 
     function useConsumeInGame(k) {
+        if(state.isTutorial) return;
         if(!state.isPlaying || state.isPaused) return;
         
         if(state.consumes[k] > 0) {
@@ -1817,6 +1868,7 @@ function gameOver() {
     }
 
     function buySkill(k){ 
+        if(state.isTutorial) return;
         const s=skills[k]; const c=getCost(s); 
         if(state.pts>=c){ 
             playBtn(); state.pts-=c; s.lv++; updateUI(); renderSkills(); 
@@ -1835,6 +1887,7 @@ function gameOver() {
     }
     
     function buyItem(k){ 
+        if(state.isTutorial) return;
         if(state.pts>=shopItems[k].cost){ 
             playRezi(); 
             state.pts-=shopItems[k].cost; owned.push(k); updateUI(); checkGadgets(); renderShop(); 
@@ -1842,6 +1895,7 @@ function gameOver() {
     }
     
     function buyConsume(k){ 
+        if(state.isTutorial) return;
         if(state.pts>=consumeItems[k].cost){ 
             playRezi(); 
             state.pts-=consumeItems[k].cost; state.consumes[k]++; state.unlockedConsumes[k] = true; updateUI(); renderShop(); renderConsumeSidebar(); 
@@ -1849,6 +1903,7 @@ function gameOver() {
     }
     
     function useItem(k){
+        if(state.isTutorial) return;
         const i=shopItems[k]; playBtn();
         if(i.type==='skin') state.skin.ring = (state.skin.ring===i.val ? '#333' : i.val);
         else if(i.type==='effect') state.skin.effect = (state.skin.effect===i.val ? 'none' : i.val);
@@ -1858,7 +1913,10 @@ function gameOver() {
         applyFont(); checkGadgets(); renderShop();
     }
     
-    function resetLooks(){ state.skin={ring:'#333',effect:'none',sound:'default',needle:'default',f_bg:false}; applyFont(); checkGadgets(); renderShop(); }
+    function resetLooks(){ 
+        if(state.isTutorial) return;
+        state.skin={ring:'#333',effect:'none',sound:'default',needle:'default',f_bg:false}; applyFont(); checkGadgets(); renderShop(); 
+    }
 
     function playEnding() {
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
@@ -1952,16 +2010,19 @@ function gameOver() {
     }
 
     document.getElementById('gd-btn').onclick=function(){ 
+        if(state.isTutorial) return;
         sInterhon.volume=state.settings.vol; sInterhon.currentTime=0; 
         sInterhon.play().catch(()=>playTone('triangle',800,0.5)); 
     };
     
     let mId=null;
     document.getElementById('gd-metro').onclick=function(){
+        if(state.isTutorial) return;
         if(mId){ clearInterval(mId); mId=null; this.style.borderColor='#555'; }
         else { this.style.borderColor='#00ffcc'; mId=setInterval(()=>playTone('square',1200,0.05),500); }
     };
     document.getElementById('gd-bomb').onclick=function(){
+        if(state.isTutorial) return;
         playTone('sawtooth', 100, 0.8);
         const b = document.getElementById('bomb-gif');
         b.src = 'bakuhatu.gif?' + new Date().getTime();
@@ -1974,19 +2035,20 @@ function gameOver() {
     /* キャンバスの右クリック（長押し）メニューを完全に無効化 */
     canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); });
 
-    canvas.addEventListener('mousedown', (e)=>{ e.preventDefault(); handleInput(); });
-    canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleInput(); }, {passive: false});
+    canvas.addEventListener('mousedown', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); });
+    canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); }, {passive: false});
 
     /* スマホ専用タップ・スローボタンの処理 */
     const tapBtn = document.getElementById('mobile-tap-btn');
-    tapBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); handleInput(); });
-    tapBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleInput(); }, {passive: false});
+    tapBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); });
+    tapBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); }, {passive: false});
 
     const slowBtn = document.getElementById('mobile-slow-btn');
-    slowBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); triggerSlow(); });
-    slowBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); triggerSlow(); }, {passive: false});
+    slowBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); if(!state.isTutorial) triggerSlow(); });
+    slowBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(!state.isTutorial) triggerSlow(); }, {passive: false});
 
     window.addEventListener('keydown', (e)=>{ 
+        if(state.isTutorial) return;
         if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) handleInput(); } 
         if((e.code==='KeyS' || e.key==='s')){ e.preventDefault(); if(!e.repeat) triggerSlow(); } 
         if(e.code==='Escape'){ togglePause(); } 
@@ -1994,19 +2056,21 @@ function gameOver() {
     
     document.getElementById('btn-withdraw').onclick=(e)=>{ forceWithdraw(); };
     
-    document.getElementById('btn-upgrade').onclick=()=>{ playBtn(); openModal('modal-upgrade'); };
-    document.getElementById('btn-shop').onclick=()=>{ playBtn(); openModal('modal-shop'); };
-    document.getElementById('btn-help').onclick=()=>{ playBtn(); openModal('modal-help'); };
-    document.getElementById('btn-sys').onclick=()=>{ playBtn(); openModal('modal-sys'); };
-    document.getElementById('btn-status').onclick=()=>{ playBtn(); openModal('modal-status'); };
+    document.getElementById('btn-upgrade').onclick=()=>{ openModal('modal-upgrade'); };
+    document.getElementById('btn-shop').onclick=()=>{ openModal('modal-shop'); };
+    document.getElementById('btn-help').onclick=()=>{ openModal('modal-help'); };
+    document.getElementById('btn-sys').onclick=()=>{ openModal('modal-sys'); };
+    document.getElementById('btn-status').onclick=()=>{ openModal('modal-status'); };
 
     function confirmFullReset(){ 
+        if(state.isTutorial) return;
         playBtn(); 
         document.getElementById('modal-sys').style.display = 'none';
         document.getElementById('modal-confirm').style.display = 'block'; 
     }
     
     function closeConfirmModal(){
+        if(state.isTutorial) return;
         playBtn();
         document.getElementById('modal-confirm').style.display = 'none';
         document.getElementById('modal-sys').style.display = 'block'; 
