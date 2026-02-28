@@ -321,7 +321,7 @@
             #score-display { order: 1; display: block; margin-top: 5px; }
             .game-area { order: 2; margin-bottom: 5px; }
             
-            /* ★ スマホ版限定：フィーバーゲージの配置と強調 */
+            /* スマホ版限定：フィーバーゲージの配置と強調 */
             #fever-container {
                 order: 3; /* TAPボタンの直上に配置 */
                 width: 90%;
@@ -331,7 +331,8 @@
                 border: 2px solid #555;
                 box-shadow: 0 0 10px rgba(0,0,0,0.8);
             }
-            #guide-text { order: 4; }
+            /* スマホ版ではPC用操作ガイドを非表示にする */
+            #guide-text { display: none !important; }
             #mobile-controls { order: 5; }
             .withdraw-row { order: 6; }
             .point-hud { order: 7; }
@@ -797,7 +798,7 @@
         'c_oil': { name:"よく滑る油", short:"針速度x1.5", desc:"針の基本スピードが1.5倍になる。重複可。\n(ゲームオーバーまで持続)", flavor:"歯車をツルツルにする危険な油。", cost: 200, img: 'oil.png' },
         'c_timer': { name:"クイックタイマー", short:"時計間隔半減", desc:"オート時計の間隔を半分にする。\n(ゲームオーバーまで持続。重複不可)", flavor:"時間を削り取る魔法のタイマー。", cost: 1500, img: 'watchup.png' },
         'c_cushion': { name:"防護クッション", short:"GameOver保護", desc:"ミスで終わる時に自動で持ち帰りを発動する。\n(発動まで持続。重複不可)", flavor:"落ちた時の衝撃を優しく吸収してくれる。", cost: 2500, img: 'bougo.png' },
-        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'tiket.png' },
+        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'ticket.png' },
         'c_magnet': { name:"磁石", short:"的MAX(5回)", desc:"次の5回、的の広さが最大になる。", flavor:"成功を強引に引き寄せる強力な磁力。", cost: 8000, img: 'magnet.png' },
         'c_last': { name:"背水の陣", short:"常時高難易度ボス(HP1の時のみ使用可)", desc:"ライフが1の時のみ使用可能。\n毎回少し難しいボス戦が発生するようになる。\n(ゲームオーバーまで持続。重複不可)", flavor:"退路を断ち、己の全力を解放せよ。", cost: 10000, img: 'haisui.png' }
     };
@@ -2083,15 +2084,48 @@ function gameOver() {
     }
 
     // --- ✨ セーブ・ロード機能（オートセーブ対応） ✨ ---
-    function saveGame(s, silent=false){ 
+    function saveGame(s, silent=false, showNotice=true){ 
         try {
             localStorage.setItem('tl_pc_'+s, JSON.stringify({
                 pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, hasTutorialDone:state.hasTutorialDone, 
                 tutorials:state.tutorials,
                 consumes:state.consumes, unlockedConsumes:state.unlockedConsumes, sets:state.settings, 
-                recS:state.maxScore, recC:state.maxCombo
+                recS:state.maxScore, recC:state.maxCombo,
+                // ▼ プレイ中の状態も丸ごと保存する
+                score:state.score, pending:state.pending, combo:state.combo, life:state.life, tempLife:state.tempLife,
+                gameSpd:state.gameSpd, feverG:state.feverG, slowC:state.slowC, isBoss:state.isBoss
             })); 
-            if(!silent) alert("保存しました"); 
+            
+            if(!silent) {
+                alert("保存しました"); 
+            } else if(showNotice) {
+                // オートセーブ時の控えめな通知表示
+                const el = document.createElement('div');
+                el.innerText = '💾 Auto Saved...';
+                el.style.position = 'fixed';
+                el.style.top = 'max(15px, env(safe-area-inset-top))';
+                el.style.left = '15px';
+                el.style.background = 'rgba(15, 15, 15, 0.8)';
+                el.style.border = '1px solid #333';
+                el.style.color = '#888';
+                el.style.padding = '4px 8px';
+                el.style.borderRadius = '4px';
+                el.style.fontSize = '10px';
+                el.style.fontWeight = 'bold';
+                el.style.zIndex = '10000';
+                el.style.pointerEvents = 'none'; // 背後のクリックを邪魔しない
+                document.body.appendChild(el);
+
+                // フワッと消えるアニメーション
+                el.animate([
+                    { opacity: 0, transform: 'translateY(-10px)' },
+                    { opacity: 1, transform: 'translateY(0)', offset: 0.1 },
+                    { opacity: 1, transform: 'translateY(0)', offset: 0.8 },
+                    { opacity: 0, transform: 'translateY(-5px)' }
+                ], { duration: 2000, fill: 'forwards' });
+
+                setTimeout(() => el.remove(), 2000); 
+            }
         } catch(e) { console.error("Save Error", e); }
     }
     
@@ -2117,6 +2151,25 @@ function gameOver() {
             Object.keys(skills).forEach(k=>{
                 if(d.skills[k]){ skills[k].lv=d.skills[k].lv; if(d.skills[k].active !== undefined) skills[k].active=d.skills[k].active; }
             }); 
+            
+            // ▼ プレイ中だった場合は状態を復元し、そのまま再開
+            if(d.score > 0 || d.pending > 0) {
+                state.score = d.score || 0; state.pending = d.pending || 0; state.combo = d.combo || 0;
+                state.life = d.life || 1; state.tempLife = d.tempLife || 0; state.gameSpd = d.gameSpd || 0.05;
+                state.feverG = d.feverG || 0; state.slowC = d.slowC || 0; state.isBoss = d.isBoss || false;
+                
+                state.isPlaying = true; 
+                state.isPaused = false; // ★ ポーズせずそのまま動くように変更
+                
+                document.getElementById('click-here-msg').style.display = 'none';
+                document.getElementById('pending-box').style.visibility='visible';
+                document.getElementById('row-withdraw').style.visibility='visible';
+                
+                document.getElementById('overlay-msg').style.display='none'; 
+                document.getElementById('pause-txt').style.display='none';
+                setTargetBaseW(); setTarget();
+            }
+
             applyFont(); updateUI(); checkGadgets(); 
             if(!silent) alert("ロード完了"); 
         } else {
@@ -2124,10 +2177,14 @@ function gameOver() {
         }
     }
 
-    // 5秒ごとにバックグラウンドで自動セーブ
+    let autoSaveCount = 0;
+    // ▼ 裏のセーブ頻度は5秒ごとに戻し、文字の通知だけを減らす
     setInterval(() => {
         if(state.hasTutorialDone || state.score > 0 || state.pts > 0) {
-            saveGame('auto', true);
+            autoSaveCount++;
+            // 6回に1回（約30秒ごと）だけ画面に文字を表示する
+            let showNotice = (autoSaveCount % 6 === 0); 
+            saveGame('auto', true, showNotice);
         }
     }, 5000);
 
