@@ -14,11 +14,11 @@
         body {
             margin: 0; background-color: #080808; color: white;
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            height: 100vh; overflow: hidden; /* PC版ではスクロールを完全に禁止し1画面に収める */
+            height: 100vh; overflow: hidden; 
             user-select: none; 
             transition: font-family 0.3s;
             display: flex; flex-direction: column;
-            touch-action: manipulation; /* ダブルタップズーム防止 */
+            touch-action: manipulation; 
         }
 
         /* --- タイトル画面 --- */
@@ -39,9 +39,15 @@
         #btn-start {
             margin-top: 40px; padding: 15px 50px; font-size: 22px; background: linear-gradient(135deg, #00ffcc, #0088aa);
             border: none; border-radius: 10px; color: #000; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 15px #00ffcc; transition: transform 0.1s;
+            box-shadow: 0 0 15px #00ffcc; transition: transform 0.1s; margin-bottom: 15px;
         }
         #btn-start:active { transform: scale(0.95); }
+        
+        #btn-patch-note {
+            padding: 10px 30px; font-size: 16px; background: transparent;
+            border: 1px solid #555; border-radius: 8px; color: #aaa; cursor: pointer; transition: 0.2s;
+        }
+        #btn-patch-note:hover { background: #222; color: #fff; border-color: #aaa; }
 
         /* --- PC向け 3カラムレイアウト --- */
         .layout-container {
@@ -49,14 +55,14 @@
             flex-direction: row; justify-content: center; align-items: stretch;
             gap: 40px; width: 100%; max-width: 1200px; margin: 0 auto; 
             box-sizing: border-box; flex-grow: 1; 
-            padding: 2vh 20px; /* 上下の無駄な余白を削減 */
+            padding: 2vh 20px; 
             height: 100%; 
         }
-        .panel { display: flex; flex-direction: column; height: 100%; justify-content: center; } /* 縦中央に綺麗に配置 */
+        .panel { display: flex; flex-direction: column; height: 100%; } 
         
-        .left-panel { width: 280px; gap: 15px; }
-        .center-panel { width: 340px; align-items: center; }
-        .right-panel { width: 280px; gap: 15px; }
+        .left-panel { width: 280px; gap: 15px; justify-content: flex-end; padding-bottom: 4vh; }
+        .center-panel { width: 340px; align-items: center; justify-content: center; }
+        .right-panel { width: 280px; gap: 15px; justify-content: flex-end; padding-bottom: 4vh; }
 
         /* --- 左パネル：レコード・時計・ステータス --- */
         .record-box { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; box-sizing: border-box; font-size: 16px; font-weight: bold; color: #aaa; margin-bottom: auto; }
@@ -64,8 +70,10 @@
         .record-line span { color: #fff; font-size: 22px; }
 
         #clock-sidebar { display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%; margin-bottom: 10px; }
+        
+        /* --- オート時計 --- */
         .mini-clock { width: 36px; height: 36px; border: 2px solid #00ffcc; border-radius: 50%; background: rgba(0,0,0,0.5); position: relative; }
-        .mini-clock::after { content:''; display:block; width:2px; height:14px; background:#00ffcc; position:absolute; top:4px; left:17px; transform-origin:bottom center; animation: tick linear infinite; }
+        .mini-clock::after { content:''; display:block; width:2px; height:14px; background:#00ffcc; position:absolute; top:4px; left:17px; transform-origin:bottom center; animation: tick var(--dur, 10s) linear infinite; }
         @keyframes tick { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .stats-box { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; box-sizing: border-box; font-size: 18px; font-weight: bold; color: #00ffcc; line-height: 2.0; }
@@ -73,6 +81,12 @@
         .life-container { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
         .life-box { width: 20px; height: 20px; background: #00cc55; border: 1px solid #005522; border-radius: 4px; }
         .life-box.temp { background: #ffeb3b; border-color: #ccaa00; box-shadow: 0 0 5px #ffeb3b; }
+        /* ラーメン点滅用アニメーション */
+        @keyframes heart-blink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px #ffeb3b; }
+            50% { opacity: 0.5; box-shadow: 0 0 15px #ff0055; background-color: #ff5555; }
+        }
+        .life-box.temp.blink { animation: heart-blink 0.5s infinite; border-color: #ff0055; }
 
         /* --- 中央パネル：ポイント・ゲーム画面・持ち帰る --- */
         .point-hud { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-sizing: border-box; min-height: 130px; display: flex; flex-direction: column; justify-content: flex-start; }
@@ -142,9 +156,16 @@
         
         .consume-item-btn { background: #2a2a2a; border: 1px solid #555; color: #fff; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; text-align: left; }
         .consume-item-btn:hover { background: #333; }
-        .consume-item-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .consume-item-btn:disabled { cursor: not-allowed; opacity: 0.8; filter: grayscale(100%);}
         .consume-item-btn.active-buff { box-shadow: 0 0 10px #00ffcc; border-color: #00ffcc; }
-        .consume-item-btn.active-buff-unique { box-shadow: 0 0 10px #0077ff; border-color: #0077ff; }
+        /* 黄金のチケット用の青い発光エフェクト */
+        .consume-item-btn.active-buff-unique { box-shadow: 0 0 15px #0077ff; border-color: #0077ff; animation: pulseBlue 1.5s infinite; }
+        
+        @keyframes pulseBlue {
+            0% { box-shadow: 0 0 10px #0077ff; }
+            50% { box-shadow: 0 0 20px #00aaff; }
+            100% { box-shadow: 0 0 10px #0077ff; }
+        }
 
         .item-icon-box {
             width: 32px; height: 32px; flex-shrink: 0; background: rgba(255, 255, 255, 0.05); border-radius: 6px; 
@@ -155,14 +176,19 @@
         #gadget-sidebar { display: flex; flex-direction: row; gap: 10px; justify-content: center; width: 100%; margin-bottom: 10px; }
         .gadget-btn { width: 50px; height: 50px; background: #222; border: 2px solid #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; display: none; }
 
+        /* --- 新メニューレイアウト --- */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .game-btn { background: #333; border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 0 #111; transition: 0.1s; }
         .game-btn:active { transform: translateY(4px); box-shadow: none; }
         
         .btn-upgrade { background: linear-gradient(to bottom, #0077ff, #0055aa); grid-column: 1 / -1; padding: 15px; font-size: 16px; }
         .btn-shop { background: linear-gradient(to bottom, #9900ff, #6600cc); grid-column: 1 / -1; padding: 15px; font-size: 16px; }
-        .side-btns { display: flex; gap: 10px; grid-column: 1 / -1; }
-        .btn-small { background: #444; flex:1; padding: 6px; flex-direction: column; font-size: 20px; } 
+        .btn-balance { background: linear-gradient(to bottom, #886600, #554400); grid-column: span 1; padding: 15px; font-size: 16px; color:#ffd700; }
+        
+        .side-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; grid-column: 1 / -1; }
+        .btn-small { background: #444; padding: 10px; flex-direction: row; font-size: 14px; display: flex; align-items: center; justify-content: center; } 
+        .btn-small span { margin-left: 6px; }
+        .btn-achieve { background: linear-gradient(135deg, #ff8800, #cc5500); }
 
         /* --- モーダル共通 --- */
         .modal {
@@ -170,13 +196,11 @@
             background: rgba(15, 15, 15, 0.98); border: 2px solid #555; padding: 20px;
             border-radius: 12px; width: 90%; max-width: 440px; z-index: 200; max-height: 85vh; overflow-y: auto;
             box-shadow: 0 0 30px rgba(0,0,0,0.8); -webkit-overflow-scrolling: touch; 
-            box-sizing: border-box; /* 見切れ防止 */
+            box-sizing: border-box; 
         }
         
-        /* 強化ラボ・ショップは広く。 */
-        #modal-upgrade, #modal-shop { max-width: 720px; padding: 0; overflow: hidden; flex-direction: column; }
+        #modal-upgrade, #modal-shop, #modal-achieve, #modal-balance { max-width: 720px; padding: 0; overflow: hidden; flex-direction: column; }
 
-        /* わかりやすいスクロールバー設定（水色） */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #111; border-radius: 4px; border: 1px solid #222; }
         ::-webkit-scrollbar-thumb { background: #00ffcc; border-radius: 4px; box-shadow: inset 0 0 2px rgba(0,0,0,0.5); }
@@ -185,10 +209,11 @@
         /* --- モーダル間のタブ移動 --- */
         .modal-nav-tabs {
             display: flex; gap: 2px; background: #0a0a0a; border-bottom: 2px solid #333; flex-shrink: 0;
+            padding-top: 5px; 
         }
         .modal-nav-btn {
-            flex: 1; padding: 15px; background: #1a1a1a; color: #888; border: none; 
-            cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s;
+            flex: 1; padding: 18px 5px; background: #1a1a1a; color: #888; border: none; 
+            cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; white-space: nowrap;
         }
         .modal-nav-btn.active {
             background: rgba(15, 15, 15, 0.98); color: #fff; border-bottom: 3px solid #00ffcc;
@@ -197,7 +222,6 @@
             background: #222; color: #fff;
         }
 
-        /* ヘッダー上部固定 */
         .modal-header { 
             display: flex; flex-direction: column; align-items: stretch; gap: 10px;
             border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 20;
@@ -207,25 +231,124 @@
         .modal-header-top { display: flex; justify-content: space-between; align-items: baseline; }
         .close { font-size: 24px; background: #333; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: -5px; }
 
-        /* 内部のスクロールエリア */
         .modal-scroll-area {
             padding: 0 25px 20px 25px; overflow-y: auto; flex-grow: 1;
         }
 
-        /* タブデザイン（ショップ用） */
         .shop-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
         .shop-tab-btn { flex: 1; padding: 10px; background: #222; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .shop-tab-btn.active { background: #00ffcc; color: #000; border-color: #00ffcc; }
 
-        /* --- 新デザイン：2カラムグリッド（強化・ショップ共通） --- */
         #list-upgrade, #list-shop {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 15px;
             padding-bottom: 10px;
+            margin-top: 15px;
         }
 
-        /* スマートなカテゴリ見出し  */
+        /* --- ✨天秤の間 アイコン＆ツールチップUIデザイン✨ --- */
+        .scale-category-tabs { 
+            display:flex; gap:8px; margin-top: 15px; margin-bottom: 5px; 
+            overflow-x: auto; padding-bottom: 10px; 
+        }
+        .scale-cat-btn { 
+            flex: 0 0 auto; min-width: 80px; padding: 10px 5px; background: #1a1a1a; border: 2px solid #333; color: #888; 
+            border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; 
+            text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .scale-cat-btn.active { 
+            background: #332b00; color: #ffd700; border-color: #ffd700; 
+            box-shadow: 0 0 10px rgba(255,215,0,0.4); transform: scale(1.05); 
+        }
+        .scale-cat-btn-icon { font-size: 24px; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
+        .scale-category-tabs::-webkit-scrollbar { height: 6px; }
+        .scale-category-tabs::-webkit-scrollbar-track { background: #111; border-radius: 3px; }
+        .scale-category-tabs::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
+        .balance-accordion-item {
+            background: #1a1a1a; border: 1px solid #333; border-radius: 8px; margin-bottom: 10px; overflow: hidden;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .balance-accordion-item.contracted { border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .balance-accordion-header {
+            padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; transition: background 0.2s; user-select: none;
+        }
+        .balance-accordion-header:hover { background: #222; }
+        .balance-accordion-header.active { background: #332b00; border-bottom: 1px solid #ffd700; color: #ffd700; }
+        .balance-accordion-content {
+            background: #111; max-height: 0; opacity: 0; overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .balance-accordion-content.open { max-height: 1000px; opacity: 1; padding: 15px; overflow: visible; }
+    
+        .scale-body { display: flex; gap: 10px; align-items: stretch; justify-content: space-between; }
+        .scale-pan { flex: 1; border: 1px solid #333; border-radius: 6px; padding: 15px 8px; background: #1a1a1a; display: flex; flex-direction: column; }
+        .scale-pan.blessing { border-color: #00ffcc; box-shadow: inset 0 0 10px rgba(0,255,204,0.1); }
+        .scale-pan.curse { border-color: #ff0055; box-shadow: inset 0 0 10px rgba(255,0,85,0.1); }
+        
+        .scale-icon-group { display: flex; justify-content: space-evenly; align-items: center; }
+        .scale-icon-item { 
+            width: 50px; height: 50px; font-size: 24px; border: 2px solid #444; border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center; cursor: pointer; background: #1a1a1a; transition: 0.2s;
+        }
+        .scale-icon-item:hover { filter: brightness(1.3); background: #333; }
+        .scale-icon-item.selected-b { border-color: #00ffcc; background: rgba(0,255,204,0.2); box-shadow: 0 0 15px rgba(0,255,204,0.6); transform: scale(1.15); }
+        .scale-icon-item.selected-c { border-color: #ff0055; background: rgba(255,0,85,0.2); box-shadow: 0 0 15px rgba(255,0,85,0.6); transform: scale(1.15); }
+        
+        /* 天秤の詳細テキストエリア（中央揃え） */
+        .scale-desc-box {
+            margin-top: 8px;
+            text-align: center;
+            min-height: 45px;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+
+        /* ツールチップ（グローバル表示用） */
+        #global-tooltip {
+            position: fixed; z-index: 99999; pointer-events: none; visibility: hidden; opacity: 0;
+            background: rgba(10, 10, 10, 0.95); border: 1px solid #555; 
+            width: 160px; padding: 4px 6px; border-radius: 4px;
+            color: #fff; font-size: 10px; text-align: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8); line-height: 1.2;
+            transition: opacity 0.1s;
+        }
+        .scale-tt-title { 
+            font-weight: bold; border-bottom: 1px dashed #444; 
+            margin-bottom: 2px; padding-bottom: 2px; white-space: nowrap; 
+        }
+        .scale-tt-desc {
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; color: #ddd;
+        }
+
+        .scale-footer { margin-top: 15px; text-align: center; }
+
+        /* --- 実績リスト --- */
+        #list-achieve { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; margin-top: 5px; }
+        .achieve-row { 
+            background: #1a1a1a; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; 
+            display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
+        }
+        .achieve-row:hover { background: #222; }
+        .achieve-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .achieve-icon { font-size: 24px; width: 36px; height: 36px; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+        .achieve-text { display: flex; flex-direction: column; gap: 2px; }
+        .achieve-name { font-size: 14px; font-weight: bold; color: #fff; }
+        .achieve-desc { font-size: 11px; color: #aaa; line-height: 1.3; }
+        .achieve-flavor { font-size: 9px; color: #777; font-style: italic; margin-top: 1px; }
+        .achieve-btn { 
+            background: #00ffcc; color: #000; border: none; padding: 6px 12px; 
+            border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; flex-shrink: 0; margin-left: 10px;
+            min-width: 60px;
+        }
+        .achieve-btn:disabled { background: #444; color: #777; cursor: default; }
+        .btn-claim { background: #ff8800; color: #fff; box-shadow: 0 0 10px rgba(255, 136, 0, 0.5); animation: pulse 1.5s infinite; }
+        .btn-claimed { background: transparent; color: #555; border: 1px dashed #444; box-shadow: none; animation: none;}
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
         .skill-category-title { 
             grid-column: 1 / -1;
             font-size: 14px; font-weight: bold; margin: 15px 0 0 0; 
@@ -239,7 +362,6 @@
             padding: 2px 6px; border-radius: 4px; border: 1px solid #ff0055; font-weight: bold;
         }
 
-        /* カード型リストアイテム */
         .list-row { 
             background: #1a1a1a; padding: 12px;
             border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column;
@@ -252,18 +374,15 @@
         .list-title { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; color: #fff; }
         .list-title-wrapper { display: flex; flex-direction: column; gap: 2px; }
         
-        /* 強化説明文エリア */
         .list-desc-wrapper {
             background: rgba(0, 0, 0, 0.4); border-radius: 6px; 
             padding: 8px; margin-bottom: 12px; border: 1px solid #2a2a2a; flex-grow: 1;
         }
         .list-desc { font-size: 12px; color: #ddd; white-space: pre-wrap; line-height: 1.5; }
-        /* フレーバーテキスト */
         .list-flavor { font-size: 10px; color: #777; font-style: italic; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #333; line-height: 1.3;}
         
         .list-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
 
-        /* アイコン枠と効果量表示枠 */
         .skill-icon-box {
             width: 32px; height: 32px; flex-shrink: 0; background: rgba(255, 255, 255, 0.08); 
             border-radius: 6px; display: flex; align-items: center; justify-content: center; 
@@ -288,50 +407,56 @@
         .toggle-btn { background: #444; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
         .toggle-btn.on { background: #ffeb3b; color: #000; }
 
-        /* チュートリアル用の背景ブロックフィルム */
         #tutorial-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: transparent; z-index: 2999; pointer-events: auto; 
         }
-        /* --- スマホ専用の要素 --- */
+        
+        #scale-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 3099; pointer-events: auto; 
+        }
+
         .mobile-only { display: none !important; }
+        .mobile-btn { transition: transform 0.1s; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .mobile-btn:active { transform: translateY(4px); box-shadow: none !important; }
 
-        .mobile-btn {
-            transition: transform 0.1s;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .mobile-btn:active {
-            transform: translateY(4px);
-            box-shadow: none !important;
-        }
+        .patch-date { color: #00ffcc; font-weight: bold; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px dashed #333; padding-bottom: 3px;}
+        .patch-list { margin: 0; padding-left: 20px; font-size: 13px; color: #ddd; line-height: 1.5; }
+        .patch-list li { margin-bottom: 4px; }
 
-        /* --- ✨スマホ向け大幅アップデート（見やすさ・操作性向上）✨ --- */
+        /* --- トースト通知 --- */
+        #toast-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 10000;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .toast-msg {
+            background: rgba(20, 20, 20, 0.95); border: 2px solid #ff8800; padding: 10px 15px;
+            border-radius: 8px; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.5s ease-in 3.5s forwards;
+        }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* --- ✨スマホ向け大幅アップデート✨ --- */
         @media (max-width: 900px) {
-            /* スマホの時は縦にスクロールさせる */
             body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
 
-            /* 余白の調整（上にステータス、下にメニューの固定領域ができるため） */
-            .layout-container { height: auto; padding: 80px 10px 160px 10px; gap: 15px; flex-direction: column; }
+            #toast-container { top: 70px; right: 10px; bottom: auto; } 
+
+            .layout-container { height: auto; padding: 80px 10px 200px 10px; gap: 15px; flex-direction: column; }
             .panel { height: auto; justify-content: flex-start; }
             .left-panel, .center-panel, .right-panel { width: 100%; max-width: 100%; padding: 0; }
             
-            /* ★ スマホ版の表示順序の最適化 (CSS Flexbox order) */
             .center-panel { display: flex; flex-direction: column; order: 1; }
             #score-display { order: 1; display: block; margin-top: 5px; }
             .game-area { order: 2; margin-bottom: 5px; }
             
-            /* スマホ版限定：フィーバーゲージの配置と強調 */
             #fever-container {
-                order: 3; /* TAPボタンの直上に配置 */
-                width: 90%;
-                height: 18px; /* ゲージを太く見やすく */
-                margin: 5px auto 15px auto;
-                border-radius: 9px;
-                border: 2px solid #555;
-                box-shadow: 0 0 10px rgba(0,0,0,0.8);
+                order: 3; width: 90%; height: 18px; margin: 5px auto 15px auto;
+                border-radius: 9px; border: 2px solid #555; box-shadow: 0 0 10px rgba(0,0,0,0.8);
             }
-            /* スマホ版ではPC用操作ガイドを非表示にする */
             #guide-text { display: none !important; }
             #mobile-controls { order: 5; }
             .withdraw-row { order: 6; }
@@ -340,55 +465,22 @@
             .left-panel { order: 2; }
             .right-panel { order: 3; }
 
-            /* ★ ライフやスピードの枠（stats-box）を画面上部に完全固定 */
             .stats-box { 
-                position: fixed; 
-                top: 0;
-                left: 0; width: 100%; 
-                background: rgba(15, 15, 15, 0.98); 
-                border: none;
-                border-bottom: 2px solid #333; 
-                border-radius: 0;
-                z-index: 1000;
+                position: fixed; top: 0; left: 0; width: 100%; 
+                background: rgba(15, 15, 15, 0.98); border: none; border-bottom: 2px solid #333; 
+                border-radius: 0; z-index: 1000;
                 display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; 
                 padding: max(10px, env(safe-area-inset-top)) 15px 10px 15px; 
-                box-sizing: border-box; gap: 8px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.8);
-                margin: 0;
+                box-sizing: border-box; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); margin: 0;
             }
             .stats-box hr { display: none; }
             .stat-line { margin: 0; font-size: 14px; flex: 1 1 45%; } 
-
             .stats-box .stat-line:first-child { display: flex; } 
             
-            /* ★ ポイント表示の横並びコンパクト化 */
-            .point-hud { 
-                min-height: auto; 
-                padding: 12px 0; 
-                margin-bottom: 0; 
-                flex-direction: row; 
-                justify-content: center; 
-                align-items: center; 
-            }
-            .pts-wrapper { 
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center; 
-                border-right: 1px dashed #333; 
-            }
+            .point-hud { min-height: auto; padding: 12px 0; margin-bottom: 0; flex-direction: row; justify-content: center; align-items: center; }
+            .pts-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px dashed #333; }
             .pts-val { font-size: 26px; margin: 0; }
-            .pending-box { 
-                flex: 1;
-                display: flex !important; 
-                flex-direction: column; 
-                align-items: center; 
-                margin-top: 0; 
-                border-top: none; 
-                padding-top: 0; 
-                text-align: center; 
-            }
+            .pending-box { flex: 1; display: flex !important; flex-direction: column; align-items: center; margin-top: 0; border-top: none; padding-top: 0; text-align: center; }
             .pending-box > div:nth-child(2) { font-size: 26px !important; margin-bottom: 2px; }
             .pending-box > div:nth-child(3) { margin-top: 0 !important; }
 
@@ -396,46 +488,33 @@
             .record-line { margin-top: 0; font-size: 14px; }
             canvas { transform: scale(0.95); margin: -5px 0; }
 
-            /* 強化メニュー・設定などを画面の一番下に固定配置 */
             .menu-grid { 
                 position: fixed; bottom: 0; left: 0; width: 100%; 
-                background: rgba(15, 15, 15, 0.98); 
-                border-top: 2px solid #00ffcc; 
-                padding: 10px; box-sizing: border-box; 
-                z-index: 1000; 
+                background: rgba(15, 15, 15, 0.98); border-top: 2px solid #00ffcc; 
+                padding: 10px; box-sizing: border-box; z-index: 1000; 
                 display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-                padding-bottom: env(safe-area-inset-bottom, 10px); 
-                box-shadow: 0 -5px 15px rgba(0,0,0,0.8); 
+                padding-bottom: env(safe-area-inset-bottom, 10px); box-shadow: 0 -5px 15px rgba(0,0,0,0.8); 
             }
-            .btn-upgrade, .btn-shop { grid-column: span 1; padding: 12px; font-size: 16px; border-radius: 8px; }
-            .side-btns { grid-column: 1 / -1; display: flex; gap: 8px; }
-            .btn-small { flex: 1; padding: 8px; font-size: 16px; flex-direction: row; justify-content: center; align-items: center; }
-            .btn-small span { margin-top: 0; margin-left: 6px; font-size: 12px; }
+            .btn-upgrade { grid-column: 1 / -1; padding: 12px; font-size: 16px; border-radius: 8px; }
+            .btn-shop { grid-column: 1 / -1; padding: 12px; font-size: 16px; border-radius: 8px; }
+            .btn-balance { grid-column: span 1; padding: 12px; font-size: 16px; border-radius: 8px; }
+            
+            .side-btns { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; grid-column: 1 / -1; }
+            .btn-small { flex: 1; padding: 8px 4px; font-size: 14px; flex-direction: column; align-items: center; justify-content: center; }
+            .btn-small span { margin-top: 4px; margin-left: 0; font-size: 10px; }
 
-            /* ★ TAPボタンの中央固定とSLOWボタンの配置最適化 */
-            #mobile-tap-btn {
-                flex: none !important;
-                width: 180px; 
-                height: 60px; 
-                border-radius: 30px !important; 
-                font-size: 20px !important;
-                letter-spacing: 2px;
-            }
-            .mobile-only.control-row { 
-                display: flex !important; 
-                align-items: center; 
-                justify-content: space-between; 
-                width: 100%; 
-                margin-bottom: 15px; 
-                padding: 0 10px;
-                box-sizing: border-box;
-            }
+            #mobile-tap-btn { flex: none !important; width: 180px; height: 60px; border-radius: 30px !important; font-size: 20px !important; letter-spacing: 2px; }
+            .mobile-only.control-row { display: flex !important; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 15px; padding: 0 10px; box-sizing: border-box; }
 
-            /* モーダルリストのコンパクト化（スマホ専用） */
-            .modal { padding: 15px; width: 95%; max-width: none; max-height: 85vh; box-sizing: border-box; }
+            .modal { 
+                padding: 15px; width: 95%; max-width: none; max-height: 85vh; box-sizing: border-box; 
+                margin-top: 10px;
+            }
+            .modal-nav-tabs { margin-top: 5px; padding-top: 5px; }
+            .modal-nav-btn { padding: 18px 5px; }
             .modal-header { padding: 15px; }
             .modal-scroll-area { padding: 0 15px 20px 15px; }
-            #list-upgrade, #list-shop { grid-template-columns: 1fr; gap: 10px; }
+            #list-upgrade, #list-shop, #list-achieve { grid-template-columns: 1fr; gap: 10px; }
             .list-row { padding: 10px; }
             .list-row-top { margin-bottom: 4px; }
             .list-title { font-size: 13px; }
@@ -446,6 +525,9 @@
             .list-effect-box { padding: 4px 8px; font-size: 10px; margin-bottom: 8px; }
             .list-btn { padding: 6px 12px; font-size: 12px; min-width: 50px; }
             .toggle-btn { padding: 4px 8px; font-size: 10px; }
+            
+            .scale-body { flex-direction: column; gap: 10px; }
+            .scale-pan { width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
@@ -463,7 +545,7 @@
         <p>・回転する針が<strong>赤いエリア</strong>に来たら<span style="color:#00ffcc;">画面をタップ</span>または<span style="color:#00ffcc;">スペースキー</span>！</p>
         <p>・左下のライフがなくなると<span style="color:#00ffcc;">ポイントが一部失われる！</span>ライフがなくなる前に<span style="color:#efb627;">ポイント持ち帰り</span>を押し、ポイントを保持しよう！</p>
         <p>・ポイントが溜まったら右側の<span style="color:#00ffcc;">「強化ラボ」</span>でパワーアップや<span style="color:#00ffcc;">「ショップ」</span>で見た目のカスタマイズができるぞ！</p>
-        <p>・目指せ<strong><span style="color:#00ffcc;">100スコア</strong></span>！</p>
+        <p>・目指せ<strong><span style="color:#00ffcc;">100スコア</span></strong>！</p>
     </div>
     <button id="btn-close-start-help" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">ゲームスタート</button>
 </div>
@@ -475,6 +557,30 @@
     <p id="tut-desc" style="font-size:14px; color:#ddd; line-height:1.6; margin-bottom:20px; word-break: break-word;"></p>
     <button onclick="closeTutorial()" style="width:100%; padding:15px; background:linear-gradient(135deg, #00ffcc, #0088aa); color:black; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">わかった！</button>
 </div>
+
+<div id="modal-unlock" class="modal" style="padding: 20px; text-align:center; border: 2px solid #ff0055; z-index: 3000; box-shadow: 0 0 30px #ff0055;">
+    <h3 style="margin-top:0; margin-bottom:15px; color:#ff0055; font-size:24px; font-family:'DenkiChip', sans-serif;">🎉 NEW SKILL UNLOCKED!</h3>
+    <p style="font-size:15px; color:#ddd; line-height:1.6; margin-bottom:25px;">
+        素晴らしい！見事にスコア100の壁を突破しました！<br><br>
+        強化ラボに隠されていた<br>
+        <span style="color:#ffeb3b; font-weight:bold; font-size:18px;">「神の領域」</span>と<span style="color:#00ffcc; font-weight:bold; font-size:18px;">「限界突破」</span><br>
+        への道が開かれました。<br><br>
+        さらなる高みへ、ようこそ。
+    </p>
+    <button onclick="closeUnlockModal()" style="width:100%; padding:15px; background:linear-gradient(135deg, #ff0055, #aa0033); color:white; font-size:18px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">確認</button>
+</div>
+
+<div id="scale-overlay"></div>
+<div id="modal-scale-confirm" class="modal" style="max-width:320px; text-align:center; padding: 20px; z-index: 3100; border-color: #ffd700;">
+    <h3 id="scale-confirm-title" style="color:#ffd700; margin-top:0;">契約の確認</h3>
+    <p id="scale-confirm-desc" style="font-size:14px; color:#ddd; margin-bottom:20px; white-space:pre-wrap;"></p>
+    <div style="display:flex; gap:10px;">
+        <button onclick="closeScaleConfirm()" style="flex:1; padding:12px; background:#444; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">やめる</button>
+        <button id="btn-scale-execute" style="flex:1; padding:12px; background:#ffd700; color:black; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">実行する</button>
+    </div>
+</div>
+
+<div id="global-tooltip"></div>
 
 <div class="layout-container" id="main-ui">
 
@@ -539,6 +645,7 @@
             <div class="pts-wrapper">
                 <div style="font-size:12px; color:#888;">TOTAL POINTS</div>
                 <div class="pts-val" id="ui-pts">0</div>
+                <div id="ui-medals-container" style="font-size:11px; color:#ffd700; margin-top:2px; display:none;">🏅 メダル: <span id="ui-medals">0</span></div>
             </div>
             <div id="pending-box" class="pending-box">
                 <div style="font-size:12px; color:#ff5500;">一時獲得分</div>
@@ -562,12 +669,14 @@
         </div>
 
         <div class="menu-grid">
-            <button id="btn-upgrade" class="game-btn btn-upgrade">🔧 強化ラボ</button>
-            <button id="btn-shop" class="game-btn btn-shop">🎁 ショップ</button>
+            <button id="btn-upgrade" class="game-btn btn-upgrade" onclick="playBtn(); openModal('modal-upgrade')">🔧 強化ラボ</button>
+            <button id="btn-shop" class="game-btn btn-shop" onclick="playBtn(); openModal('modal-shop')">🎁 ショップ</button>
+            <button id="btn-balance-main" class="game-btn btn-balance" onclick="playBtn(); openModal('modal-balance')" style="display:none;">⚖️ 天秤の間</button>
             <div class="side-btns">
-                <button id="btn-sys" class="game-btn btn-small" title="設定">⚙️<span style="font-size:10px; margin-top:2px;">設定・セーブ</span></button>
-                <button id="btn-status" class="game-btn btn-small" title="ステータス">📊<span style="font-size:10px; margin-top:2px;">ステータス</span></button>
-                <button id="btn-help" class="game-btn btn-small" title="ヘルプ">❓<span style="font-size:10px; margin-top:2px;">ヘルプ</span></button>
+                <button id="btn-achieve" class="game-btn btn-small btn-achieve" onclick="playBtn(); openModal('modal-achieve')" title="実績">🏆<span>実績</span></button>
+                <button id="btn-sys" class="game-btn btn-small" onclick="playBtn(); openModal('modal-sys')" title="設定">⚙️<span>設定</span></button>
+                <button id="btn-status" class="game-btn btn-small" onclick="playBtn(); openModal('modal-status')" title="ステータス">📊<span>情報</span></button>
+                <button id="btn-help" class="game-btn btn-small" onclick="playBtn(); openModal('modal-help')" title="ヘルプ">❓<span>遊び方</span></button>
             </div>
         </div>
     </div>
@@ -576,7 +685,8 @@
 <div id="modal-upgrade" class="modal">
     <div class="modal-nav-tabs">
         <button class="modal-nav-btn active">🔧 強化ラボ</button>
-        <button class="modal-nav-btn" onclick="openModal('modal-shop')">🎁 ショップ</button>
+        <button class="modal-nav-btn" onclick="playBtn(); openModal('modal-shop')">🎁 ショップ</button>
+        <button class="modal-nav-btn tab-balance-btn" onclick="playBtn(); openModal('modal-balance')" style="display:none; color:#ffd700;">⚖️ 天秤</button>
     </div>
     <div class="modal-header">
         <div class="modal-header-top">
@@ -589,14 +699,15 @@
         </div>
     </div>
     <div class="modal-scroll-area">
-        <div id="list-upgrade" style="min-height: 200px; margin-top: 5px;"></div>
+        <div id="list-upgrade"></div>
     </div>
 </div>
 
 <div id="modal-shop" class="modal">
     <div class="modal-nav-tabs">
-        <button class="modal-nav-btn" onclick="openModal('modal-upgrade')">🔧 強化ラボ</button>
+        <button class="modal-nav-btn" onclick="playBtn(); openModal('modal-upgrade')">🔧 強化ラボ</button>
         <button class="modal-nav-btn active">🎁 ショップ</button>
+        <button class="modal-nav-btn tab-balance-btn" onclick="playBtn(); openModal('modal-balance')" style="display:none; color:#ffd700;">⚖️ 天秤</button>
     </div>
     <div class="modal-header">
         <div class="modal-header-top">
@@ -620,6 +731,69 @@
     </div>
 </div>
 
+<div id="modal-achieve" class="modal" style="max-width: 720px; padding: 0; overflow: hidden; flex-direction: column;">
+    <div class="modal-header">
+        <div class="modal-header-top">
+            <div style="display:flex; align-items:baseline; gap:15px;">
+                <h3 style="margin:0; color:#ff8800;">🏆 実績</h3>
+                <span style="font-size:13px; color:#ccc;">達成率: <span id="achieve-progress">0/0</span></span>
+            </div>
+            <span class="close" onclick="closeAllModals()">×</span>
+        </div>
+    </div>
+    <div class="modal-scroll-area">
+        <div id="list-achieve"></div>
+    </div>
+</div>
+
+<div id="modal-balance" class="modal">
+    <div class="modal-nav-tabs">
+        <button class="modal-nav-btn" onclick="playBtn(); openModal('modal-upgrade')">🔧 強化ラボ</button>
+        <button class="modal-nav-btn" onclick="playBtn(); openModal('modal-shop')">🎁 ショップ</button>
+        <button class="modal-nav-btn active tab-balance-btn" style="color:#ffd700;">⚖️ 天秤</button>
+    </div>
+    <div class="modal-header">
+        <div class="modal-header-top">
+            <div style="display:flex; align-items:baseline; gap:15px;">
+                <h3 style="margin:0; color:#ffd700;">⚖️ 天秤の間</h3>
+                <span style="font-size:13px; color:#ccc;">所持メダル: <span id="balance-medals-display" style="color:#ffd700;font-weight:bold;">0</span></span>
+            </div>
+            <span class="close" onclick="closeAllModals()">×</span>
+        </div>
+        <div style="font-size:11px; color:#aaa; margin-top:5px;">強力な「恵み」と「呪い」を等価交換する。大カテゴリごとに1つだけ有効にできる。</div>
+        
+        <div class="scale-category-tabs" id="scale-cat-tabs"></div>
+    </div>
+    <div class="modal-scroll-area" style="padding-top:10px;">
+        <div id="list-balance"></div>
+    </div>
+</div>
+
+<div id="modal-patch" class="modal" style="padding: 20px;">
+    <div class="modal-header-top" style="margin-bottom:10px;">
+        <h3 style="margin:0; color:#00ffcc;">📜 アップデート履歴</h3>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button onclick="playBtn(); openModal('modal-status');" style="background:#444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">◀ 戻る</button>
+            <span class="close" onclick="closeAllModals()">×</span>
+        </div>
+    </div>
+    <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px;" id="patch-notes-content">
+        <div class="patch-date">v1.0.1 - 2026/03/06</div>
+        <ul class="patch-list">
+            <li>メインメニューに「天秤の間」への直通ボタンを追加。</li>
+            <li>「天秤の間」解放時にチュートリアルが表示されるようになりました。</li>
+            <li>ステータス画面でラッキー時のポイント倍率を確認できるようになりました。</li>
+        </ul>
+        <div class="patch-date">v1.0 - 2026/03/05</div>
+        <ul class="patch-list">
+            <li>一旦の形が完成！</li>
+            <li>新たに実績機能が追加されました！</li>
+            <li>新たに天秤の間機能が追加されました！</li>
+            <li>たくさんのバグを治しました。</li>
+        </ul>
+    </div>
+</div>
+
 <div id="modal-help" class="modal" style="padding: 20px;">
     <div class="modal-header-top" style="margin-bottom:10px;"><h3 style="margin:0;">遊び方</h3><span class="close" onclick="closeAllModals()">×</span></div>
     <div style="font-size:14px; line-height:1.6; color:#ccc; margin-top:10px;">
@@ -627,6 +801,7 @@
         <p><strong>■ 持ち帰る</strong><br>ポイントはライフが０になると最低保証の分しか持って帰れません。ミスする前に押すことでポイントを全て持ち帰ることができます。</p>
         <p><strong>■ 強化ラボ</strong><br>たまったポイントを使ってパワーアップすることができます。<br>強化した機能はOFFにすることもできます</p>
         <p><strong>■ ショップ</strong><br>たまったポイントを使いスキンや施設を買う事ができます。おしゃれしている中にも役立つものもあるかも…？</p>
+        <p><strong>■ 天秤の間</strong><br>スコアを稼ぐとメダルが貯まります。メダルを使って、強力なバフと強烈なデバフを同時に発動する禁断の取引ができます。</p>
         <p><strong>■ ボス戦</strong><br>10回ごとに動く的が出現！難易度は高いがポイントも多くもらえるぞ！</p>
         <p><strong>■ スロー機能</strong><br>強化後で開放すると、<strong>Sキー</strong>または<strong>スローボタン</strong>を押すことで一定時間スローになります（回数消費）。</p>
         <p><strong>■ フィーバー</strong><br>強化後で開放すると、ゲージ満タンで突入。時間内クリックし放題になります！なおゲージはミスすると10%後退してしまいます。</p>
@@ -646,7 +821,7 @@
         </div>
 
         <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-        <p style="font-size:12px; color:#aaa; margin-bottom:5px;">※プレイ状況は5秒ごとに自動セーブされます</p>
+        <p style="font-size:12px; color:#aaa; margin-bottom:5px;">※プレイ状況は自動セーブされます</p>
         <div style="display:flex; gap:10px; margin-bottom:10px;">
             <button onclick="saveGame(1)" style="flex:1; padding:12px; background:#444; color:#fff; border:none; border-radius:6px; cursor:pointer;">手動セーブ1</button>
             <button onclick="loadGame(1)" style="flex:1; padding:12px; background:#0077ff; color:#fff; border:none; border-radius:6px; cursor:pointer;">手動ロード1</button>
@@ -660,13 +835,19 @@
         
         <button onclick="confirmFullReset()" style="width:100%; margin-top:20px; background:#ff0055; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">データ全削除 (リセット)</button>
 
-        <button onclick="openModal('modal-credit')" style="width:100%; margin-top:10px; background:#555; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">クレジットを見る</button>
+        <button onclick="debugUnlockAll()" style="width:100%; margin-top:30px; background:#ffeb3b; color:black; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; display: none;">🛠️ [デバッグ] 全解放する</button>
     </div>
 </div>
 
 <div id="modal-status" class="modal" style="padding: 20px;">
-    <div class="modal-header-top" style="margin-bottom:10px;"><h3 style="margin:0;">詳細ステータス</h3><span class="close" onclick="closeAllModals()">×</span></div>
-    <div id="status-content" style="font-size:14px; line-height:2.0; color:#ddd; background:#111; padding:15px; border-radius:8px; border:1px solid #333; margin-top:10px;"></div>
+    <div class="modal-header-top" style="margin-bottom:10px;">
+        <h3 style="margin:0;">詳細ステータス</h3>
+        <span class="close" onclick="closeAllModals()">×</span>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-bottom: 5px;">
+        <button onclick="playBtn(); openModal('modal-patch');" style="background:#0077ff; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">📜 パッチノートを見る</button>
+    </div>
+    <div id="status-content" style="font-size:14px; line-height:2.0; color:#ddd; background:#111; padding:15px; border-radius:8px; border:1px solid #333; margin-top:5px;"></div>
 </div>
 
 <div id="modal-confirm" class="modal" style="max-width:320px; text-align:center; padding: 20px;">
@@ -693,10 +874,14 @@
     </div>
 </div>
 
+<div id="toast-container"></div>
 <script>
     const DEBUG_POINTS = 0; 
 
     let owned = [];
+    let claimedAchievements = []; 
+    let notifiedAchievements = []; 
+    
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -705,16 +890,20 @@
     const sInterhon = new Audio('interhon.mp3');
     const sRezi = new Audio('rezi.mp3'); 
     const sEnd = new Audio('end.mp3');
+    const sTensi = new Audio('tensi.mp3'); 
 
     let state = {
         pts: DEBUG_POINTS, pending: 0, isPlaying: false, isPaused: false,
-        isTutorial: false, // チュートリアル表示中の操作ブロック用フラグ
+        isTutorial: false, hasSeenUnlockMsg: false, 
         isFever: false, isSlow: false, isBoss: false, hasReached100: false, hasTutorialDone: false, 
-        tutorials: { boss: false, withdraw: false, upgrade: false, shop: false, consume: false, slow: false, fever: false }, 
+        tutorials: { boss: false, withdraw: false, upgrade: false, shop: false, consume: false, slow: false, fever: false, balance: false }, 
         feverG: 0, combo: 0, score: 0, life: 1, tempLife: 0, gameSpd: 0.05, 
-        slowC: 0, slowTimer: 0, heartTimer: 0, ticketTimer: 0, angle: 0, targetA: 0, targetW: 0.7, critOff: 0, bossDir: 1, bossSpeed: 0.01,
+        slowC: 0, slowTimer: 0, heartTimers: [], ticketTimer: 0, angle: 0, targetA: 0, targetW: 0.7, critOff: 0, bossDir: 1, bossSpeed: 0.01,
         bossShieldLeft: 0, direction: 1, hasDeath: false, deathA: 0, deathW: 0.3,
-        maxScore: 0, maxCombo: 0,
+        hasSubTarget: false, subTargetA: 0, subTargetW: 0.1, 
+        maxScore: 0, maxCombo: 0, totalPlayTimeMs: 0, totalEarnedPts: 0,
+        totalScoreMedals: 0, activeScales: {}, 
+        disabledByCurse: {}, 
         skin: { ring:'#333', effect:'none', sound:'default', needle:'default', g_btn:false, g_met:false, i_tikuwa:false, g_bomb:false, f_gorg:false, f_bg:false, g_neko:false },
         consumes: { c_heart: 0, c_pot: 0, c_oil: 0, c_timer: 0, c_cushion: 0, c_ticket: 0, c_magnet: 0, c_last: 0 },
         unlockedConsumes: {}, 
@@ -724,6 +913,177 @@
     };
     
     let particles = [];
+
+    // --- ⚖️ 天秤のデータ定義 ---
+    const scaleCategories = {
+        'hp': {
+            mainCategory: 'basic',
+            name: "体力の天秤", icon: "❤️",
+            reqLv: 15, reqCat: 'basic',
+            blessings: {
+                'hp_b1': { name: "恵み: 生気", icon: "💖", desc: "20スコアごとに\n追加体力を得る" },
+                'hp_b2': { name: "恵み: 頑強", icon: "🛡️", desc: "初期ライフが2倍になる" },
+                'hp_b3': { name: "恵み: 吸血", icon: "🧛", desc: "クリティカル発生時、\n3%の確率で体力を1回復する" }
+            },
+            curses: {
+                'hp_c1': { name: "呪い: 脆弱", icon: "💔", desc: "受けるダメージが\n2倍になる" },
+                'hp_c2': { name: "呪い: 腐敗", icon: "🥀", desc: "回復効果が無効になり、ミス時の\nゲージ低下と速度低下が2倍" },
+                'hp_c3': { name: "呪い: 盲目", icon: "👁️‍🗨️", desc: "体力の表記が\n見えなくなる" }
+            }
+        },
+        'score': {
+            mainCategory: 'basic',
+            name: "スコアの天秤", icon: "💰",
+            reqLv: 15, reqCat: 'basic', 
+            blessings: {
+                'sc_b1': { name: "恵み: 富豪", icon: "💵", desc: "ポイント獲得量が\n常に3倍になる" },
+                'sc_b2': { name: "恵み: 保証", icon: "🤝", desc: "ゲームオーバー時、一時獲得\nポイントの50%を持ち帰る" },
+                'sc_b3': { name: "恵み: 乱数", icon: "🎰", desc: "獲得ポイントがランダムで\n0.5〜5倍に変動する" }
+            },
+            curses: {
+                'sc_c1': { name: "呪い: 散財", icon: "💸", desc: "33％の確率で\n獲得ポイントが0になる" },
+                'sc_c2': { name: "呪い: 搾取", icon: "📉", desc: "基礎獲得ポイントが\n半減する(-50%)" },
+                'sc_c3': { name: "呪い: 焦燥", icon: "⏳", desc: "コンボが無効化され\nクリティカルが発生しなくなる" }
+            }
+        },
+        'area': {
+            mainCategory: 'basic',
+            name: "エリアの天秤", icon: "🎯",
+            reqLv: 15, reqCat: 'basic',
+            blessings: {
+                'ar_b1': { name: "恵み: 拡張", icon: "🔍", desc: "赤いエリアの範囲が\n+50%される" },
+                'ar_b2': { name: "恵み: 分身", icon: "👥", desc: "現在のエリアの25%の広さの\nサブエリアが反対側に出現" },
+                'ar_b3': { name: "恵み: 慈愛", icon: "🕊️", desc: "コンボが続くほど成功エリアが\n徐々に広がる（最大+50%）" }
+            },
+            curses: {
+                'ar_c1': { name: "呪い: 収縮", icon: "🤏", desc: "赤いエリアの範囲が\n-50%される" },
+                'ar_c2': { name: "呪い: 死神", icon: "💀", desc: "即死エリアが\nスコア1の段階から出現する" },
+                'ar_c3': { name: "呪い: 恐怖", icon: "😱", desc: "即死エリアの広さが\n通常の2倍になる" }
+            }
+        },
+        'rng': {
+            mainCategory: 'rng',
+            name: "確率の天秤", icon: "🎲",
+            reqLv: 5, reqCat: 'rng', 
+            blessings: {
+                'rn_b1': { name: "恵み: 奇跡", icon: "✨", desc: "ラッキー確率が\n+30％される" },
+                'rn_b2': { name: "恵み: 豪運", icon: "💊", desc: "ミス時のリカバリー\n発動率が+30%される" },
+                'rn_b3': { name: "恵み: 必殺", icon: "⚡", desc: "クリティカル時の\n倍率が10倍になる" }
+            },
+            curses: {
+                'rn_c1': { name: "呪い: 厄災", icon: "🌩️", desc: "ラッキー確率が\n-100％される" },
+                'rn_c2': { name: "呪い: 狭窄", icon: "🤏", desc: "クリティカルの判定エリアが\n60%減少する" },
+                'rn_c3': { name: "呪い: 不発", icon: "💢", desc: "成功判定に入っていても\n5%の確率でミスになる" }
+            }
+        },
+        'luck': {
+            mainCategory: 'rng',
+            name: "運の天秤", icon: "🌠",
+            reqLv: 5, reqCat: 'rng', 
+            blessings: {
+                'rn_b4': { name: "恵み: 収穫", icon: "🧺", desc: "成功時0.6%で\nランダムな消費アイテム獲得" },
+                'rn_b5': { name: "恵み: 飛躍", icon: "🚀", desc: "ラッキー時の\nポイント倍率が10倍になる" },
+                'rn_b6': { name: "恵み: 生還", icon: "👼", desc: "即死エリアを踏んだ時50%の確率\nで無効化し2000Pt獲得する" }
+            },
+            curses: {
+                'rn_c4': { name: "呪い: 反転", icon: "🙃", desc: "成功時5%の確率で\n獲得ポイントがマイナスになる" },
+                'rn_c5': { name: "呪い: 幻惑", icon: "💫", desc: "クリティカル判定時50%で\n通常ポイントになる" },
+                'rn_c6': { name: "呪い: 強欲", icon: "😈", desc: "持ち帰り時20%の確率で\n失敗し、一時Ptが半減する" }
+            }
+        },
+        'system': {
+            mainCategory: 'system',
+            name: "システムの天秤", icon: "⚙️",
+            reqLv: 15, reqCat: 'system',
+            blessings: {
+                'sy_b1': { name: "恵み: 加速", icon: "⏩", desc: "初期速度が2倍になるが\nスコアでの速度上昇が無効化" },
+                'sy_b2': { name: "恵み: 錬金", icon: "⚗️", desc: "オート時計の獲得Ptが\n常時2倍になる" },
+                'sy_b3': { name: "恵み: 停止", icon: "⏸️", desc: "スロー使用中、針が\n完全に停止する" }
+            },
+            curses: {
+                'sy_c1': { name: "呪い: 崩壊", icon: "💥", desc: "10スコア毎にランダムな\n強化が1つ強制OFFになる" },
+                'sy_c2': { name: "呪い: 暴走", icon: "🌀", desc: "数秒おきに針の回転方向が\nランダムに反転する" },
+                'sy_c3': { name: "呪い: 忘却", icon: "🧠", desc: "プレイ中の獲得Pt表示が\nすべて「???」になる" }
+            }
+        },
+        'fever': {
+            mainCategory: 'fever',
+            name: "フィーバーの天秤", icon: "🌟",
+            reqLv: 5, reqCat: 'fever', 
+            blessings: {
+                'fv_b1': { name: "恵み: 永遠", icon: "♾️", desc: "フィーバー時間が\n+50%される" },
+                'fv_b2': { name: "恵み: 爆発", icon: "🎆", desc: "フィーバー中の\n獲得ポイント2倍" },
+                'fv_b3': { name: "恵み: 昂揚", icon: "🔥", desc: "フィーバーゲージが\n30%溜まりやすくなる" }
+            },
+            curses: {
+                'fv_c1': { name: "呪い: 短命", icon: "🥀", desc: "フィーバー時間が\n-50%される" },
+                'fv_c2': { name: "呪い: 減衰", icon: "📉", desc: "フィーバー中の\n獲得ポイント-50%" },
+                'fv_c3': { name: "呪い: 冷静", icon: "🧊", desc: "フィーバーゲージが\n30%溜まりにくくなる" }
+            }
+        },
+        'boss': {
+            mainCategory: 'boss',
+            name: "ボスの天秤", icon: "👹",
+            reqLv: 1, reqCat: 'boss', 
+            blessings: {
+                'bs_b1': { name: "恵み: 停滞", icon: "🛑", desc: "ボスの移動が\nなくなる" },
+                'bs_b2': { name: "恵み: 略奪", icon: "🧲", desc: "ボスから得られる\nポイントが3倍" },
+                'bs_b3': { name: "恵み: 巨的", icon: "🎯", desc: "ボス戦にエリア拡大\n効果が適用される" }
+            },
+            curses: {
+                'bs_c1': { name: "呪い: 狂気", icon: "👺", desc: "ボス戦で即死ゾーンが\n2つ必ず出現する" },
+                'bs_c2': { name: "呪い: 幻影", icon: "👻", desc: "ボス戦の針が少し速くなり\n時々透明になる" },
+                'bs_c3': { name: "呪い: 貧困", icon: "💸", desc: "ボスから得られる\nポイントが-50される" }
+            }
+        }
+    };
+    
+    let selectingScale = {}; 
+    let currentBalanceCat = null; 
+    let pendingScaleAction = null; 
+
+    function hasScaleBless(bKey) {
+        if(!state.activeScales) return false;
+        for(let mainCat in state.activeScales) {
+            if (state.activeScales[mainCat] && state.activeScales[mainCat].bless === bKey) return true;
+        }
+        return false;
+    }
+    function hasScaleCurse(cKey) {
+        if(!state.activeScales) return false;
+        for(let mainCat in state.activeScales) {
+            if (state.activeScales[mainCat] && state.activeScales[mainCat].curse === cKey) return true;
+        }
+        return false;
+    }
+
+    const achievements = {
+        'pts_total_100': { icon:"P", name:"最初の一歩", desc:"累計で100Pt以上稼ぐ", flavor: "", reward: 10, check: () => state.totalEarnedPts >= 100 },
+        'boss_clear':{ icon:"👹", name:"ボスハンター", desc:"ボス戦を初めてクリアする", flavor: "", reward: 10, check: () => state.maxScore >= 11 },
+        'score_50':  { icon:"🎯", name:"登竜門", desc:"スコア50に到達する", flavor: "", reward: 10, check: () => state.maxScore >= 50 },
+        'score_75':  { icon:"💀", name:"死線", desc:"スコア75に到達する", flavor: "", reward: 20, check: () => state.maxScore >= 75 },
+        'item_gift': { icon:"🍜", name:"腹が減っては...", desc:"コンボ15を達成する", flavor: "", rewardItem: 'c_heart', rewardItemCount: 1, check: () => state.maxCombo >= 15 },
+        'combo_25':  { icon:"🎵", name:"リズムを刻め", desc:"最大コンボ25を達成する", flavor: "", reward: 20, check: () => state.maxCombo >= 25 },
+        'combo_100': { icon:"🔥", name:"止まらない時計", desc:"最大コンボ100を達成する", flavor: "", reward: 10, rewardItem: 'c_ticket', rewardItemCount: 1, check: () => state.maxCombo >= 100 },
+        'pts_1w':    { icon:"💰", name:"プチ富豪", desc:"所持ポイントが10,000Ptを超える", flavor: "", reward: 10, check: () => state.pts >= 10000 },
+        'pts_100k':  { icon:"💎", name:"大富豪", desc:"所持ポイントが100,000Ptを超える", flavor: "", reward: 100, check: () => state.pts >= 100000 },
+        'pts_1m':    { icon:"👑", name:"億万長者", desc:"所持ポイントが1,000,000Ptを超える", flavor: "", reward: 1000, check: () => state.pts >= 1000000 },
+        'unlock_balance': { icon:"⚖️", name:"禁断の取引", desc:"天秤の間を開放する", flavor: "", reward: 10, check: () => isA('balance')  ,secret: true},
+        'medals_10': { icon:"🏅", name:"メダルコレクター", desc:"所持メダルが10枚に到達する", flavor: "", reward: 30, check: () => state.totalScoreMedals >= 10 },
+        'unlock_toybox': { icon:"📦", name:"新たな遊び", desc:"おもちゃ箱を開放する", flavor: "", reward: 10, check: () => isA('toybox') },
+        'sign_scale': { icon:"🤝", name:"天使と悪魔の契約", desc:"初めて天秤の契約を結ぶ", flavor: "", reward: 10, check: () => Object.keys(state.activeScales || {}).length > 0 , secret: true},
+        'max_upgrade': { icon:"💯", name:"極めし者", desc:"強化ラボのいずれかの項目をMAXにする", flavor: "", reward: 10, check: () => Object.values(skills).some(s => s.lv >= (s.defaultMax || s.max)) , secret: true},
+        'max_ins':   { icon:"🏦", name:"絶対の安心", desc:"強化「死亡保険」をMAXにする", flavor: "", rewardItem: 'c_cushion', rewardItemCount: 1, check: () => skills.ins.lv >= (skills.ins.defaultMax || skills.ins.max), secret: true },
+        'trigger_fever': { icon:"🌟", name:"熱狂の渦へ", desc:"フィーバーを発動する", flavor: "", rewardItem: 'c_ticket', rewardItemCount: 1, check: () => state.isFever , secret: true},
+        'use_last':  { icon:"⚔️", name:"後戻りはできない", desc:"消費アイテム「背水の陣」を使用する", flavor: "", reward: 50, check: () => state.buffs.last },
+        'all_skins': { icon:"👗", name:"コレクター", desc:"ショップのアイテム（消費以外）を全て購入する", flavor: "", reward: 50, check: () => Object.keys(shopItems).every(k => owned.includes(k)) },
+        'speed_100': { icon:"🚀", name:"油ギトギト", desc:"SPEEDが100を超える", flavor: "", reward: 50, check: () => ((state.buffs.oil>0 ? state.gameSpd*Math.pow(1.5, state.buffs.oil) : state.gameSpd)*20) >= 100 },
+        'all_consume':{ icon:"🧸", name:"おもちゃ箱コンプリート", desc:"消費アイテムを全種類1回以上購入する", flavor: "", reward: 10, check: () => Object.keys(consumeItems).every(k => state.unlockedConsumes[k]) },
+        'play_1h':   { icon:"⏳", name:"時の探求者", desc:"総プレイ時間が1時間を超える", flavor: "", reward: 10, check: () => state.totalPlayTimeMs >= 3600000 },
+        'unlock_tikuwa': { icon:"🍢", name:"なぞの棒", desc:"ちくわを開放する", flavor: "", reward: 10, check: () => owned.includes('i_tikuwa'), secret: true },
+        'ending':    { icon:"🎬", name:"真実を知る者", desc:"エンディングを見る", flavor: "", reward: 100, check: () => state.hasReached100 && isA('ending'), secret: true },
+        'score_300': { icon:"👑", name:"ストッパーの頂点", desc:"スコア300に到達する", flavor: "", reward: 10000, check: () => state.maxScore >= 300, req: () => state.maxScore >= 100 }
+    };
 
     function getCatColor(cat) {
         switch(cat) {
@@ -739,7 +1099,7 @@
     }
 
     const skills = {
-        life: { icon: "❤️", name:"ライフ+", desc:"ミスの許容回数を増やします。", flavor:"心の余裕、欲しくない？", base:30, step:30, defaultMax:5, max:5, lv:0, tier:0, active:true, cat:'basic' },
+        life: { icon: "❤️", name:"ライフ+", desc:"ミスの許容回数を増やします。", flavor:"心の余裕、欲しくない？", base:30, step:50, defaultMax:5, max:5, lv:0, tier:0, active:true, cat:'basic' },
         pts:  { icon: "P", name:"ポイントUP", desc:"基礎獲得量を増加させます。", flavor:"小さな積み重ねが、やがて莫大な富へと変わる。", base:20, step:20, defaultMax:20, max:20, lv:0, tier:0, active:true, cat:'basic', isLB:true },
         wide: { icon: "🎯", name:"エリア拡大", desc:"成功判定となる赤いエリアを少し広くします。", flavor:"成功への的を広げていく。", base:20, step:10, defaultMax:10, max:10, lv:0, tier:0, active:true, cat:'basic' },
         gear: { icon: "⚙️", name:"軽量ギア", desc:"成功を重ねた時の、針の加速スピードを抑えます。", flavor:"精密な歯車が、時の暴走を優しくなだめる。", base:400, step:400, defaultMax:5, max:5, lv:0, tier:11, active:true, cat:'basic', isLB:true }, 
@@ -750,28 +1110,29 @@
         crit: { icon: "⚡", name:"クリティカル", desc:"ポイントが1.5倍になる黄色いクリティカルエリアが出現します。", flavor:"一瞬の隙を突く、研ぎ澄まされた集中力。", base:80, step:0, defaultMax:1, max:1, lv:0, tier:5, active:true, cat:'rng' },
         critRate: { icon: "📈", name:"クリ率UP", desc:"エリア外でも、確率でクリティカル判定になります。", flavor:"奇跡を必然に変える、恐るべき洞察。", base:200, step:150, defaultMax:10, max:10, lv:0, tier:6, active:true, cat:'rng', parent:'crit' }, 
         lucky:{ icon: "🍀", name:"ラッキー", desc:"0.5%で獲得ポイントが3倍になるラッキーが発生します。", flavor:"運命の女神が、あなたに微笑みかけている。", base:250, step:0, defaultMax:1, max:1, lv:0, tier:5, active:true, cat:'rng' },
-        recovery: { icon: "💊", name:"リカバリー", desc:"ミスした時に、確率でライフが減らないことがあります。", flavor:"死の淵から蘇る、不屈の精神。", base:250, step:200, defaultMax:5, max:5, lv:0, tier:7, active:true, cat:'rng' },
+        recovery: { icon: "💊", name:"リカバリー", desc:"ミスした時に、確率でライフが減らないことがあります。", flavor:"死の淵から蘇る、不屈の精神。", base:250, step:450, defaultMax:5, max:5, lv:0, tier:7, active:true, cat:'rng' },
 
         slow: { icon: "⏱️", name:"スロー", desc:"ゲーム中にSキーを押すと、一定時間針がスローになります。", flavor:"世界が色褪せ、時の流れが泥のように遅くなる。", base:60, step:50, defaultMax:5, max:5, lv:0, tier:3, active:true, cat:'system' },
         discount: { icon: "🎫", name:"割引", desc:"他のすべての強化に必要なポイントが減少します。", flavor:"取引の極意。全ての対価は、交渉次第で下がる。", base:500, step:400, defaultMax:3, max:3, lv:0, tier:4, active:true, cat:'system' },
-        comboBonus: { icon: "🔥", name:"コンボ強化", desc:"コンボ数が続くほど、獲得ポイントにボーナスが付きます。", flavor:"止まらない連撃が、かつてない熱狂を呼ぶ。", base:150, step:80, defaultMax:5, max:5, lv:0, tier:4, active:true, cat:'system' }, 
+        comboBonus: { icon: "🔥", name:"コンボ強化", desc:"コンボ数が続くほど、獲得ポイントにボーナスが付きます。", flavor:"止まらない連撃が、かつてない熱狂を呼ぶ。", base:150, step:100, defaultMax:5, max:5, lv:0, tier:4, active:true, cat:'system' }, 
         ins:  { icon: "🏦", name:"死亡保険", desc:"ゲームオーバーになった時に必ず持ち帰れる最低保証ポイントが増えます。", flavor:"最悪の事態に備える。それがプロの流儀だ。", base:30, step:20, defaultMax:25, max:25, lv:0, tier:5, active:true, cat:'system' },
         wideKeep: { icon: "🛡️", name:"ワイドキープ", desc:"スコアが進むにつれてエリアが狭くなるのを抑えます。", flavor:"どんなに追い詰められても、決して視野を狭めない。", base:400, step:300, defaultMax:5, max:5, lv:0, tier:9, active:true, cat:'system' }, 
         auto: { icon: "🕰️", name:"オート時計", desc:"放置しているだけで自動的にポイントを稼いでくれます。", flavor:"あなたが休んでいる間も、時計はチクタクと時を刻む。", base:200, step:150, defaultMax:15, max:15, lv:0, tier:10, active:true, cat:'system' },
         autoEff: { icon: "🔋", name:"オート時計効率", desc:"オート時計から得られるポイントを増加させます。", flavor:"歯車に油を注ぎ、全自動の恩恵を極限まで高める。", base:300, step:250, defaultMax:20, max:20, lv:0, tier:15, active:true, cat:'system', parent:'auto' },
         
         toybox: { icon: "🧸", name:"おもちゃ箱", desc:"ショップに「消費アイテム」のカテゴリが追加されます。", flavor:"「ガラクタか、宝物か。とにかく役立つ新商品をそろえてみたぜ。」byショップ店長", base:1000, step:0, defaultMax:1, max:1, lv:0, tier:10, active:true, noToggle:true, cat:'toybox' },
+        balance: { icon: "⚖️", name:"天秤の間", desc:"タブに「天秤の間」が追加される。強力なバフと引き換えにデバフを負う。", flavor:"等価交換の法則。", base:5000, step:0, defaultMax:1, max:1, lv:0, tier:15, active:true, noToggle:true, cat:'toybox' }, 
 
         bossShield: { icon: "🛡️", name:"ボスシールド", desc:"ボス戦でのミスを回数分だけ無効化してくれます。", flavor:"強大な敵の一撃を、見えない障壁が弾き返す。", base:600, step:600, defaultMax:2, max:2, lv:0, tier:25, active:true, cat:'boss' },
-        bossSlow: { icon: "👁️", name:"ボス威圧", desc:"ボス戦突入時に、確率で自動的にスローが発動します。", flavor:"あなたの放つ威圧感が、敵の動きを鈍らせる。", base:800, step:600, defaultMax:5, max:5, lv:0, tier:25, active:true, cat:'boss' },
+        bossSlow: { icon: "👁️", name:"ボス威圧", desc:"ボス戦突入時に、確率で自動的にスローが発発動します。", flavor:"あなたの放つ威圧感が、敵の動きを鈍らせる。", base:800, step:600, defaultMax:5, max:5, lv:0, tier:25, active:true, cat:'boss' },
 
         fever:{ icon: "🌟", name:"フィーバー", desc:"ゲージが満タンになると、一定時間無敵で連打し放題になります。", flavor:"限界を超えた先にある、黄金色に輝く熱狂の領域。", base:300, step:300, defaultMax:5, max:5, lv:0, tier:15, active:true, cat:'fever' },
-        feverTime: { icon: "⏳", name:"Fタイム延長", desc:"フィーバー状態の持続時間を延長します。", flavor:"終わらない狂宴。この熱狂はまだ冷めやらない。", base:600, step:600, defaultMax:5, max:5, lv:0, tier:16, active:true, cat:'fever', parent:'fever' },
+        feverTime: { icon: "⏳", name:"Fタイム延長", desc:"フィーバー状態の持続時間を延長します。", flavor:"終わらない狂宴。この熱狂はまだ冷めやらない。", base:600, step:800, defaultMax:5, max:5, lv:0, tier:16, active:true, cat:'fever', parent:'fever' },
         feverBoost: { icon: "💥", name:"Fボーナス", desc:"フィーバー中に獲得できるポイントの倍率が上がります。", flavor:"熱狂の渦の中で、富は爆発的に膨れ上がる。", base:500, step:500, defaultMax:5, max:5, lv:0, tier:18, active:true, cat:'fever', parent:'fever' }, 
 
         ending: { icon: "🎬", name:"真実の扉", desc:"設定画面からゲームのエンディングを見ることができます。", flavor:"すべての針が重なる時、本当の結末が目を覚ます。", base:3000, step:0, defaultMax:1, max:1, lv:0, tier:12, active:true, cat:'god' }, 
-        godMode: { icon: "👑", name:"神の領域", desc:"絶対成功領域を展開し、ポイントが常時10倍になります。", flavor:"もはやゲームではない。あなたがこの世界のルールだ。", base:50000, step:0, defaultMax:1, max:1, lv:0, tier:17, active:true, cat:'god', parent:'ending' },
-        limitBreak: { icon: "🔥", name:"限界突破", desc:"一部の強化(Pt系、ギア、エリア拡大+)のLv上限を999まで引き上げる。", flavor:"限界の先へ。神すらも踏み入らぬ無限の領域。", base:50000, step:0, defaultMax:1, max:1, lv:0, tier:20, active:true, cat:'god', parent:'ending' } 
+        godMode: { icon: "👑", name:"神の領域", desc:"絶対成功領域を展開し、ポイントが常時10倍になります。", flavor:"もはやゲームではない。あなたがこの世界のルールだ。", base:100000, step:0, defaultMax:1, max:1, lv:0, tier:17, active:true, cat:'god', parent:'ending' },
+        limitBreak: { icon: "🔥", name:"限界突破", desc:"一部の強化(Pt系、ギア、エリア拡大+等)のLv上限を引き上げる。", flavor:"限界の先へ。神すらも踏み入らぬ無限の領域。", base:20000, step:0, defaultMax:1, max:1, lv:0, tier:20, active:true, cat:'god', parent:'ending' } 
     };
 
     const shopItems = {
@@ -779,7 +1140,7 @@
         's_gold': { icon:"🟨", name:"ゴールドリム", type:'skin', cost:800, desc:"リングを金にする(常時発光)", flavor:"成金趣味とは言わせない。ただまぶしすぎる", val:'#ffd700' },
         's_white':{ icon:"⬜", name:"ホワイト", type:'skin', cost:400, desc:"リングを白にする(常時発光)", flavor:"純白の輝き。", val:'#ffffff' },
         's_red':  { icon:"🟥", name:"レッドフレア", type:'skin', cost:400, desc:"リングを赤にする", flavor:"赤すぎて何も見えない。", val:'#ff0055' },
-        's_real_n':{ icon:"🗡️", name:"黄金の針", type:'needle', cost:2500, desc:"針を黄金にする", flavor:"時を刻むのにふさわしい逸品。", val:'real_needle' },
+        's_real_n':{ icon:"🗡️", name:"黄金の針", type:'needle', cost:25000, desc:"針を黄金にする", flavor:"時を刻むのにふさわしい逸品。", val:'real_needle' },
         'e_thun': { icon:"⚡", name:"雷エフェクト", type:'effect', cost:2500, desc:"クリティカルヒット時に雷発生", flavor:"ビリビリくるぜ。", val:'thunder' },
         'e_party':{ icon:"✨", name:"パーティクル", type:'effect', cost:4000, desc:"ヒット時に星屑が散る", flavor:"画面を鮮やかに彩る星屑。", val:'particle' }, 
         'f_bg':   { icon:"🌐", name:"サイバー背景", type:'facility', cost:4000, desc:"背景にデジタルグリッドを描画", flavor:"ハッカー気分を味わえる電脳空間。", val:'cyber_bg' }, 
@@ -798,7 +1159,7 @@
         'c_oil': { name:"よく滑る油", short:"針速度x1.5", desc:"針の基本スピードが1.5倍になる。重複可。\n(ゲームオーバーまで持続)", flavor:"歯車をツルツルにする危険な油。", cost: 200, img: 'oil.png' },
         'c_timer': { name:"クイックタイマー", short:"時計間隔半減", desc:"オート時計の間隔を半分にする。\n(ゲームオーバーまで持続。重複不可)", flavor:"時間を削り取る魔法のタイマー。", cost: 1500, img: 'watchup.png' },
         'c_cushion': { name:"防護クッション", short:"GameOver保護", desc:"ミスで終わる時に自動で持ち帰りを発動する。\n(発動まで持続。重複不可)", flavor:"落ちた時の衝撃を優しく吸収してくれる。", cost: 2500, img: 'bougo.png' },
-        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60秒)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(重複で時間延長)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'ticket.png' },
+        'c_ticket': { name:"黄金のチケット", short:"Pt2倍(60s/重複不可)", desc:"1分間、すべての獲得ポイントが2倍になる。\n(使用中は再使用不可)", flavor:"選ばれし者にのみ与えられる黄金の輝き。", cost: 4000, img: 'ticket.png' },
         'c_magnet': { name:"磁石", short:"的MAX(5回)", desc:"次の5回、的の広さが最大になる。", flavor:"成功を強引に引き寄せる強力な磁力。", cost: 8000, img: 'magnet.png' },
         'c_last': { name:"背水の陣", short:"常時高難易度ボス(HP1の時のみ使用可)", desc:"ライフが1の時のみ使用可能。\n毎回少し難しいボス戦が発生するようになる。\n(ゲームオーバーまで持続。重複不可)", flavor:"退路を断ち、己の全力を解放せよ。", cost: 10000, img: 'haisui.png' }
     };
@@ -827,7 +1188,7 @@
         if(k==='gear') return `緩和Lv${lv}`;
         if(k==='antiReverse') return `-${lv*10}%`;
         
-        if(k==='crit' || k==='lucky' || k==='toybox' || k==='ending' || k==='godMode' || k==='limitBreak') return lv>0 ? '解放済' : '未解放';
+        if(k==='crit' || k==='lucky' || k==='toybox' || k==='ending' || k==='godMode' || k==='limitBreak' || k==='balance') return lv>0 ? '解放済' : '未解放';
         if(k==='critRate') return `+${(lv*0.2).toFixed(1)}%`;
         if(k==='recovery') return `${lv*5}%`;
         
@@ -867,7 +1228,7 @@
     function playHit(crit, fever){
         if(fever){ playTone('square', 800 + Math.random()*800, 0.08); return; }
         if(state.skin.sound==='click_file'){ 
-            sClick.volume=state.settings.vol * 0.5; // クリック音量を半減
+            sClick.volume=state.settings.vol * 0.5; 
             sClick.currentTime=0; 
             sClick.play().catch(()=>playTone('triangle',1000,0.05)); 
         }
@@ -900,6 +1261,35 @@
         btn.className = state.settings.showNum ? "toggle-btn on" : "toggle-btn";
     }
 
+    /* --- グローバルツールチップ関数 --- */
+    function showGlobalTooltip(e, title, desc, borderColor, titleColor) {
+        const tt = document.getElementById('global-tooltip');
+        tt.style.borderColor = borderColor || '#555';
+        tt.innerHTML = `<div class="scale-tt-title" style="color:${titleColor || '#ffd700'}">${title}</div><div class="scale-tt-desc">${desc}</div>`;
+        tt.style.visibility = 'visible';
+        tt.style.opacity = '1';
+        moveGlobalTooltip(e);
+    }
+    function moveGlobalTooltip(e) {
+        const tt = document.getElementById('global-tooltip');
+        let x = e.clientX; let y = e.clientY - 15;
+        tt.style.left = x + 'px'; tt.style.top = y + 'px';
+        tt.style.transform = 'translate(-50%, -100%)';
+        
+        let rect = tt.getBoundingClientRect();
+        if (rect.left < 5) tt.style.left = (x + (5 - rect.left)) + 'px';
+        if (rect.right > window.innerWidth - 5) tt.style.left = (x - (rect.right - window.innerWidth + 5)) + 'px';
+        if (rect.top < 5) { 
+            tt.style.top = (e.clientY + 20) + 'px'; 
+            tt.style.transform = 'translate(-50%, 0)'; 
+        }
+    }
+    function hideGlobalTooltip() {
+        const tt = document.getElementById('global-tooltip');
+        tt.style.visibility = 'hidden';
+        tt.style.opacity = '0';
+    }
+
     document.getElementById('btn-start').onclick = () => {
         playBtn();
         document.getElementById('title-screen').style.display = 'none';
@@ -914,14 +1304,13 @@
         init();
     };
 
-    // --- チュートリアルモーダルの表示処理 ---
     let wasPausedBeforeTutorial = false; 
     
     function showTutorial(type) {
         if(state.isTutorial) return;
         wasPausedBeforeTutorial = state.isPaused; 
         state.isPaused = true; 
-        state.isTutorial = true; // ★ 操作ブロックフラグをON
+        state.isTutorial = true; 
         
         const modal = document.getElementById('modal-tutorial');
         const title = document.getElementById('tut-title');
@@ -948,6 +1337,9 @@
         } else if(type === 'fever') {
             title.innerText = "🌟 チュートリアル: フィーバー";
             desc.innerHTML = "熱狂の<span style='color:#ffeb3b; font-weight:bold;'>「フィーバー」</span>機能が解放されました！<br><br>成功を重ねてゲージがMAXになると突入します！<br>フィーバー中は無敵になり、<br>連打した分だけ大量のポイントを稼げます！<br>（※ミスするとゲージが少し減ってしまいます）";
+        } else if(type === 'balance') {
+            title.innerText = "⚖️ チュートリアル: 天秤の間";
+            desc.innerHTML = "「天秤の間」が解放されました！<br><br>ここでは、スコアを稼いで得たメダルを消費して<br><span style='color:#00ffcc; font-weight:bold;'>強力な「恵み」</span>と<span style='color:#ff0055; font-weight:bold;'>強烈な「呪い」</span>を<br>同時に受け入れる「契約」ができます。<br>ハイリスク・ハイリターンの取引で限界を超えましょう！";
         }
         
         document.getElementById('tutorial-overlay').style.display = 'block';
@@ -959,7 +1351,21 @@
         document.getElementById('modal-tutorial').style.display = 'none';
         document.getElementById('tutorial-overlay').style.display = 'none';
         state.isPaused = wasPausedBeforeTutorial;
-        state.isTutorial = false; // ★ 操作ブロックを解除
+        state.isTutorial = false; 
+    }
+
+    function showUnlockMsg() {
+        state.isTutorial = true;
+        document.getElementById('tutorial-overlay').style.display = 'block';
+        document.getElementById('modal-unlock').style.display = 'block';
+    }
+
+    function closeUnlockModal() {
+        playBtn();
+        document.getElementById('modal-unlock').style.display = 'none';
+        document.getElementById('tutorial-overlay').style.display = 'none';
+        state.isTutorial = false;
+        state.hasSeenUnlockMsg = true;
     }
 
     function init() {
@@ -968,8 +1374,14 @@
         state.isFever=false; state.feverG=0; state.pending=0;
         state.combo=0; state.score=0; state.gameSpd=0.05;
         state.direction=1; state.hasDeath=false;
+        state.hasSubTarget = false; 
+        state.heartTimers = [];
         
-        state.life = isA('life') ? 1 + skills.life.lv : 1;
+        let baseLife = isA('life') ? 1 + skills.life.lv : 1;
+        if (hasScaleBless('hp_b2')) baseLife *= 2;
+        if (hasScaleCurse('hp_c2')) baseLife = Math.max(1, Math.floor(baseLife / 2));
+        state.life = baseLife;
+
         state.tempLife = 0; 
         state.slowC = isA('slow') ? skills.slow.lv + (skills.slow.lv>=3 ? skills.slow.lv-2 : 0) : 0;
         
@@ -982,8 +1394,6 @@
         state.buffs.cushion = 0; state.buffs.magnet = 0; state.buffs.last = false;
         state.heartTimer = 0; state.ticketTimer = 0;
         renderConsumeSidebar();
-
-        setTargetBaseW();
         
         document.getElementById('pending-box').style.visibility='visible';
         document.getElementById('row-withdraw').style.visibility='visible';
@@ -1004,12 +1414,38 @@
     }
 
     function setTargetBaseW() {
-        state.targetW = 0.7;
-        if(isA('wide')) state.targetW += skills.wide.lv * 0.05;
-        if(isA('widePlus')) state.targetW += skills.widePlus.lv * 0.05;
+        if(state.isBoss) {
+            // ボス戦の時の幅計算
+            let bLv = Math.floor(state.score / 10);
+            if(state.buffs.last) bLv += 3; 
+            
+            let wBase = 0.7 - (bLv * 0.05);
+            if(hasScaleBless('bs_b3')) { // 恵み: 巨的
+                if(isA('wide')) wBase += skills.wide.lv*0.05;
+                if(isA('widePlus')) wBase += skills.widePlus.lv*0.05;
+            }
+            state.targetW = Math.max(state.buffs.last ? 0.1 : 0.2, wBase); 
+        } else {
+            // 通常時の幅計算（ここでスコアに応じて狭くする！）
+            let wBase = 0.7;
+            if(isA('wide')) wBase += skills.wide.lv * 0.05;
+            if(isA('widePlus')) wBase += skills.widePlus.lv * 0.05;
+            
+            // スコア * 0.005 ずつ狭くなる
+            let shrink = state.score * 0.005;
+            if(isA('wideKeep')) shrink -= state.score * (skills.wideKeep.lv * 0.0005);
+            
+            state.targetW = Math.max(0.15, wBase - shrink);
+        }
+
+        // --- 天秤の各種補正を最後にまとめてかける ---
+        if (hasScaleBless('ar_b3')) state.targetW *= (1 + Math.min(0.5, state.combo * 0.01)); // 恵み: 慈愛
+        if (hasScaleBless('ar_b1')) state.targetW *= 1.5; // 恵み: 拡張
+        if (hasScaleCurse('ar_c1')) state.targetW *= 0.5; // 呪い: 収縮
     }
 
     function setTarget() {
+        setTargetBaseW();
         state.targetA = Math.random()*Math.PI*2;
         state.critOff = (Math.random()-0.5)*(state.targetW*0.6);
         
@@ -1024,18 +1460,38 @@
         }
 
         state.hasDeath = false;
-        if(state.score >= 75 && Math.random() < 0.3) {
+        state.hasDeath2 = false; 
+        
+        let deathThreshold = hasScaleCurse('ar_c2') ? 1 : 75;
+        if(state.score >= deathThreshold && Math.random() < 0.3) {
             state.hasDeath = true;
-            state.deathW = 0.3; 
+            state.deathW = hasScaleCurse('ar_c3') ? 0.6 : 0.3; 
             if(Math.random() < 0.5) {
                 state.deathA = (state.targetA + state.targetW/2 + state.deathW/2) % (Math.PI*2);
             } else {
                 state.deathA = (state.targetA - state.targetW/2 - state.deathW/2 + Math.PI*2) % (Math.PI*2);
             }
         }
+        
+        if(state.isBoss && hasScaleCurse('bs_c1')) {
+            state.hasDeath = true;
+            state.hasDeath2 = true;
+            state.deathW = hasScaleCurse('ar_c3') ? 0.6 : 0.3; 
+            state.deathA = (state.targetA + state.targetW/2 + state.deathW/2 + 0.1) % (Math.PI*2);
+            state.deathA2 = (state.targetA - state.targetW/2 - state.deathW/2 - 0.1 + Math.PI*2) % (Math.PI*2);
+        }
 
-        if(state.buffs.magnet > 0) { state.targetW = Math.PI * 2; state.hasDeath = false; }
-        else if(isA('godMode')) { state.targetW = Math.PI * 2; state.hasDeath = false; }
+        if(state.buffs.magnet > 0 || isA('godMode')) { 
+            state.targetW = Math.PI * 2; state.hasDeath = false; state.hasDeath2 = false; state.hasSubTarget = false;
+        } else {
+            if (hasScaleBless('ar_b2')) {
+                state.hasSubTarget = true;
+                state.subTargetW = state.targetW * 0.25;
+                state.subTargetA = (state.targetA + Math.PI) % (Math.PI*2);
+            } else {
+                state.hasSubTarget = false;
+            }
+        }
     }
 
     function triggerSlow() {
@@ -1088,9 +1544,20 @@
             let fbM = isA('feverBoost') ? 1 + skills.feverBoost.lv * 0.2 : 1;
             let fgain = ptsM * 1.5 * fbM;
             if(state.ticketTimer > 0) fgain *= 2;
-            state.pending += fgain; 
+            
+            if (hasScaleBless('fv_b2')) fgain *= 2;
+            if (hasScaleCurse('fv_c2')) fgain *= 0.5;
+
+            if (hasScaleBless('sc_b3')) fgain *= (0.5 + Math.random() * 4.5);
+            fgain = Math.floor(fgain);
+            if (hasScaleCurse('sc_c1') && Math.random() < 0.33) {
+                fgain = 0; showFloatingText("MISS (0Pt)", "#ff5555");
+            } else {
+                state.pending += fgain; 
+                showFloatingText("+" + Math.floor(fgain), "#ffeb3b");
+            }
+            
             playHit(false,true); 
-            showFloatingText("+" + Math.floor(fgain), "#ffeb3b");
             if(state.skin.effect==='thunder') drawThunder(); 
             if(state.skin.effect==='particle') generateParticles();
             updateUI(); return;
@@ -1101,20 +1568,36 @@
             let dDiff = Math.abs(state.angle - state.deathA);
             if(dDiff > Math.PI) dDiff = (Math.PI*2) - dDiff;
             if(dDiff <= state.deathW/2 + 0.05) isDeathClick = true;
+            
+            if(state.hasDeath2) {
+                let dDiff2 = Math.abs(state.angle - state.deathA2);
+                if(dDiff2 > Math.PI) dDiff2 = (Math.PI*2) - dDiff2;
+                if(dDiff2 <= state.deathW/2 + 0.05) isDeathClick = true;
+            }
         }
 
         if (isDeathClick) {
-            playTone('sawtooth', 50, 1.0);
-            showFloatingText("INSTANT DEATH!", "#0055ff");
-            state.life = 0; state.tempLife = 0;
-            if(state.buffs.cushion > 0) {
-                state.buffs.cushion--; renderConsumeSidebar();
-                showFloatingText("CUSHION!", "#00ffcc");
-                forceWithdraw();
+            if (hasScaleBless('rn_b6') && Math.random() < 0.5) {
+                isDeathClick = false; 
+                let gain = 2000;
+                state.pending += gain;
+                updateUI();            
+                
+                showFloatingText("生還! +" + gain, "#00ffcc"); 
+                playTone('triangle', 1200, 0.3);
             } else {
-                gameOver();
+                playTone('sawtooth', 50, 1.0);
+                showFloatingText("INSTANT DEATH!", "#0055ff");
+                state.life = 0; state.tempLife = 0;
+                if(state.buffs.cushion > 0) {
+                    state.buffs.cushion--; renderConsumeSidebar();
+                    showFloatingText("CUSHION!", "#00ffcc");
+                    forceWithdraw();
+                } else {
+                    gameOver();
+                }
+                return;
             }
-            return;
         }
 
         let diff = Math.abs(state.angle - state.targetA);
@@ -1122,14 +1605,35 @@
         
         let cDiff = Math.abs(state.angle - (state.targetA+state.critOff));
         if(cDiff>Math.PI) cDiff=(Math.PI*2)-cDiff;
-        let isCritArea = (isA('crit') && cDiff<=(state.targetW*0.15));
-        let isCritRandom = (isA('critRate') && Math.random() < (skills.critRate.lv * 0.002));
+        
+        let cWidth = state.targetW*0.15;
+        if (hasScaleCurse('rn_c2')) { cWidth *= 0.4; } // 呪い: 狭窄 (60%減)
+        let cRate = skills.critRate.lv * 0.002;
+        
+        let isCritArea = (isA('crit') && cDiff<=cWidth);
+        let isCritRandom = (isA('critRate') && Math.random() < cRate);
         let isCrit = isCritArea || isCritRandom;
+        
+        if (hasScaleCurse('sc_c3')) isCrit = false; // 呪い: 焦燥
+        if (isCrit && hasScaleCurse('rn_c5') && Math.random() < 0.5) { // 呪い：幻惑
+            isCrit = false; showFloatingText("幻惑", "#888");
+        }
 
         let isSuccess = (diff <= state.targetW/2 + 0.05);
 
+        if(!isSuccess && state.hasSubTarget) {
+            let subDiff = Math.abs(state.angle - state.subTargetA);
+            if(subDiff>Math.PI) subDiff=(Math.PI*2)-subDiff;
+            if(subDiff <= state.subTargetW/2 + 0.05) isSuccess = true;
+        }
+
         if(!isSuccess && state.isBoss && state.bossShieldLeft > 0) {
             isSuccess = true; state.bossShieldLeft--; playTone('triangle', 1200, 0.2); 
+        }
+        
+        if (isSuccess && hasScaleCurse('rn_c3') && Math.random() < 0.05) { // 呪い: 不発
+            isSuccess = false;
+            showFloatingText("不発!", "#ff5555");
         }
 
         if(isSuccess) {
@@ -1139,10 +1643,42 @@
                 document.getElementById('click-here-msg').style.display = 'none';
             }
 
-            state.score++; state.combo++;
+            state.score++; 
+            if (hasScaleCurse('sc_c3')) state.combo = 0;
+            else state.combo++;
             
             if(state.score > state.maxScore) state.maxScore = state.score;
             if(state.combo > state.maxCombo) state.maxCombo = state.combo;
+            
+            if (hasScaleCurse('sy_c1') && state.score > 0 && state.score % 10 === 0) { // 呪い: 崩壊
+                const keys = Object.keys(skills).filter(k => skills[k].lv > 0 && skills[k].active && !skills[k].noToggle && skills[k].cat !== 'god' && skills[k].cat !== 'toybox');
+                if (keys.length > 0) {
+                    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                    skills[randomKey].active = false;
+                    if(!state.disabledByCurse) state.disabledByCurse = {};
+                    state.disabledByCurse[randomKey] = true;
+                    showFloatingText(skills[randomKey].name + " OFF", "#ff0055");
+                    renderSkills();
+                }
+            }
+
+            if(state.score > 0 && state.score % 50 === 0) {
+                state.totalScoreMedals++;
+                showFloatingText("🏅メダル獲得！", "#ffd700");
+                playTone('sine', 1500, 0.2); setTimeout(()=>playTone('sine', 2000, 0.3), 100);
+            }
+
+            if(hasScaleBless('hp_b1') && state.score % 20 === 0) {
+                if (!hasScaleCurse('hp_c2')) {
+                    state.tempLife++; showFloatingText("LIFE+1", "#ffeb3b"); playTone('triangle', 1200, 0.2);
+                }
+            }
+
+            if (isCrit && hasScaleBless('hp_b3') && Math.random() < 0.03) { // 恵み: 吸血
+                if (!hasScaleCurse('hp_c2')) {
+                    state.tempLife++; showFloatingText("LIFE+1(吸血)", "#ffeb3b"); playTone('triangle', 1200, 0.2);
+                }
+            }
 
             if(state.buffs.magnet > 0) {
                 state.buffs.magnet--; renderConsumeSidebar();
@@ -1156,35 +1692,79 @@
             let gain = isA('pts') ? 1 + skills.pts.lv : 1;
             if(isA('ptsPlus')) gain *= (1 + skills.ptsPlus.lv); 
 
-            if(isA('comboBonus')) gain *= 1 + (state.combo * 0.03 * skills.comboBonus.lv); 
+            if (hasScaleCurse('sc_c2')) gain *= 0.5;
+            if (!hasScaleCurse('sc_c3')) {
+                if(isA('comboBonus')) gain *= 1 + (state.combo * 0.03 * skills.comboBonus.lv); 
+            }
             
             if(state.isBoss) {
                 let bossCount = Math.floor(state.score / 10);
-                gain += 50 * bossCount; 
+                let bGain = 50 * bossCount; 
+                if (hasScaleBless('bs_b2')) bGain *= 3;
+                if (hasScaleCurse('bs_c3')) bGain -= 50;
+                gain += Math.max(0, bGain);
+                
                 if(state.score > 1) { playTone('triangle', 1000, 0.2); setTimeout(()=>playTone('triangle', 1200, 0.4), 100); }
             }
             
-            if(isCrit) gain *= 1.5;
+            let critMult = hasScaleBless('rn_b3') ? 10 : 1.5;
+            if(isCrit) gain *= critMult;
             
             let lRate = isA('lucky') ? 0.005 : 0;
             if(state.buffs.pot > 0) lRate += 0.15 * state.buffs.pot;
+            if(hasScaleBless('rn_b1')) lRate += 0.3;
+            if(hasScaleCurse('rn_c1')) lRate = 0; 
+            
             if(lRate > 0 && Math.random() < lRate) { 
-                gain *= 3; playTone('square', 1500, 0.5); showFloatingText("LUCKY!", "#ff0055");
+                gain *= (hasScaleBless('rn_b5') ? 10 : 3); // 恵み：飛躍
+                playTone('square', 1500, 0.5); showFloatingText("LUCKY!", "#ff0055");
                 if(state.buffs.pot > 0) { state.buffs.pot--; renderConsumeSidebar(); } 
             }
             
+            if (hasScaleBless('sc_b1')) gain *= 3;
+            if (hasScaleBless('sc_b3')) gain *= (0.5 + Math.random() * 4.5);
+
             if(state.ticketTimer > 0) gain *= 2;
             if(isA('godMode')) gain *= 10;
+            gain = Math.floor(gain);
 
-            state.pending += gain;
-            showFloatingText("+" + Math.floor(gain), isCrit ? "#ffeb3b" : "#fff");
-            
-            playHit(isCrit,false);
-            if(isCrit && state.skin.effect==='thunder') drawThunder();
-            if(state.skin.effect==='particle') generateParticles();
-            
+            if (hasScaleCurse('rn_c4') && Math.random() < 0.05) {
+                gain = -gain;
+                showFloatingText("反転!", "#ff00ff");
+                playTone('sawtooth', 150, 0.5);
+            }
+
+            if (hasScaleCurse('sc_c1') && Math.random() < 0.33) {
+                gain = 0; showFloatingText("MISS (0Pt)", "#ff5555");
+            } else {
+                state.pending += gain;
+                
+                // ▼マイナスになった時は表示を変える処理
+                let txtColor = gain < 0 ? "#ff00ff" : (isCrit ? "#ffeb3b" : "#fff");
+                let prefix = gain > 0 ? "+" : "";
+                showFloatingText(prefix + gain, txtColor);
+                
+                if (gain >= 0) playHit(isCrit, false);
+                if (isCrit && state.skin.effect === 'thunder') drawThunder();
+                if (state.skin.effect === 'particle') generateParticles();
+        
+            }
+
+            if (hasScaleBless('rn_b4') && Math.random() < 0.006) { // 恵み：収穫
+                let keys = Object.keys(consumeItems);
+                let rItem = keys[Math.floor(Math.random() * keys.length)];
+                state.consumes[rItem]++;
+                state.unlockedConsumes[rItem] = true;
+                showFloatingText("ITEM GET!", "#ff55cc");
+                playTone('triangle', 2000, 0.3);
+                renderConsumeSidebar();
+            }
+
             if(isA('fever')) {
-                state.feverG += (isCrit ? 4 : 2) + (skills.fever.lv * 0.5);
+                let fvAdd = (isCrit ? 4 : 2) + (skills.fever.lv * 0.5);
+                if (hasScaleBless('fv_b3')) fvAdd *= 1.3;
+                if (hasScaleCurse('fv_c3')) fvAdd *= 0.7;
+                state.feverG += fvAdd;
                 if(state.feverG>=100) { startFever(); }
             }
 
@@ -1193,7 +1773,6 @@
                 let bLv = Math.floor(state.score / 10);
                 if(state.buffs.last) bLv += 3; 
                 
-                state.targetW = Math.max(state.buffs.last ? 0.1 : 0.2, 0.7 - (bLv * 0.05)); 
                 state.bossSpeed = 0.01 + (bLv * 0.005); 
                 
                 if(isA('bossSlow') && Math.random() < skills.bossSlow.lv * 0.2) {
@@ -1201,12 +1780,6 @@
                 }
             } else {
                 state.isBoss = false;
-                let wBase = 0.7;
-                if(isA('wide')) wBase += skills.wide.lv*0.05;
-                if(isA('widePlus')) wBase += skills.widePlus.lv*0.05;
-                let shrink = state.score * 0.005;
-                if(isA('wideKeep')) shrink -= state.score * (skills.wideKeep.lv * 0.0005);
-                state.targetW = Math.max(0.15, wBase - shrink);
             }
 
             let spdInc = 0.002;
@@ -1215,7 +1788,7 @@
             }
             state.gameSpd += spdInc;
 
-            if(!state.isFever) {
+            if(!state.isFever && !hasScaleCurse('sy_c3')) {
                 document.getElementById('score-display').innerText = state.score;
             }
             setTarget();
@@ -1230,15 +1803,26 @@
             }
 
         } else {
-            if(isA('recovery') && Math.random() < skills.recovery.lv * 0.1) {
+            let recRate = (isA('recovery') ? skills.recovery.lv * 0.1 : 0) + (hasScaleBless('rn_b2') ? 0.3 : 0);
+            
+            if(Math.random() < recRate) {
                 playTone('sine', 800, 0.2); setTarget(); 
             } else {
-                if (state.tempLife > 0) { state.tempLife--; }
-                else { state.life--; }
+                let dmg = hasScaleCurse('hp_c1') ? 2 : 1;
+                for (let i=0; i<dmg; i++) {
+                    if (state.tempLife > 0) {
+                        state.tempLife--;
+                        if(state.heartTimers && state.heartTimers.length > 0) state.heartTimers.shift(); // 追加
+                    }
+                    else state.life--;
+                }
+                if (state.tempLife <= 0) state.heartTimers = [];
 
                 state.combo=0;
-                state.gameSpd = Math.max(0.05, state.gameSpd - 0.01); 
-                state.feverG = Math.max(0, state.feverG - 10); 
+                let missPenaltyMult = hasScaleCurse('hp_c2') ? 2 : 1; // 呪い：腐敗 ペナルティ2倍
+                
+                state.gameSpd = Math.max(0.05, state.gameSpd - (0.01 * missPenaltyMult)); 
+                state.feverG = Math.max(0, state.feverG - (10 * missPenaltyMult)); 
                 
                 if(state.life <= 0 && state.tempLife <= 0) {
                     if(state.buffs.cushion > 0) {
@@ -1265,52 +1849,89 @@
         updateUI();
     }
 
-function gameOver() {
-    state.isPlaying=false; state.isFever=false; state.isPaused=false;
-    state.isBoss=false; canvas.classList.remove('boss-active'); 
-    
-    state.buffs.oil = 0; state.buffs.qTimer = false; state.tempLife = 0;
-    state.buffs.last = false;
-    if(state.buffs.pot > 0) state.buffs.pot = 0; 
+    function gameOver() {
+        state.isPlaying=false; state.isFever=false; state.isPaused=false;
+        state.isBoss=false; canvas.classList.remove('boss-active'); 
+        
+        state.buffs.oil = 0; state.buffs.qTimer = false; state.tempLife = 0;
+        state.buffs.last = false;
+        state.heartTimers = [];
+        if(state.buffs.pot > 0) state.buffs.pot = 0; 
 
-    playTone('sawtooth',80,0.6);
-    let ins = isA('ins') ? 15 + skills.ins.lv*10 : 15;
-    state.pts += Math.min(state.pending, ins);
-    
-    document.getElementById('score-display').innerText = "LOST";
-    
-    document.getElementById('pending-box').style.visibility='hidden';
-    document.getElementById('row-withdraw').style.visibility='hidden';
+        // 呪い：崩壊でOFFにされたスキルを復元
+        if (state.disabledByCurse) {
+            for (let k in state.disabledByCurse) {
+                skills[k].active = true;
+            }
+            state.disabledByCurse = {};
+            renderSkills();
+        }
 
-    document.getElementById('click-here-msg').style.display = 'none';
-    
-    renderConsumeSidebar(); updateUI(); updateClocks(true); 
+        playTone('sawtooth',80,0.6);
+        let ins = isA('ins') ? 15 + skills.ins.lv*10 : 15;
+        if (hasScaleBless('sc_b2')) {
+            let halfPending = Math.floor(state.pending * 0.5);
+            if(halfPending > ins) ins = halfPending;
+        }
 
-    if (!state.tutorials.upgrade && state.pts >= 20) {
-        state.tutorials.upgrade = true;
-        setTimeout(() => showTutorial('upgrade'), 800);
+        state.totalEarnedPts += Math.min(state.pending, ins); 
+        state.pts += Math.min(state.pending, ins);
+        
+        document.getElementById('score-display').innerText = "LOST";
+        
+        document.getElementById('pending-box').style.visibility='hidden';
+        document.getElementById('row-withdraw').style.visibility='hidden';
+
+        document.getElementById('click-here-msg').style.display = 'none';
+        
+        renderConsumeSidebar(); updateUI(); updateClocks(true); 
+
+        if (!state.tutorials.upgrade && state.pts >= 20) {
+            state.tutorials.upgrade = true;
+            setTimeout(() => showTutorial('upgrade'), 800);
+        }
     }
-}
 
     function forceWithdraw() {
-    if(state.isTutorial) return;
-    playBtn(); state.pts+=state.pending; state.isPlaying=false; 
-    
-    state.hasTutorialDone = true; 
-    document.getElementById('click-here-msg').style.display = 'none';
+        if(state.isTutorial) return;
+        // 呪い「強欲」の処理
+        if (hasScaleCurse('rn_c6') && Math.random() < 0.2) {
+            playTone('sawtooth', 100, 0.8);
+            state.pending = Math.floor(state.pending / 2);
+            showFloatingText("持ち帰り失敗!", "#ff0055");
+            updateUI();
+            return; // 持ち帰らせずに強制的にゲームを続行させる
+        }
+        playBtn(); 
+        state.totalEarnedPts += state.pending; 
+        state.pts+=state.pending; 
+        state.isPlaying=false; 
+        state.heartTimers = [];
+        
+        // 呪い：崩壊でOFFにされたスキルを復元
+        if (state.disabledByCurse) {
+            for (let k in state.disabledByCurse) {
+                skills[k].active = true;
+            }
+            state.disabledByCurse = {};
+            renderSkills();
+        }
 
-    document.getElementById('score-display').innerText="SAFE"; 
-    updateUI(); 
-    document.getElementById('pending-box').style.visibility='hidden';
-    document.getElementById('row-withdraw').style.visibility='hidden';
-    state.feverG=0; canvas.className=''; 
-    updateClocks(true);
+        state.hasTutorialDone = true; 
+        document.getElementById('click-here-msg').style.display = 'none';
 
-    if (!state.tutorials.upgrade && state.pts >= 20) {
-        state.tutorials.upgrade = true;
-        setTimeout(() => showTutorial('upgrade'), 800);
+        document.getElementById('score-display').innerText="SAFE"; 
+        updateUI(); 
+        document.getElementById('pending-box').style.visibility='hidden';
+        document.getElementById('row-withdraw').style.visibility='hidden';
+        state.feverG=0; canvas.className=''; 
+        updateClocks(true);
+
+        if (!state.tutorials.upgrade && state.pts >= 20) {
+            state.tutorials.upgrade = true;
+            setTimeout(() => showTutorial('upgrade'), 800);
+        }
     }
-}
 
     let thFrames = 0;
     function drawThunder(){ thFrames=5; }
@@ -1335,6 +1956,10 @@ function gameOver() {
         if(deltaTime > 50) deltaTime = 16.666; 
         let dtMult = deltaTime / 16.666;
 
+        if(state.isPlaying && !state.isPaused && !state.isTutorial) {
+            state.totalPlayTimeMs += deltaTime;
+        }
+
         if(!state.isPlaying || state.isPaused) { requestAnimationFrame(loop); return; }
 
         ctx.clearRect(0,0,280,280);
@@ -1355,10 +1980,28 @@ function gameOver() {
             document.getElementById('val-slow-timer').innerText = "(" + (state.slowTimer/1000).toFixed(1) + "s)";
         } else { document.getElementById('val-slow-timer').innerText = ""; }
 
-        if(state.heartTimer > 0) {
-            state.heartTimer -= deltaTime;
-            if(state.heartTimer <= 0) { state.tempLife = 0; updateUI(); }
+        if(state.heartTimers && state.heartTimers.length > 0) {
+            let needsUpdate = false;
+            for (let i = state.heartTimers.length - 1; i >= 0; i--) {
+                let prev = state.heartTimers[i];
+                state.heartTimers[i] -= deltaTime;
+                
+                // 残り5秒を切った瞬間にUIを更新（点滅を開始させるため）
+                if (prev > 5000 && state.heartTimers[i] <= 5000) {
+                    needsUpdate = true;
+                }
+                
+                // タイマー切れ処理
+                if(state.heartTimers[i] <= 0) {
+                    state.heartTimers.splice(i, 1);
+                    if (state.tempLife > 0) state.tempLife--;
+                    needsUpdate = true;
+                }
+            }
+            if (state.tempLife <= 0) state.heartTimers = [];
+            if(needsUpdate) updateUI();
         }
+
         if(state.ticketTimer > 0) {
             state.ticketTimer -= deltaTime;
             if(state.ticketTimer <= 0) { renderConsumeSidebar(); }
@@ -1367,6 +2010,9 @@ function gameOver() {
         if(state.isFever) {
             let fTimeLv = isA('feverTime') ? skills.feverTime.lv : 0;
             let feverDuration = 10000 + (fTimeLv * 1000); 
+            if(hasScaleBless('fv_b1')) feverDuration *= 1.5;
+            if(hasScaleCurse('fv_c1')) feverDuration *= 0.5;
+
             state.feverG -= 100 * (deltaTime / feverDuration);
             if(state.feverG<=0) { 
                 state.isFever=false; state.feverG = 0;
@@ -1400,7 +2046,7 @@ function gameOver() {
         if(state.isFever) {
             ctx.arc(140,140,110,0,Math.PI*2); ctx.strokeStyle = `hsl(${Date.now()%360},${state.settings.feverSat}%,50%)`;
         } else {
-            if(state.isBoss) { 
+            if(state.isBoss && !hasScaleBless('bs_b1')) { 
                 state.targetA += state.bossSpeed * state.bossDir * dtMult; 
                 if(Math.random()<0.02 * dtMult) state.bossDir*=-1; 
             }
@@ -1409,21 +2055,43 @@ function gameOver() {
         }
         ctx.stroke();
 
-        if(isA('crit') && !state.isFever) {
-            ctx.beginPath(); let cw = state.targetW*0.3;
-            ctx.arc(140,140,110,(state.targetA+state.critOff)-cw/2, (state.targetA+state.critOff)+cw/2);
+        if(state.hasSubTarget && !state.isFever) {
+            ctx.beginPath();
+            ctx.arc(140,140,110,state.subTargetA-state.subTargetW/2, state.subTargetA+state.subTargetW/2);
+            ctx.strokeStyle='#ff0055';
+            ctx.stroke();
+        }
+
+        if(isA('crit') && !state.isFever && !hasScaleCurse('sc_c3')) {
+            let cWidth = state.targetW*0.3;
+            if (hasScaleCurse('rn_c2')) cWidth *= 0.4;
+            ctx.beginPath();
+            ctx.arc(140,140,110,(state.targetA+state.critOff)-cWidth/2, (state.targetA+state.critOff)+cWidth/2);
             ctx.strokeStyle='#ffeb3b'; ctx.stroke();
         }
 
         if(state.hasDeath && !state.isFever) {
             ctx.beginPath();
             ctx.arc(140, 140, 110, state.deathA - state.deathW/2, state.deathA + state.deathW/2);
-            ctx.strokeStyle = '#0055ff'; ctx.lineWidth = 15; ctx.stroke();
+            ctx.strokeStyle = '#0055ff'; 
+            ctx.lineWidth = 15; ctx.stroke();
             let dx = 140 + Math.cos(state.deathA)*110; let dy = 140 + Math.sin(state.deathA)*110;
-            ctx.font = "16px Arial"; ctx.fillStyle = "#fff"; ctx.fillText("💀", dx - 10, dy + 6);
+            ctx.font = "16px Arial"; ctx.fillStyle = "#fff"; 
+            ctx.fillText("💀", dx - 10, dy + 6);
+            
+            if(state.hasDeath2) {
+                ctx.beginPath();
+                ctx.arc(140, 140, 110, state.deathA2 - state.deathW/2, state.deathA2 + state.deathW/2);
+                ctx.strokeStyle = '#0055ff'; 
+                ctx.lineWidth = 15; ctx.stroke();
+                let dx2 = 140 + Math.cos(state.deathA2)*110; let dy2 = 140 + Math.sin(state.deathA2)*110;
+                ctx.fillText("💀", dx2 - 10, dy2 + 6);
+            }
         }
 
         let currentSpd = state.gameSpd * Math.pow(1.5, state.buffs.oil);
+        if (hasScaleBless('sy_b1')) currentSpd = 0.15 * Math.pow(1.5, state.buffs.oil);
+        if (state.isBoss && hasScaleCurse('bs_c2')) currentSpd *= 1.2;
         
         if (!state.hasTutorialDone && state.score === 0) {
             let tDiff = Math.abs(state.angle - state.targetA);
@@ -1439,19 +2107,31 @@ function gameOver() {
             }
         }
 
-        let step = (state.isSlow ? currentSpd*0.3 : currentSpd) * state.direction * dtMult;
+        if (hasScaleCurse('sy_c2') && Math.random() < 0.005 * dtMult) {
+            state.direction *= -1;
+        }
+
+        let slowRate = hasScaleBless('sy_b3') ? 0 : 0.3;
+        let step = (state.isSlow ? currentSpd*slowRate : currentSpd) * state.direction * dtMult;
         state.angle = (state.angle + step + Math.PI*2) % (Math.PI*2);
         
-        if (state.skin.needle === 'real_needle') {
-            ctx.save(); ctx.translate(140, 140); ctx.rotate(state.angle);
-            const img = document.getElementById('needle-img');
-            if (img.complete && img.naturalHeight !== 0) { ctx.drawImage(img, -10, -110, 20, 110); } 
-            else { ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(110,0); ctx.strokeStyle='#ffd700'; ctx.lineWidth=4; ctx.stroke(); }
-            ctx.restore();
-        } else {
-            ctx.beginPath(); ctx.moveTo(140,140);
-            ctx.lineTo(140+Math.cos(state.angle)*110, 140+Math.sin(state.angle)*110);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth=4; ctx.stroke();
+        let drawNeedle = true;
+        if (state.isBoss && hasScaleCurse('bs_c2') && !state.isFever) {
+            if (Date.now() % 2000 < 500) drawNeedle = false;
+        }
+
+        if (drawNeedle) {
+            if (state.skin.needle === 'real_needle') {
+                ctx.save(); ctx.translate(140, 140); ctx.rotate(state.angle);
+                const img = document.getElementById('needle-img');
+                if (img.complete && img.naturalHeight !== 0) { ctx.drawImage(img, -10, -110, 20, 110); } 
+                else { ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(110,0); ctx.strokeStyle='#ffd700'; ctx.lineWidth=4; ctx.stroke(); }
+                ctx.restore();
+            } else {
+                ctx.beginPath(); ctx.moveTo(140,140);
+                ctx.lineTo(140+Math.cos(state.angle)*110, 140+Math.sin(state.angle)*110);
+                ctx.strokeStyle = '#fff'; ctx.lineWidth=4; ctx.stroke();
+            }
         }
 
         if(thFrames>0) {
@@ -1473,25 +2153,45 @@ function gameOver() {
     }
 
     function updateUI() {
+        const forgotten = hasScaleCurse('sy_c3');
+        
         document.getElementById('ui-pts').innerText = Math.floor(state.pts);
         
-        let pendingText = Math.floor(state.pending);
-        document.getElementById('ui-pending').innerText = pendingText;
+        document.getElementById('ui-pending').innerText = forgotten ? "???" : Math.floor(state.pending);
 
         document.getElementById('ui-ins').innerText = isA('ins') ? 15 + skills.ins.lv*10 : 15;
         
         document.getElementById('rec-score').innerText = state.maxScore;
         document.getElementById('rec-combo').innerText = state.maxCombo;
 
-        let lHtml = '';
-        let baseLife = isA('life') ? 1 + skills.life.lv : 1;
-        let cBase = state.isPlaying ? Math.max(0, state.life) : baseLife;
-        let cTemp = state.isPlaying ? state.tempLife : 0;
-        
-        for(let i=0; i<cBase; i++) { lHtml += '<div class="life-box"></div>'; }
-        for(let i=0; i<cTemp; i++) { lHtml += '<div class="life-box temp"></div>'; }
-        
-        document.getElementById('val-life').innerHTML = lHtml;
+        if(hasScaleCurse('hp_c3')) {
+            document.getElementById('val-life').innerHTML = '<span style="color:#ff0055;font-weight:bold;letter-spacing:2px;">???</span>';
+        } else {
+            let lHtml = '';
+            let baseLife = isA('life') ? 1 + skills.life.lv : 1;
+            if (hasScaleBless('hp_b2')) baseLife *= 2;
+            if (hasScaleCurse('hp_c2')) baseLife = Math.max(1, Math.floor(baseLife / 2));
+            
+            let cBase = state.isPlaying ? Math.max(0, state.life) : baseLife;
+            let cTemp = state.isPlaying ? state.tempLife : 0;
+            
+            // 残り5秒以下のラーメンの数を数える
+            let blinkCount = 0;
+            if (state.heartTimers) {
+                blinkCount = state.heartTimers.filter(t => t <= 5000).length;
+            }
+
+            for(let i=0; i<cBase; i++) { lHtml += '<div class="life-box"></div>'; }
+            for(let i=0; i<cTemp; i++) { 
+                // 点滅対象（右側にあるもの）に blink クラスを付与
+                if (i >= cTemp - blinkCount) {
+                    lHtml += '<div class="life-box temp blink"></div>'; 
+                } else {
+                    lHtml += '<div class="life-box temp"></div>'; 
+                }
+            }
+            document.getElementById('val-life').innerHTML = lHtml;
+        }
 
         document.getElementById('val-spd').innerText = ((state.buffs.oil>0 ? state.gameSpd*Math.pow(1.5, state.buffs.oil) : state.gameSpd)*20).toFixed(1);
         document.getElementById('val-slow').innerText = state.isPlaying?state.slowC : (isA('slow') ? skills.slow.lv + (skills.slow.lv>=3 ? skills.slow.lv-2 : 0) : 0);
@@ -1512,6 +2212,27 @@ function gameOver() {
         document.getElementById('btn-play-ending').style.display = isA('ending') ? 'block' : 'none';
 
         document.querySelectorAll('.modal-pts-display').forEach(el => el.innerText = Math.floor(state.pts));
+        
+        if(isA('balance')) {
+            if(document.getElementById('ui-medals-container')) document.getElementById('ui-medals-container').style.display = 'block';
+            if(document.getElementById('btn-balance-main')) document.getElementById('btn-balance-main').style.display = 'flex';
+            if(document.getElementById('btn-shop')) document.getElementById('btn-shop').style.gridColumn = 'span 1'; // ←この行を追加
+        } else {
+            if(document.getElementById('ui-medals-container')) document.getElementById('ui-medals-container').style.display = 'none';
+            if(document.getElementById('btn-balance-main')) document.getElementById('btn-balance-main').style.display = 'none';
+            if(document.getElementById('btn-shop')) document.getElementById('btn-shop').style.gridColumn = '1 / -1'; // ←この行を追加
+        }
+
+        if(document.getElementById('ui-medals')) document.getElementById('ui-medals').innerText = state.totalScoreMedals;
+        if(document.getElementById('balance-medals-display')) document.getElementById('balance-medals-display').innerText = state.totalScoreMedals;
+
+        document.querySelectorAll('.tab-balance-btn').forEach(b => {
+            b.style.display = isA('balance') ? 'block' : 'none';
+        });
+
+        if (!state.isFever) {
+            document.getElementById('score-display').innerText = (forgotten && state.isPlaying) ? "???" : state.score;
+        }
 
         updateClocks();
     }
@@ -1520,27 +2241,26 @@ function gameOver() {
         if(state.isTutorial) return;
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); 
         
-        if(id === 'modal-upgrade' || id === 'modal-shop') {
+        if(id === 'modal-upgrade' || id === 'modal-shop' || id === 'modal-achieve' || id === 'modal-balance') {
             document.getElementById(id).style.display='flex'; 
         } else {
             document.getElementById(id).style.display='block'; 
         }
 
-        if(id === 'modal-upgrade') {
-            renderSkills();
-        }
+        if(id === 'modal-upgrade') renderSkills();
         if(id === 'modal-shop') {
             let hasToybox = isA('toybox');
             document.getElementById('shop-tabs').style.display = hasToybox ? 'flex' : 'none';
             if(!hasToybox) state.shopTab = 'skin';
             changeShopTab(state.shopTab, false);
-
             if(!state.tutorials.shop) {
                 state.tutorials.shop = true;
                 setTimeout(() => showTutorial('shop'), 300);
             }
         }
+        if(id === 'modal-achieve') renderAchievements();
         if(id === 'modal-status') renderStatus();
+        if(id === 'modal-balance') renderBalanceTabs(); 
     }
 
     function closeAllModals() {
@@ -1551,7 +2271,393 @@ function gameOver() {
     
     function toggleSkill(k) {
         if(state.isTutorial) return;
+        if (state.disabledByCurse && state.disabledByCurse[k]) {
+            showFloatingText("呪いで封印中", "#ff0055");
+            playTone('sawtooth', 200, 0.3);
+            return;
+        }
         playBtn(); skills[k].active = !skills[k].active; updateUI(); renderSkills();
+    }
+
+    function selectScaleCategory(cat) {
+        if(state.isTutorial) return;
+        playBtn();
+        if (currentBalanceCat === cat) {
+            currentBalanceCat = null;
+        } else {
+            currentBalanceCat = cat;
+        }
+        renderBalanceTabs();
+    }
+
+    function renderBalanceTabs() {
+        document.getElementById('balance-medals-display').innerText = state.totalScoreMedals;
+        const div = document.getElementById('list-balance');
+        
+        let html = '';
+        
+        const categoryOrder = [
+            { id: 'basic', name: '🔵 基本の天秤' },
+            { id: 'rng', name: '🟠 確率の天秤' },
+            { id: 'system', name: '🟣 システムの天秤' },
+            { id: 'fever', name: '🟡 フィーバーの天秤' },
+            { id: 'boss', name: '🔴 ボスの天秤' }
+        ];
+
+        categoryOrder.forEach(mainGroup => {
+            let groupScales = Object.keys(scaleCategories).filter(k => scaleCategories[k].mainCategory === mainGroup.id);
+            if (groupScales.length === 0) return;
+
+            let catColor = getCatColor(mainGroup.id);
+            html += `<div class="skill-category-title" style="border-left-color: ${catColor}; color: ${catColor};">${mainGroup.name}</div>`;
+
+            groupScales.forEach(cat => {
+                const scale = scaleCategories[cat];
+                let mainCat = scale.mainCategory;
+                
+                let catLvSum = 0;
+                for (let k in skills) {
+                    if (skills[k].cat === scale.reqCat) catLvSum += skills[k].lv;
+                }
+                const isUnlocked = catLvSum >= scale.reqLv;
+                const isActiveContract = state.activeScales && state.activeScales[mainCat] && state.activeScales[mainCat].category === cat;
+                const isOpen = currentBalanceCat === cat;
+
+                html += `<div class="balance-accordion-item ${isActiveContract ? 'contracted' : ''}">
+                            <div class="balance-accordion-header ${isOpen ? 'active' : ''}" onclick="selectScaleCategory('${cat}')">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:24px; filter:drop-shadow(0 0 5px rgba(255,255,255,0.2));">${scale.icon}</span>
+                                    <span style="font-weight:bold; font-size:15px; color:${isOpen?'#ffd700':'#fff'};">${scale.name}</span>
+                                    ${isActiveContract ? '<span style="color:#000; background:#ffd700; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-left:5px;">契約中</span>' : ''}
+                                </div>
+                                <div style="font-size:12px; color:#888;">
+                                    ${!isUnlocked ? `<span style="color:#ff5555; font-weight:bold;">🔒 強化Lv${catLvSum}/${scale.reqLv}</span>` : (isOpen ? '▲ 閉じる' : '▼ 開く')}
+                                </div>
+                            </div>`;
+
+                html += `<div class="balance-accordion-content ${isOpen ? 'open' : ''}">`;
+                
+                if (isOpen) {
+                    if (!isUnlocked) {
+                        let catNames = { 'basic':'基本', 'system':'システム', 'rng':'確率', 'fever':'フィーバー', 'boss':'ボス' };
+                        html += `<div style="text-align:center; color:#ff5555; font-size:12px; padding:10px;">
+                                    「${catNames[scale.reqCat]}強化」の合計レベルが ${scale.reqLv} に達すると解放されます。(現在: ${catLvSum})
+                                 </div>`;
+                    } else {
+                        const hasOtherActive = state.activeScales && state.activeScales[mainCat] && state.activeScales[mainCat].category !== cat;
+                        if (!selectingScale[cat]) selectingScale[cat] = { bless: null, curse: null };
+                        let currentSel = selectingScale[cat];
+
+                        let displayBless = isActiveContract ? state.activeScales[mainCat].bless : currentSel.bless;
+                        let displayCurse = isActiveContract ? state.activeScales[mainCat].curse : currentSel.curse;
+
+                        let blessKeys = displayBless && !isActiveContract ? [displayBless] : Object.keys(scale.blessings);
+                        let curseKeys = displayCurse && !isActiveContract ? [displayCurse] : Object.keys(scale.curses);
+
+                        if (isActiveContract) {
+                            blessKeys = [displayBless];
+                            curseKeys = [displayCurse];
+                        }
+
+                        html += `
+                            <div class="scale-body">
+                                <div class="scale-pan blessing">
+                                    <div style="text-align:center; color:#00ffcc; font-size:12px; font-weight:bold; margin-bottom:10px;">【 恵みを選択 】</div>
+                                    <div class="scale-icon-group">
+                                        ${blessKeys.map(bKey => {
+                                            let b = scale.blessings[bKey];
+                                            let isSel = displayBless === bKey;
+                                            return `
+                                                <div class="scale-icon-item ${isSel ? 'selected-b' : ''}" 
+                                                     onclick="selectScaleItem('${cat}', 'bless', '${bKey}')" 
+                                                     onmouseenter="showGlobalTooltip(event, '${b.name}', '${b.desc.replace(/\n/g, '<br>')}', '#00ffcc', '#00ffcc')"
+                                                     onmousemove="moveGlobalTooltip(event)"
+                                                     onmouseleave="hideGlobalTooltip()"
+                                                     style="${isActiveContract?'pointer-events:none;':''}">
+                                                    ${b.icon}
+                                                </div>`;
+                                        }).join('')}
+                                    </div>
+                                    <div class="scale-desc-box">
+                                        ${displayBless ? `<div style="color:#00ffcc; font-weight:bold; margin-bottom:4px; font-size:13px;">${scale.blessings[displayBless].name}</div><div style="color:#ddd; font-size:12px; white-space:pre-wrap;">${scale.blessings[displayBless].desc}</div>` : `<div style="color:#777; font-size:12px;">アイコンをタップして選択</div>`}
+                                        ${displayBless && !isActiveContract ? `<div style="color:#aaa; font-size:10px; margin-top:5px; cursor:pointer;" onclick="selectScaleItem('${cat}', 'bless', '${displayBless}')">（クリックで解除）</div>` : ''}
+                                    </div>
+                                </div>
+                                
+                                <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:24px; color:#777; font-weight:bold;">⚖️</div>
+                                
+                                <div class="scale-pan curse">
+                                    <div style="text-align:center; color:#ff0055; font-size:12px; font-weight:bold; margin-bottom:10px;">【 呪いを選択 】</div>
+                                    <div class="scale-icon-group">
+                                        ${curseKeys.map(cKey => {
+                                            let c = scale.curses[cKey];
+                                            let isSel = displayCurse === cKey;
+                                            return `
+                                                <div class="scale-icon-item ${isSel ? 'selected-c' : ''}" 
+                                                     onclick="selectScaleItem('${cat}', 'curse', '${cKey}')" 
+                                                     onmouseenter="showGlobalTooltip(event, '${c.name}', '${c.desc.replace(/\n/g, '<br>')}', '#ff0055', '#ff0055')"
+                                                     onmousemove="moveGlobalTooltip(event)"
+                                                     onmouseleave="hideGlobalTooltip()"
+                                                     style="${isActiveContract?'pointer-events:none;':''}">
+                                                    ${c.icon}
+                                                </div>`;
+                                        }).join('')}
+                                    </div>
+                                    <div class="scale-desc-box">
+                                        ${displayCurse ? `<div style="color:#ff0055; font-weight:bold; margin-bottom:4px; font-size:13px;">${scale.curses[displayCurse].name}</div><div style="color:#ddd; font-size:12px; white-space:pre-wrap;">${scale.curses[displayCurse].desc}</div>` : `<div style="color:#777; font-size:12px;">アイコンをタップして選択</div>`}
+                                        ${displayCurse && !isActiveContract ? `<div style="color:#aaa; font-size:10px; margin-top:5px; cursor:pointer;" onclick="selectScaleItem('${cat}', 'curse', '${displayCurse}')">（クリックで解除）</div>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="scale-footer">
+                        `;
+
+                        if (isActiveContract) {
+                            html += `<button class="list-btn" style="background:#ff0055; color:#fff; padding: 12px; font-size: 16px; box-shadow: 0 0 10px rgba(255,0,85,0.5); width:100%;" onclick="promptBreakScale('${cat}')">契約を破棄する (1メダル)</button>`;
+                        } else if (hasOtherActive) {
+                            let activeCatName = scaleCategories[state.activeScales[mainCat].category].name;
+                            html += `<button class="list-btn" disabled style="background:#444; color:#777; padding: 12px; font-size: 14px; width:100%;">同カテゴリの「${activeCatName}」が契約中です</button>`;
+                        } else {
+                            const canSign = currentSel.bless && currentSel.curse;
+                            const enoughCost = state.totalScoreMedals >= 2 && state.pts >= 5000;
+                            if (!canSign) {
+                                html += `<div style="color:#ff8800; font-size:13px; font-weight:bold; margin-bottom:8px;">⚠️ 恵みと呪いの両方を選択してください</div>`;
+                                html += `<button class="list-btn" disabled style="background:#444; color:#777; padding: 12px; font-size: 16px; width:100%;">契約を結ぶ (2メダル + 5000Pt)</button>`;
+                            } else {
+                                html += `<button class="list-btn" style="background:#ffd700; color:#000; padding: 12px; font-size: 16px; box-shadow: 0 0 10px rgba(255,215,0,0.5); width:100%;" ${enoughCost ? '' : 'disabled'} onclick="promptSignScale('${cat}')">契約を結ぶ (2メダル + 5000Pt)</button>`;
+                                if(!enoughCost) {
+                                    html += `<div style="color:#ff5555; font-size:12px; margin-top:5px;">※メダルまたはポイントが足りません</div>`;
+                                }
+                            }
+                        }
+
+                        html += `</div>`; 
+                    }
+                }
+                html += `</div></div>`; 
+            });
+        });
+
+        div.innerHTML = html;
+    }
+
+    function selectScaleItem(cat, type, key) {
+        if(state.isTutorial) return;
+        playBtn();
+        hideGlobalTooltip();
+        if (selectingScale[cat][type] === key) {
+            selectingScale[cat][type] = null; // 選択解除
+        } else {
+            selectingScale[cat][type] = key;
+        }
+        renderBalanceTabs();
+    }
+
+    function promptSignScale(cat) {
+        if(state.isTutorial) return;
+        playBtn();
+        pendingScaleAction = { type: 'sign', cat: cat };
+        document.getElementById('scale-confirm-title').innerText = "⚖️ 契約の結成";
+        document.getElementById('scale-confirm-title').style.color = "#ffd700";
+        document.getElementById('btn-scale-execute').style.background = "#ffd700";
+        document.getElementById('btn-scale-execute').innerText = "契約する";
+        document.getElementById('btn-scale-execute').style.color = "black";
+        document.getElementById('scale-confirm-desc').innerText = "本当にこの天秤と契約を結びますか？\n（スコアメダル2枚 ＋ 5000Pt 消費）";
+        
+        document.getElementById('scale-overlay').style.display = 'block';
+        document.getElementById('modal-scale-confirm').style.display = 'block';
+    }
+
+    function promptBreakScale(cat) {
+        if(state.isTutorial) return;
+        playBtn();
+        pendingScaleAction = { type: 'break', cat: cat };
+        document.getElementById('scale-confirm-title').innerText = "⚠️ 契約の破棄";
+        document.getElementById('scale-confirm-title').style.color = "#ff0055";
+        document.getElementById('btn-scale-execute').style.background = "#ff0055";
+        document.getElementById('btn-scale-execute').innerText = "破棄する";
+        document.getElementById('btn-scale-execute').style.color = "white";
+        document.getElementById('scale-confirm-desc').innerText = "本当に現在の契約を破棄しますか？\n（スコアメダル1枚 消費）";
+        
+        document.getElementById('scale-overlay').style.display = 'block';
+        document.getElementById('modal-scale-confirm').style.display = 'block';
+    }
+
+    function closeScaleConfirm() {
+        playBtn();
+        pendingScaleAction = null;
+        document.getElementById('scale-overlay').style.display = 'none';
+        document.getElementById('modal-scale-confirm').style.display = 'none';
+    }
+
+    document.getElementById('btn-scale-execute').onclick = function() {
+        if (!pendingScaleAction) return;
+        let cat = pendingScaleAction.cat;
+        let mainCat = scaleCategories[cat].mainCategory;
+        
+        if (pendingScaleAction.type === 'sign') {
+            if(state.totalScoreMedals >= 2 && state.pts >= 5000 && selectingScale[cat].bless && selectingScale[cat].curse) {
+                // 天秤契約時のSEを tensi.mp3 に変更
+                sTensi.volume = state.settings.vol;
+                sTensi.currentTime = 0;
+                sTensi.play().catch(() => playTone('sine', 1500, 1.0));
+                
+                state.totalScoreMedals -= 2;
+                state.pts -= 5000;
+                
+                if(!state.activeScales) state.activeScales = {};
+                state.activeScales[mainCat] = { category: cat, bless: selectingScale[cat].bless, curse: selectingScale[cat].curse };
+                showFloatingText("契約成立！", "#ffd700");
+                
+                if(cat === 'hp') {
+                    let baseLife = isA('life') ? 1 + skills.life.lv : 1;
+                    if (state.activeScales[mainCat].bless === 'hp_b2') baseLife *= 2;
+                    if (state.activeScales[mainCat].curse === 'hp_c2') baseLife = Math.max(1, Math.floor(baseLife / 2));
+                    state.life = baseLife;
+                }
+            } else {
+                alert("メダルかポイントが足りません！");
+            }
+        } else if (pendingScaleAction.type === 'break') {
+            if(state.totalScoreMedals >= 1) {
+                playTone('sawtooth', 200, 0.3);
+                state.totalScoreMedals -= 1;
+                delete state.activeScales[mainCat];
+                selectingScale[cat] = { bless: null, curse: null }; 
+                showFloatingText("契約破棄", "#ff5555");
+                
+                if(cat === 'hp') {
+                    let baseLife = isA('life') ? 1 + skills.life.lv : 1;
+                    state.life = baseLife;
+                }
+            } else {
+                alert("メダルが足りません！");
+            }
+        }
+        
+        updateUI();
+        renderBalanceTabs();
+        closeScaleConfirm();
+    };
+
+    function renderAchievements() {
+        const div = document.getElementById('list-achieve'); div.innerHTML = '';
+        let completedCount = 0;
+        let totalCount = Object.keys(achievements).length;
+
+        for(let k in achievements) {
+            const a = achievements[k];
+            const isClaimed = claimedAchievements.includes(k);
+            const isCompleted = a.check();
+            
+            if(isClaimed) completedCount++;
+
+            let displayIcon = a.icon;
+            let displayName = a.name;
+            let displayDesc = a.desc;
+            let displayFlavor = a.flavor ? `<span class="achieve-flavor">"${a.flavor}"</span>` : '';
+
+            if (!isCompleted) {
+                if (a.secret) {
+                    displayIcon = "❓";
+                    displayName = "？？？";
+                    displayDesc = "達成条件は秘密です";
+                    displayFlavor = '';
+                } else if (a.req && !a.req()) {
+                    displayIcon = "🔒";
+                    displayName = "？？？";
+                    displayDesc = "特定の条件を満たすと公開されます";
+                    displayFlavor = '';
+                }
+            }
+
+            let btnHtml = '';
+            if(isClaimed) {
+                btnHtml = `<button class="achieve-btn btn-claimed" disabled>達成済</button>`;
+            } else if (isCompleted) {
+                btnHtml = `<button class="achieve-btn btn-claim" onclick="claimAchievement('${k}')">受取</button>`;
+            } else {
+                btnHtml = `<button class="achieve-btn" disabled>未達成</button>`;
+            }
+
+            let borderColor = isClaimed ? '#ff8800' : (isCompleted ? '#00ffcc' : '#444');
+
+            let rewardDisplay = "";
+            if (a.reward) rewardDisplay += `<span style="color:#ffeb3b;">💰 ${a.reward} Pt</span>`;
+            if (a.rewardItem) {
+                if(rewardDisplay) rewardDisplay += " / ";
+                rewardDisplay += `<span style="color:#ff55cc;">🎁 ${consumeItems[a.rewardItem].name} x${a.rewardItemCount || 1}</span>`;
+            }
+
+            div.innerHTML += `
+            <div class="achieve-row" style="border-left: 4px solid ${borderColor};">
+                <div class="achieve-info">
+                    <div class="achieve-icon">${displayIcon}</div>
+                    <div class="achieve-text">
+                        <span class="achieve-name" style="color:${isClaimed ? '#ff8800' : (isCompleted ? '#00ffcc' : '#fff')};">${displayName}</span>
+                        <span class="achieve-desc">${displayDesc}</span>
+                        ${displayFlavor}
+                        ${!isClaimed && isCompleted && rewardDisplay ? `<span style="font-size:10px; margin-top:2px;">報酬: ${rewardDisplay}</span>` : ''}
+                    </div>
+                </div>
+                ${btnHtml}
+            </div>`;
+        }
+        document.getElementById('achieve-progress').innerText = `${completedCount}/${totalCount}`;
+    }
+
+    function claimAchievement(k) {
+        if(state.isTutorial) return;
+        playRezi();
+        const a = achievements[k];
+        
+        if(a.reward) state.pts += a.reward;
+        if(a.rewardItem) {
+            let count = a.rewardItemCount || 1;
+            state.consumes[a.rewardItem] += count;
+            state.unlockedConsumes[a.rewardItem] = true;
+        }
+
+        claimedAchievements.push(k);
+        updateUI();
+        renderAchievements();
+        renderConsumeSidebar(); 
+
+        let rewardText = a.reward ? `+${a.reward}Pt` : "";
+        if (a.rewardItem) {
+            let itemName = consumeItems[a.rewardItem].name;
+            if(rewardText) rewardText += " & ";
+            rewardText += `+${itemName}x${a.rewardItemCount||1}`;
+        }
+        showFloatingText(rewardText, "#ff8800");
+    }
+
+    function checkAchievements() {
+        if(state.isTutorial) return;
+        let changed = false;
+        for (let k in achievements) {
+            if (!notifiedAchievements.includes(k) && achievements[k].check()) {
+                notifiedAchievements.push(k);
+                showAchievementToast(achievements[k]);
+                changed = true;
+            }
+        }
+        if (changed && document.getElementById('modal-achieve').style.display === 'flex') {
+            renderAchievements();
+        }
+    }
+
+    function showAchievementToast(ach) {
+        const container = document.getElementById('toast-container');
+        const el = document.createElement('div');
+        el.className = 'toast-msg';
+        el.innerHTML = `<div style="font-size:24px;">${ach.icon}</div>
+                        <div style="display:flex; flex-direction:column;">
+                            <div style="font-size:10px; color:#ff8800; font-weight:bold;">実績解除！</div>
+                            <div style="font-size:14px; color:#fff; font-weight:bold;">${ach.name}</div>
+                        </div>`;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
     }
 
     function renderSkills() {
@@ -1618,7 +2724,7 @@ function gameOver() {
         let maxVal = (isA('limitBreak') && s.isLB) ? 999 : (s.defaultMax || s.max);
         const max = s.lv >= maxVal;
         
-        const alwaysVisible = ['crit', 'slow', 'bossShield', 'fever'];
+        const alwaysVisible = ['crit', 'slow', 'bossShield', 'fever', 'balance'];
         const isSecret = locked && !alwaysVisible.includes(k);
 
         let titleName = isSecret ? '？？？' : s.name;
@@ -1633,7 +2739,10 @@ function gameOver() {
         let toggleHtml = (s.lv > 0 && !s.noToggle) ? `<button class="toggle-btn ${s.active?'on':''}" onclick="toggleSkill('${k}')">${s.active?'ON':'OFF'}</button>` : '';
         let catColor = getCatColor(s.cat);
 
+        let isCursed = state.disabledByCurse && state.disabledByCurse[k];
         let lockBadgeHTML = locked ? `<div class="lock-badge" style="margin-bottom:0;">🔒 ${lockReason}</div>` : '';
+        if (isCursed) lockBadgeHTML += `<div class="lock-badge" style="margin-bottom:0; background:#330000; color:#ff5555; border-color:#ff5555;">封印中</div>`;
+        
         let childStyle = isChild ? `border-left: 4px solid #555; background: #151515;` : `border-left: 4px solid ${catColor};`;
 
         let effectText = '';
@@ -1756,25 +2865,42 @@ function gameOver() {
     }
 
     function renderConsumeSidebar() {
-        if(!isA('toybox')) return;
         const div = document.getElementById('consume-list'); div.innerHTML = '';
         let hasItem = false;
         for(let k in consumeItems) {
+            if(state.unlockedConsumes[k]) hasItem = true;
+        }
+        
+        if(!isA('toybox') && !hasItem) {
+            document.getElementById('consume-area').style.display = 'none';
+            return;
+        }
+
+        for(let k in consumeItems) {
             if(state.unlockedConsumes[k]) {
-                hasItem = true;
                 let bKey = k.substring(2); 
                 let bVal = state.buffs[bKey];
                 let isActive = bVal > 0 || bVal === true;
-                let isUnique = (k === 'c_timer' || k === 'c_cushion' || k === 'c_last');
-                let actClass = isActive ? (isUnique ? " active-buff-unique" : " active-buff") : "";
+                let isUnique = (k === 'c_timer' || k === 'c_cushion' || k === 'c_last' || k === 'c_ticket');
+                if(k === 'c_ticket') isActive = (state.ticketTimer > 0);
                 
+                let actClass = isActive ? (isUnique ? " active-buff-unique" : " active-buff") : "";
+                if(k === 'c_heart') isActive = (state.heartTimers && state.heartTimers.length > 0);
+
                 let countTxt = (bVal > 1) ? ` (x${bVal})` : "";
                 if(isActive && k==='c_ticket' && state.ticketTimer>0) countTxt = ` (${Math.ceil(state.ticketTimer/1000)}s)`;
-                if(isActive && k==='c_heart' && state.heartTimer>0) countTxt = ` (${Math.ceil(state.heartTimer/1000)}s)`;
+                if(isActive && k==='c_heart' && state.heartTimers && state.heartTimers.length>0) {
+                    // 一番残り時間が少ないものを表示
+                    countTxt = ` (${Math.ceil(Math.min(...state.heartTimers)/1000)}s)`;
+                }
                 if(isActive && k==='c_magnet' && state.buffs.magnet>0) countTxt = ` (残り${state.buffs.magnet}回)`;
 
                 let imgTag = consumeItems[k].img ? `<img src="${consumeItems[k].img}" alt="icon">` : '';
-                div.innerHTML += `<button class="consume-item-btn${actClass}" onclick="useConsumeInGame('${k}')" ${state.consumes[k] === 0 ? 'disabled' : ''}>
+                
+                let isDisabled = state.consumes[k] === 0;
+                if(k === 'c_ticket' && state.ticketTimer > 0) isDisabled = true;
+
+                div.innerHTML += `<button class="consume-item-btn${actClass}" onclick="useConsumeInGame('${k}')" ${isDisabled ? 'disabled' : ''}>
                     <div style="display:flex; align-items:center;">
                         <div class="item-icon-box" style="width:24px; height:24px; border-radius:4px; margin-right:8px;">${imgTag}</div>
                         <div style="text-align:left;"><span>${consumeItems[k].name}</span><span style="color:#ffeb3b; font-size:12px;">${countTxt}</span><br><span style="font-size:10px;font-weight:normal;color:#aaa">${consumeItems[k].short}</span></div> 
@@ -1782,7 +2908,7 @@ function gameOver() {
                     <span style="color:${state.consumes[k] > 0 ? '#ffeb3b' : '#777'}; font-size:18px;">x${state.consumes[k]}</span></button>`;
             }
         }
-        document.getElementById('consume-area').style.display = hasItem ? 'flex' : 'none';
+        document.getElementById('consume-area').style.display = 'flex';
     }
 
     function useConsumeInGame(k) {
@@ -1793,6 +2919,7 @@ function gameOver() {
             let bKey = k.substring(2);
             if(k === 'c_timer' && state.buffs.qTimer) return;
             if(k === 'c_cushion' && state.buffs.cushion > 0) return;
+            if(k === 'c_ticket' && state.ticketTimer > 0) return;
             if(k === 'c_last') {
                 if(state.buffs.last) return;
                 if(state.life + state.tempLife !== 1) {
@@ -1805,7 +2932,18 @@ function gameOver() {
             state.consumes[k]--;
             
             if(k === 'c_heart') {
-                state.tempLife++; state.heartTimer = 60000; playTone('triangle', 1200, 0.2); showFloatingText("LIFE+1", "#ffeb3b");
+                if (hasScaleCurse('hp_c2')) {
+                    showFloatingText("回復無効", "#ff5555");
+                    playTone('sawtooth', 200, 0.3);
+                } else {
+                    state.tempLife++; 
+                    if(!state.heartTimers) state.heartTimers = [];
+                    state.heartTimers.push(60000); // 独立タイマーを追加
+                    playTone('triangle', 1200, 0.2); 
+                    showFloatingText("LIFE+1", "#ffeb3b");
+                }
+            
+            
             } else if (k === 'c_pot') {
                 state.buffs.pot++; playTone('sine', 1500, 0.2); showFloatingText("ラッキーUP!", "#ff5500");
             } else if (k === 'c_oil') {
@@ -1815,7 +2953,7 @@ function gameOver() {
             } else if (k === 'c_cushion') {
                 state.buffs.cushion++; playTone('sine', 1200, 0.2); showFloatingText("防護発動!", "#00ffcc");
             } else if (k === 'c_ticket') {
-                state.ticketTimer += 60000; state.buffs.ticket++; playTone('triangle', 2000, 0.5); showFloatingText("ゴールデン!", "#ffd700");
+                state.ticketTimer = 60000; playTone('triangle', 2000, 0.5); showFloatingText("ゴールデン!", "#ffd700");
             } else if (k === 'c_magnet') {
                 state.buffs.magnet += 5; playTone('sawtooth', 800, 0.2); showFloatingText("マグネットパワー!", "#ff0055"); setTarget();
             } else if (k === 'c_last') {
@@ -1841,6 +2979,7 @@ function gameOver() {
         let lRateBase = isA('lucky') ? 0.5 : 0;
         let lRatePot = (state.buffs.pot > 0) ? 15 * state.buffs.pot : 0;
         let luckyChance = lRateBase + lRatePot;
+        let luckyMult = hasScaleBless('rn_b5') ? 10 : 3; 
         
         let godText = "";
         if (skills.ending.lv > 0) {
@@ -1850,22 +2989,77 @@ function gameOver() {
             godText = `<p><strong>■ ？？？</strong>: <span style="color:#777">未解放</span></p>`;
         }
 
+        let scaleText = "";
+        if (isA('balance')) {
+            scaleText += `<p><strong>■ 契約中の天秤</strong>:</p>`;
+            let hasAny = false;
+            for(let mc in state.activeScales) {
+                let s = state.activeScales[mc];
+                let catData = scaleCategories[s.category];
+                scaleText += `<div style="margin-left: 10px; font-size: 12px; margin-bottom: 4px;">・${catData.name} <br> <span style="color:#00ffcc; margin-left:10px;">${catData.blessings[s.bless].name}</span> / <span style="color:#ff0055;">${catData.curses[s.curse].name}</span></div>`;
+                hasAny = true;
+            }
+            if(!hasAny) scaleText += `<div style="margin-left: 10px; font-size: 12px; color: #777;">なし</div>`;
+            scaleText += `<hr style="border:0; border-top:1px dashed #333; margin:10px 0;">`;
+        }
+
+        let playHours = Math.floor(state.totalPlayTimeMs / 3600000);
+        let playMinutes = Math.floor((state.totalPlayTimeMs % 3600000) / 60000);
+
         let html = `
             <p><strong>■ 総合レベル</strong>: ${totalLv}</p>
             <p><strong>■ 初期ライフ</strong>: ${isA('life') ? 1 + skills.life.lv : 1}</p>
             <p><strong>■ 基礎Pt倍率</strong>: x${ptsMult}</p>
             <p><strong>■ 的の広さ(ベース)</strong>: ${areaW.toFixed(2)}</p>
             <p><strong>■ ラッキー確率</strong>: ${luckyChance.toFixed(1)}%</p>
+            <p><strong>■ ラッキー倍率</strong>: x${luckyMult}</p>
             <p><strong>■ フィーバー時間</strong>: ${isA('fever') ? fTime + "秒" : "未解放"}</p>
             <p><strong>■ フィーバー倍率</strong>: ${isA('fever') ? "x"+fBoost.toFixed(1) : "未解放"}</p>
             <p><strong>■ ランダムクリティカル率</strong>: ${critChance}%</p>
             <p><strong>■ ボス戦スロー発動率</strong>: ${bSlow}%</p>
             <p><strong>■ 割引率</strong>: ${isA('discount') ? [0,5,10,25,25][skills.discount.lv] : 0}%</p>
             <p><strong>■ オート時計</strong>: ${isA('auto') ? (1+Math.floor((skills.auto.lv-1)/5)) : 0} 枠稼働中</p>
+            <p style="color:#aaa;"><strong>■ 総プレイ時間</strong>: ${playHours}時間 ${playMinutes}分</p>
             <hr style="border:0; border-top:1px solid #333; margin:10px 0;">
+            ${scaleText}
             ${godText}
         `;
         document.getElementById('status-content').innerHTML = html;
+    }
+
+    function debugUnlockAll() {
+        if(state.isTutorial) return;
+        if(!confirm("【デバッグ】全実績・全強化・全アイテムを解放し、ポイントをMAXにしますか？")) return;
+        
+        playTone('square', 800, 0.5);
+        state.pts += 9999999;
+        state.totalEarnedPts += 9999999;
+        state.totalScoreMedals += 9999999; 
+        state.maxScore = Math.max(state.maxScore, 1000);
+        state.maxCombo = Math.max(state.maxCombo, 1000);
+        state.hasReached100 = true;
+        state.totalPlayTimeMs += 36000000; 
+        
+        for(let k in skills) {
+            skills[k].lv = skills[k].max || skills[k].defaultMax || 999;
+            if(isA('limitBreak') && skills[k].isLB) skills[k].lv = 999;
+        }
+        for(let k in shopItems) {
+            if(!owned.includes(k)) owned.push(k);
+        }
+        for(let k in consumeItems) {
+            state.consumes[k] += 99;
+            state.unlockedConsumes[k] = true;
+        }
+        
+        updateUI();
+        renderConsumeSidebar();
+        
+        if (document.getElementById('modal-sys').style.display === 'block') {
+            closeAllModals();
+            openModal('modal-sys');
+        }
+        alert("全解放しました！");
     }
 
     function buySkill(k){ 
@@ -1875,7 +3069,6 @@ function gameOver() {
             playBtn(); state.pts-=c; s.lv++; updateUI(); renderSkills(); 
             if(k==='ending') playEnding(); 
             
-            // --- チュートリアル表示の追加 ---
             if(k === 'slow' && s.lv === 1 && !state.tutorials.slow) {
                 state.tutorials.slow = true;
                 setTimeout(() => showTutorial('slow'), 300);
@@ -1883,6 +3076,10 @@ function gameOver() {
             if(k === 'fever' && s.lv === 1 && !state.tutorials.fever) {
                 state.tutorials.fever = true;
                 setTimeout(() => showTutorial('fever'), 300);
+            }
+            if(k === 'balance' && s.lv === 1 && !state.tutorials.balance) {
+                state.tutorials.balance = true;
+                setTimeout(() => showTutorial('balance'), 300);
             }
         } 
     }
@@ -1926,7 +3123,6 @@ function gameOver() {
         txt.style.display='block'; txt.style.animation = 'none'; void txt.offsetWidth; 
         txt.style.animation = 'scrollUp 15s linear forwards, shine 3s linear infinite';
         
-        // エンディング音声を再生（失敗時は電子音）
         sEnd.volume = state.settings.vol;
         sEnd.currentTime = 0;
         sEnd.play().catch(() => playTone('triangle', 600, 3));
@@ -1953,27 +3149,46 @@ function gameOver() {
             setTimeout(() => conf.remove(), duration);
         }
 
-        setTimeout(() => { document.getElementById('overlay-msg').style.display='none'; txt.style.display='none'; }, 15000);
+        setTimeout(() => { 
+            document.getElementById('overlay-msg').style.display='none'; 
+            txt.style.display='none'; 
+            
+            if (!state.hasSeenUnlockMsg) {
+                showUnlockMsg();
+            }
+        }, 15000);
     }
 
     let clkInt=[];
     function updateClocks(forceRebuild = false){
         const c=document.getElementById('clock-sidebar');
         const num=isA('auto') ? 1+Math.floor((skills.auto.lv-1)/5) : 0;
-        if(c.childElementCount!==num || skills.auto.lv%5===1 || forceRebuild){
+        
+        let spdMs = isA('auto') ? 10000 - ((skills.auto.lv-1)%5)*1800 : 10000;
+        if(state.buffs.qTimer) spdMs /= 2; 
+
+        let needsRebuild = forceRebuild || (c.childElementCount !== num);
+        if (c.childElementCount > 0 && c.firstChild.dataset.spd != spdMs) {
+            needsRebuild = true;
+        }
+
+        if(needsRebuild){
             c.innerHTML=''; clkInt.forEach(clearInterval); clkInt=[];
             if(num>0){
-                let spdMs = 10000 - ((skills.auto.lv-1)%5)*1800;
-                if(state.buffs.qTimer) spdMs /= 2; 
                 for(let i=0;i<num;i++){
-                    const d=document.createElement('div'); d.className='mini-clock';
-                    d.innerHTML=`<style>.mini-clock::after{animation-duration:${spdMs/1000}s}</style>`;
+                    const d=document.createElement('div'); 
+                    d.className='mini-clock';
+                    d.dataset.spd = spdMs; 
+                    d.style.setProperty('--dur', `${spdMs/1000}s`); 
                     c.appendChild(d);
+                    
                     clkInt.push(setInterval(()=>{ 
                         if(!state.isPaused && state.isPlaying){ 
                             let gain = 1;
                             if(isA('autoEff')) gain += 9 + (skills.autoEff.lv - 1) * 10;
+                            if(hasScaleBless('sy_b2')) gain *= 2; 
                             if(state.ticketTimer > 0) gain *= 2;
+                            state.totalEarnedPts += gain; 
                             state.pts += gain; updateUI(); 
                             if(state.settings.showNum) {
                                 let rect = d.getBoundingClientRect();
@@ -1988,9 +3203,9 @@ function gameOver() {
         }
     }
     
-    // 招き猫の定期的ポイント獲得
     setInterval(() => {
         if (state.skin['g_neko'] && state.isPlaying && !state.isPaused) {
+            state.totalEarnedPts += 1; 
             state.pts += 1;
             updateUI();
             let gd = document.getElementById('gd-neko');
@@ -2033,17 +3248,12 @@ function gameOver() {
 
     document.getElementById('pause-btn').onclick = togglePause;
     
-    /* キャンバスの右クリック（長押し）メニューを完全に無効化 */
     canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); });
-
     canvas.addEventListener('mousedown', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); });
     canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); }, {passive: false});
-
-    /* スマホ専用タップ・スローボタンの処理 */
     const tapBtn = document.getElementById('mobile-tap-btn');
     tapBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); });
     tapBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(!state.isTutorial) handleInput(); }, {passive: false});
-
     const slowBtn = document.getElementById('mobile-slow-btn');
     slowBtn.addEventListener('mousedown', (e)=>{ e.preventDefault(); if(!state.isTutorial) triggerSlow(); });
     slowBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(!state.isTutorial) triggerSlow(); }, {passive: false});
@@ -2057,11 +3267,12 @@ function gameOver() {
     
     document.getElementById('btn-withdraw').onclick=(e)=>{ forceWithdraw(); };
     
-    document.getElementById('btn-upgrade').onclick=()=>{ openModal('modal-upgrade'); };
-    document.getElementById('btn-shop').onclick=()=>{ openModal('modal-shop'); };
-    document.getElementById('btn-help').onclick=()=>{ openModal('modal-help'); };
-    document.getElementById('btn-sys').onclick=()=>{ openModal('modal-sys'); };
-    document.getElementById('btn-status').onclick=()=>{ openModal('modal-status'); };
+    document.getElementById('btn-upgrade').onclick=()=>{ playBtn(); openModal('modal-upgrade'); };
+    document.getElementById('btn-shop').onclick=()=>{ playBtn(); openModal('modal-shop'); };
+    document.getElementById('btn-help').onclick=()=>{ playBtn(); openModal('modal-help'); };
+    document.getElementById('btn-sys').onclick=()=>{ playBtn(); openModal('modal-sys'); };
+    document.getElementById('btn-status').onclick=()=>{ playBtn(); openModal('modal-status'); };
+    document.getElementById('btn-achieve').onclick=()=>{ playBtn(); openModal('modal-achieve'); }; 
 
     function confirmFullReset(){ 
         if(state.isTutorial) return;
@@ -2083,15 +3294,16 @@ function gameOver() {
         location.reload(); 
     }
 
-    // --- ✨ セーブ・ロード機能（オートセーブ対応） ✨ ---
     function saveGame(s, silent=false, showNotice=true){ 
         try {
             localStorage.setItem('tl_pc_'+s, JSON.stringify({
                 pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, hasTutorialDone:state.hasTutorialDone, 
-                tutorials:state.tutorials,
+                tutorials:state.tutorials, hasSeenUnlockMsg:state.hasSeenUnlockMsg,
                 consumes:state.consumes, unlockedConsumes:state.unlockedConsumes, sets:state.settings, 
-                recS:state.maxScore, recC:state.maxCombo,
-                // ▼ プレイ中の状態も丸ごと保存する
+                recS:state.maxScore, recC:state.maxCombo, claimedAchievements, notifiedAchievements,
+                totalPlayTimeMs: state.totalPlayTimeMs, totalEarnedPts: state.totalEarnedPts,
+                totalScoreMedals: state.totalScoreMedals, activeScales: state.activeScales,
+                disabledByCurse: state.disabledByCurse,
                 score:state.score, pending:state.pending, combo:state.combo, life:state.life, tempLife:state.tempLife,
                 gameSpd:state.gameSpd, feverG:state.feverG, slowC:state.slowC, isBoss:state.isBoss
             })); 
@@ -2099,7 +3311,6 @@ function gameOver() {
             if(!silent) {
                 alert("保存しました"); 
             } else if(showNotice) {
-                // オートセーブ時の控えめな通知表示
                 const el = document.createElement('div');
                 el.innerText = '💾 Auto Saved...';
                 el.style.position = 'fixed';
@@ -2113,10 +3324,9 @@ function gameOver() {
                 el.style.fontSize = '10px';
                 el.style.fontWeight = 'bold';
                 el.style.zIndex = '10000';
-                el.style.pointerEvents = 'none'; // 背後のクリックを邪魔しない
+                el.style.pointerEvents = 'none';
                 document.body.appendChild(el);
 
-                // フワッと消えるアニメーション
                 el.animate([
                     { opacity: 0, transform: 'translateY(-10px)' },
                     { opacity: 1, transform: 'translateY(0)', offset: 0.1 },
@@ -2134,8 +3344,22 @@ function gameOver() {
         if(d){ 
             state.pts=d.pts || 0; owned=d.owned || []; state.skin=d.skin; state.hasReached100=d.reach100||false;
             if(d.hasTutorialDone !== undefined) state.hasTutorialDone = d.hasTutorialDone;
+            if(d.hasSeenUnlockMsg !== undefined) state.hasSeenUnlockMsg = d.hasSeenUnlockMsg;
             if(d.tutorials) state.tutorials = { ...state.tutorials, ...d.tutorials };
             if(d.recS) state.maxScore = d.recS; if(d.recC) state.maxCombo = d.recC;
+            if(d.totalPlayTimeMs) state.totalPlayTimeMs = d.totalPlayTimeMs;
+            if(d.totalEarnedPts) state.totalEarnedPts = d.totalEarnedPts;
+            if(d.claimedAchievements) claimedAchievements = d.claimedAchievements;
+            if(d.notifiedAchievements) notifiedAchievements = d.notifiedAchievements;
+            if(d.totalScoreMedals !== undefined) state.totalScoreMedals = d.totalScoreMedals;
+            
+            if(d.activeScales !== undefined) {
+                state.activeScales = d.activeScales;
+            } else if(d.activeScale) {
+                state.activeScales = { 'basic': d.activeScale };
+            } else {
+                state.activeScales = {};
+            }
             
             if(d.consumes) state.consumes = { ...state.consumes, ...d.consumes };
             if(d.unlockedConsumes) state.unlockedConsumes = d.unlockedConsumes;
@@ -2152,14 +3376,13 @@ function gameOver() {
                 if(d.skills[k]){ skills[k].lv=d.skills[k].lv; if(d.skills[k].active !== undefined) skills[k].active=d.skills[k].active; }
             }); 
             
-            // ▼ プレイ中だった場合は状態を復元し、そのまま再開
             if(d.score > 0 || d.pending > 0) {
                 state.score = d.score || 0; state.pending = d.pending || 0; state.combo = d.combo || 0;
                 state.life = d.life || 1; state.tempLife = d.tempLife || 0; state.gameSpd = d.gameSpd || 0.05;
                 state.feverG = d.feverG || 0; state.slowC = d.slowC || 0; state.isBoss = d.isBoss || false;
                 
                 state.isPlaying = true; 
-                state.isPaused = false; // ★ ポーズせずそのまま動くように変更
+                state.isPaused = false;
                 
                 document.getElementById('click-here-msg').style.display = 'none';
                 document.getElementById('pending-box').style.visibility='visible';
@@ -2178,17 +3401,14 @@ function gameOver() {
     }
 
     let autoSaveCount = 0;
-    // ▼ 裏のセーブ頻度は5秒ごとに戻し、文字の通知だけを減らす
     setInterval(() => {
         if(state.hasTutorialDone || state.score > 0 || state.pts > 0) {
             autoSaveCount++;
-            // 6回に1回（約30秒ごと）だけ画面に文字を表示する
             let showNotice = (autoSaveCount % 6 === 0); 
             saveGame('auto', true, showNotice);
         }
     }, 5000);
 
-    // 起動時に自動でオートセーブデータを読み込む
     window.addEventListener('DOMContentLoaded', () => {
         loadGame('auto', true);
     });
@@ -2197,9 +3417,10 @@ function gameOver() {
     document.getElementById('vol-sat').oninput=(e)=>{ state.settings.feverSat = parseInt(e.target.value); };
 
     setInterval(() => {
-        if(state.isPlaying && !state.isPaused && (state.ticketTimer > 0 || state.heartTimer > 0)) {
+        if(state.isPlaying && !state.isPaused && (state.ticketTimer > 0 || (state.heartTimers && state.heartTimers.length > 0))) {
             renderConsumeSidebar();
         }
+        checkAchievements();
     }, 1000);
 
     requestAnimationFrame(loop);
