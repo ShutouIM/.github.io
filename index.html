@@ -92,7 +92,7 @@
         .point-hud { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; text-align: center; box-sizing: border-box; min-height: 130px; display: flex; flex-direction: column; justify-content: flex-start; }
         .pts-wrapper { display: flex; flex-direction: column; }
         .pts-val { font-size: 32px; color: #ffeb3b; font-weight: bold; margin: 5px 0; word-break: break-all; }
-        .pending-box { margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; visibility: hidden; }
+        .pending-box { margin-top: 10px; border-top: 1px solid #7f7f7f; padding-top: 10px; visibility: hidden; }
 
         #fever-container { width: 90%; height: 12px; min-height: 12px; flex-shrink: 0; background: #222; border-radius: 6px; overflow: hidden; border: 2px solid #444; visibility: hidden; margin-bottom: 10px; }
         #fever-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ffeb3b, #ff5500); box-shadow: 0 0 15px #ffeb3b; }
@@ -139,7 +139,7 @@
         @keyframes scrollUp { 0% {top:100%;} 100% { top: -40%; } }
 
         .withdraw-row { display: flex; width: 100%; gap: 10px; visibility: hidden; align-items: center; min-height: 52px; margin-bottom: 10px;}
-        #btn-withdraw { flex: 1; background: linear-gradient(135deg, #ff5500, #cc2200); padding: 15px; font-size: 18px; }
+        #btn-withdraw { flex: 1; background: linear-gradient(135deg, #ff5500, #e92700); padding: 15px; font-size: 18px; border: 2px }
         #tikuwa-img { width: 50px; height: 50px; object-fit: contain; display: none; cursor: pointer; }
 
         .floating-text { position: absolute; pointer-events: none; font-weight: bold; font-size: 24px; text-shadow: 0 0 5px #000, 0 0 10px rgba(0,0,0,0.8); z-index: 50; animation: floatUp 1s ease-out forwards; }
@@ -148,8 +148,11 @@
         /* --- 右パネル：アイテム・メニュー --- */
         .consume-area { 
             background: #1a1a1a; border: 1px dashed #444; border-radius: 8px; padding: 10px; 
-            width: 100%; box-sizing: border-box; display: none; 
-            max-height: calc(100vh - 280px); display: flex; flex-direction: column; margin-bottom: auto; 
+            width: 100%; box-sizing: border-box; 
+            display: flex; flex-direction: column; 
+            flex: 1; 
+            min-height: 0; 
+            margin-bottom: 15px; 
         }
         .consume-title { font-size: 12px; color: #aaa; margin-bottom: 8px; text-align: center; flex-shrink: 0; }
         .consume-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex-grow: 1; padding-right: 5px; }
@@ -179,7 +182,13 @@
         /* --- 新メニューレイアウト --- */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .game-btn { background: #333; border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 0 #111; transition: 0.1s; }
+        .game-btn:hover { 
+            transform: translateY(-2px); 
+            filter: brightness(1.15); 
+            box-shadow: 0 6px 0 #111, 0 8px 20px rgba(0,0,0,0.6); 
+        }
         .game-btn:active { transform: translateY(4px); box-shadow: none; }
+        
         
         .btn-upgrade { background: linear-gradient(to bottom, #0077ff, #0055aa); grid-column: 1 / -1; padding: 15px; font-size: 16px; }
         .btn-shop { background: linear-gradient(to bottom, #9900ff, #6600cc); grid-column: 1 / -1; padding: 15px; font-size: 16px; }
@@ -439,7 +448,39 @@
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
-        /* --- ✨スマホ向け大幅アップデート✨ --- */
+        .upgrade-shortcuts {
+            display: flex; gap: 6px; margin-top: 12px; padding-bottom: 5px;
+            align-items: center; flex-wrap: wrap; 
+        }
+        .upgrade-shortcuts::-webkit-scrollbar { display: none; }
+        
+        .shortcut-tab {
+            flex: 0 0 auto; width: 36px; height: 32px; font-size: 16px;
+            border: none; border-radius: 4px; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5); position: relative;
+        }
+        .shortcut-tab:hover { 
+            transform: translateY(-4px) scale(1.1); 
+            box-shadow: 2px 6px 10px rgba(0,0,0,0.6); z-index: 10; filter: brightness(1.2);
+        }
+        .shortcut-tab:active { transform: translateY(0); }
+
+        /* カーソルを合わせた時に出る名前 */
+        .shortcut-tab::after {
+            content: attr(data-name);
+            position: absolute; 
+            bottom: 120%; 
+            left: 50%; transform: translateX(-50%);
+            background: rgba(20, 20, 20, 0.95); color: #fff;
+            padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold;
+            white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s;
+            border: 1px solid #555; pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8); z-index: 100;
+        }
+        .shortcut-tab:hover::after { opacity: 1; visibility: visible; }
+
+        /* ---スマホ向け大幅アプデ --- */
         @media (max-width: 900px) {
             body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
 
@@ -697,6 +738,7 @@
             </div>
             <span class="close" onclick="closeAllModals()">×</span>
         </div>
+        <div class="upgrade-shortcuts" id="upgrade-shortcuts"></div>
     </div>
     <div class="modal-scroll-area">
         <div id="list-upgrade"></div>
@@ -760,7 +802,7 @@
             </div>
             <span class="close" onclick="closeAllModals()">×</span>
         </div>
-        <div style="font-size:11px; color:#aaa; margin-top:5px;">強力な「恵み」と「呪い」を等価交換する。大カテゴリごとに1つだけ有効にできる。</div>
+        <div style="font-size:11px; color:#41dcff; margin-top:5px;">強力な「恵み」と「呪い」を等価交換する。大カテゴリごとに1つだけ有効にできる。</div>
         
         <div class="scale-category-tabs" id="scale-cat-tabs"></div>
     </div>
@@ -778,6 +820,14 @@
         </div>
     </div>
     <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px;" id="patch-notes-content">
+        <div class="patch-date">v1.0.2 - 2026/03/10</div>
+        <ul class="patch-list">
+            <li>やっとリリースすることにしました</li>
+            <li>一部ステータスが実際の表記と異なる問題を修正</li>
+            <li>諸々バグ修正しました。</li>
+            <li>一旦は最終アプデですがバグ修正や気まぐれで何かは行うかもです</li>
+
+        </ul>
         <div class="patch-date">v1.0.1 - 2026/03/06</div>
         <ul class="patch-list">
             <li>メインメニューに「天秤の間」への直通ボタンを追加。</li>
@@ -867,9 +917,12 @@
     <div style="font-size:14px; line-height:1.8; color:#ccc; margin-top:10px; text-align:center;">
         <h2 style="color:#00ffcc; font-family:'DenkiChip', sans-serif; letter-spacing: 2px;">Timing Lock: Ultimate</h2>
         <p><strong>[ 制作・消費アイテムイラスト・プログラム ]</strong><br>秋冬IM</p>
+        <p><strong>[ その他アイコン ]</strong><br>絵文字（全部描くの面倒だった）</p>
         <p><strong>[ 制作ツール ]</strong><br>VScode</p>
-        <p><strong>[ フォント ]</strong><br>x8y12pxDenkiChip.ttf</p>
+        <p><strong>[ フォント ]</strong><br>でんきチップ x8y12pxDenkiChip.ttf</p>
         <p><strong>[ 素材・SE ]</strong><br>・OtoLogic<br>・効果音ラボ<br>・photo-ac<br>
+        <p><strong>[ 作者の好きな寿司 ]</strong><br>えびといくら</p>
+        <p><strong>[ 制作意図 ]</strong><br>暇つぶしとプログラムの練習</p>
         <p style="margin-top:20px; font-size:12px; color:#888;">Thank you for playing!</p>
     </div>
 </div>
@@ -880,6 +933,13 @@
 
     let owned = [];
     let claimedAchievements = []; 
+    const myTabId = Date.now() + "_" + Math.random(); 
+    localStorage.setItem('tl_pc_active_tab', myTabId); 
+
+    // 画面をクリック・キー操作するたびに、このタブをアクティブにする
+    window.addEventListener('mousedown', () => localStorage.setItem('tl_pc_active_tab', myTabId));
+    window.addEventListener('keydown', () => localStorage.setItem('tl_pc_active_tab', myTabId));
+    window.addEventListener('touchstart', () => localStorage.setItem('tl_pc_active_tab', myTabId), {passive: true});
     let notifiedAchievements = []; 
     
     const canvas = document.getElementById('canvas');
@@ -968,7 +1028,7 @@
             blessings: {
                 'rn_b1': { name: "恵み: 奇跡", icon: "✨", desc: "ラッキー確率が\n+30％される" },
                 'rn_b2': { name: "恵み: 豪運", icon: "💊", desc: "ミス時のリカバリー\n発動率が+30%される" },
-                'rn_b3': { name: "恵み: 必殺", icon: "⚡", desc: "クリティカル時の\n倍率が10倍になる" }
+                'rn_b3': { name: "恵み: 必殺", icon: "⚡", desc: "クリティカル時の\n倍率が5倍になる" }
             },
             curses: {
                 'rn_c1': { name: "呪い: 厄災", icon: "🌩️", desc: "ラッキー確率が\n-100％される" },
@@ -1060,14 +1120,14 @@
     const achievements = {
         'pts_total_100': { icon:"P", name:"最初の一歩", desc:"累計で100Pt以上稼ぐ", flavor: "", reward: 10, check: () => state.totalEarnedPts >= 100 },
         'boss_clear':{ icon:"👹", name:"ボスハンター", desc:"ボス戦を初めてクリアする", flavor: "", reward: 10, check: () => state.maxScore >= 11 },
-        'score_50':  { icon:"🎯", name:"登竜門", desc:"スコア50に到達する", flavor: "", reward: 10, check: () => state.maxScore >= 50 },
-        'score_75':  { icon:"💀", name:"死線", desc:"スコア75に到達する", flavor: "", reward: 20, check: () => state.maxScore >= 75 },
+        'score_50':  { icon:"🎯", name:"登竜門", desc:"スコア50に到達する", flavor: "", reward: 50, check: () => state.maxScore >= 50 },
+        'score_75':  { icon:"💀", name:"死線", desc:"スコア75に到達する", flavor: "", reward: 75, check: () => state.maxScore >= 75 },
         'item_gift': { icon:"🍜", name:"腹が減っては...", desc:"コンボ15を達成する", flavor: "", rewardItem: 'c_heart', rewardItemCount: 1, check: () => state.maxCombo >= 15 },
         'combo_25':  { icon:"🎵", name:"リズムを刻め", desc:"最大コンボ25を達成する", flavor: "", reward: 20, check: () => state.maxCombo >= 25 },
-        'combo_100': { icon:"🔥", name:"止まらない時計", desc:"最大コンボ100を達成する", flavor: "", reward: 10, rewardItem: 'c_ticket', rewardItemCount: 1, check: () => state.maxCombo >= 100 },
-        'pts_1w':    { icon:"💰", name:"プチ富豪", desc:"所持ポイントが10,000Ptを超える", flavor: "", reward: 10, check: () => state.pts >= 10000 },
-        'pts_100k':  { icon:"💎", name:"大富豪", desc:"所持ポイントが100,000Ptを超える", flavor: "", reward: 100, check: () => state.pts >= 100000 },
-        'pts_1m':    { icon:"👑", name:"億万長者", desc:"所持ポイントが1,000,000Ptを超える", flavor: "", reward: 1000, check: () => state.pts >= 1000000 },
+        'combo_100': { icon:"🔥", name:"止まらない時計", desc:"最大コンボ100を達成する", flavor: "", reward: 1000, rewardItem: 'c_ticket', rewardItemCount: 1, check: () => state.maxCombo >= 100 },
+        'pts_1w':    { icon:"💰", name:"プチ富豪", desc:"所持ポイントが10,000Ptを超える", flavor: "", reward: 100, check: () => state.pts >= 10000 },
+        'pts_100k':  { icon:"💎", name:"大富豪", desc:"所持ポイントが100,000Ptを超える", flavor: "", reward: 1000, check: () => state.pts >= 100000 },
+        'pts_1m':    { icon:"👑", name:"億万長者", desc:"所持ポイントが1,000,000Ptを超える", flavor: "", reward: 100000, check: () => state.pts >= 1000000 },
         'unlock_balance': { icon:"⚖️", name:"禁断の取引", desc:"天秤の間を開放する", flavor: "", reward: 10, check: () => isA('balance')  ,secret: true},
         'medals_10': { icon:"🏅", name:"メダルコレクター", desc:"所持メダルが10枚に到達する", flavor: "", reward: 30, check: () => state.totalScoreMedals >= 10 },
         'unlock_toybox': { icon:"📦", name:"新たな遊び", desc:"おもちゃ箱を開放する", flavor: "", reward: 10, check: () => isA('toybox') },
@@ -1103,8 +1163,8 @@
         pts:  { icon: "P", name:"ポイントUP", desc:"基礎獲得量を増加させます。", flavor:"小さな積み重ねが、やがて莫大な富へと変わる。", base:20, step:20, defaultMax:20, max:20, lv:0, tier:0, active:true, cat:'basic', isLB:true },
         wide: { icon: "🎯", name:"エリア拡大", desc:"成功判定となる赤いエリアを少し広くします。", flavor:"成功への的を広げていく。", base:20, step:10, defaultMax:10, max:10, lv:0, tier:0, active:true, cat:'basic' },
         gear: { icon: "⚙️", name:"軽量ギア", desc:"成功を重ねた時の、針の加速スピードを抑えます。", flavor:"精密な歯車が、時の暴走を優しくなだめる。", base:400, step:400, defaultMax:5, max:5, lv:0, tier:11, active:true, cat:'basic', isLB:true }, 
-        widePlus: { icon: "🏹", name:"エリア拡大+", desc:"赤いエリアをさらに広くして、難易度を大幅に下げます。", flavor:"もはや外すことすら難しい。絶対的な自信の現れ。", base:1000, step:800, defaultMax:10, max:10, lv:0, tier:50, active:true, cat:'basic', isLB:true }, 
-        ptsPlus:  { icon: "💰", name:"ポイントUP+", desc:"基礎獲得量を大幅に乗算し、爆発的に稼げるようにします。", flavor:"世界の理に介入し、富の増幅を加速させる。", base:2000, step:1500, defaultMax:5, max:5, lv:0, tier:50, active:true, cat:'basic', isLB:true },
+        widePlus: { icon: "🏹", name:"エリア拡大+", desc:"赤いエリアをさらに広くして、難易度を大幅に下げます。", flavor:"もはや外すことすら難しい。絶対的な自信の現れ。", base:1000, step:1300, defaultMax:10, max:10, lv:0, tier:50, active:true, cat:'basic', isLB:true }, 
+        ptsPlus:  { icon: "💰", name:"ポイントUP+", desc:"基礎獲得量を大幅に乗算し、爆発的に稼げるようにします。", flavor:"世界の理に介入し、富の増幅を加速させる。", base:2000, step:4000, defaultMax:5, max:5, lv:0, tier:50, active:true, cat:'basic', isLB:true },
         antiReverse: { icon: "🔄", name:"誤作動防止", desc:"スコア50以降に発生する「逆回転」の確率を下げます。", flavor:"運命の逆流に抗う、強靭な意志の力。", base:300, step:200, defaultMax:2, max:2, lv:0, tier:0, active:true, cat:'basic' },
 
         crit: { icon: "⚡", name:"クリティカル", desc:"ポイントが1.5倍になる黄色いクリティカルエリアが出現します。", flavor:"一瞬の隙を突く、研ぎ澄まされた集中力。", base:80, step:0, defaultMax:1, max:1, lv:0, tier:5, active:true, cat:'rng' },
@@ -1115,7 +1175,7 @@
         slow: { icon: "⏱️", name:"スロー", desc:"ゲーム中にSキーを押すと、一定時間針がスローになります。", flavor:"世界が色褪せ、時の流れが泥のように遅くなる。", base:60, step:50, defaultMax:5, max:5, lv:0, tier:3, active:true, cat:'system' },
         discount: { icon: "🎫", name:"割引", desc:"他のすべての強化に必要なポイントが減少します。", flavor:"取引の極意。全ての対価は、交渉次第で下がる。", base:500, step:400, defaultMax:3, max:3, lv:0, tier:4, active:true, cat:'system' },
         comboBonus: { icon: "🔥", name:"コンボ強化", desc:"コンボ数が続くほど、獲得ポイントにボーナスが付きます。", flavor:"止まらない連撃が、かつてない熱狂を呼ぶ。", base:150, step:100, defaultMax:5, max:5, lv:0, tier:4, active:true, cat:'system' }, 
-        ins:  { icon: "🏦", name:"死亡保険", desc:"ゲームオーバーになった時に必ず持ち帰れる最低保証ポイントが増えます。", flavor:"最悪の事態に備える。それがプロの流儀だ。", base:30, step:20, defaultMax:25, max:25, lv:0, tier:5, active:true, cat:'system' },
+        ins:  { icon: "🏦", name:"死亡保険", desc:"ゲームオーバーになった時に必ず持ち帰れる最低保証ポイントが増えます。", flavor:"最悪の事態に備える。それがプロの流儀だ。", base:30, step:20, defaultMax:50, max:100, lv:0, tier:5, active:true, cat:'system' },
         wideKeep: { icon: "🛡️", name:"ワイドキープ", desc:"スコアが進むにつれてエリアが狭くなるのを抑えます。", flavor:"どんなに追い詰められても、決して視野を狭めない。", base:400, step:300, defaultMax:5, max:5, lv:0, tier:9, active:true, cat:'system' }, 
         auto: { icon: "🕰️", name:"オート時計", desc:"放置しているだけで自動的にポイントを稼いでくれます。", flavor:"あなたが休んでいる間も、時計はチクタクと時を刻む。", base:200, step:150, defaultMax:15, max:15, lv:0, tier:10, active:true, cat:'system' },
         autoEff: { icon: "🔋", name:"オート時計効率", desc:"オート時計から得られるポイントを増加させます。", flavor:"歯車に油を注ぎ、全自動の恩恵を極限まで高める。", base:300, step:250, defaultMax:20, max:20, lv:0, tier:15, active:true, cat:'system', parent:'auto' },
@@ -1123,34 +1183,36 @@
         toybox: { icon: "🧸", name:"おもちゃ箱", desc:"ショップに「消費アイテム」のカテゴリが追加されます。", flavor:"「ガラクタか、宝物か。とにかく役立つ新商品をそろえてみたぜ。」byショップ店長", base:1000, step:0, defaultMax:1, max:1, lv:0, tier:10, active:true, noToggle:true, cat:'toybox' },
         balance: { icon: "⚖️", name:"天秤の間", desc:"タブに「天秤の間」が追加される。強力なバフと引き換えにデバフを負う。", flavor:"等価交換の法則。", base:5000, step:0, defaultMax:1, max:1, lv:0, tier:15, active:true, noToggle:true, cat:'toybox' }, 
 
-        bossShield: { icon: "🛡️", name:"ボスシールド", desc:"ボス戦でのミスを回数分だけ無効化してくれます。", flavor:"強大な敵の一撃を、見えない障壁が弾き返す。", base:600, step:600, defaultMax:2, max:2, lv:0, tier:25, active:true, cat:'boss' },
-        bossSlow: { icon: "👁️", name:"ボス威圧", desc:"ボス戦突入時に、確率で自動的にスローが発発動します。", flavor:"あなたの放つ威圧感が、敵の動きを鈍らせる。", base:800, step:600, defaultMax:5, max:5, lv:0, tier:25, active:true, cat:'boss' },
-
         fever:{ icon: "🌟", name:"フィーバー", desc:"ゲージが満タンになると、一定時間無敵で連打し放題になります。", flavor:"限界を超えた先にある、黄金色に輝く熱狂の領域。", base:300, step:300, defaultMax:5, max:5, lv:0, tier:15, active:true, cat:'fever' },
         feverTime: { icon: "⏳", name:"Fタイム延長", desc:"フィーバー状態の持続時間を延長します。", flavor:"終わらない狂宴。この熱狂はまだ冷めやらない。", base:600, step:800, defaultMax:5, max:5, lv:0, tier:16, active:true, cat:'fever', parent:'fever' },
         feverBoost: { icon: "💥", name:"Fボーナス", desc:"フィーバー中に獲得できるポイントの倍率が上がります。", flavor:"熱狂の渦の中で、富は爆発的に膨れ上がる。", base:500, step:500, defaultMax:5, max:5, lv:0, tier:18, active:true, cat:'fever', parent:'fever' }, 
 
+        bossHunt: { icon: "⚔️", name:"ボスハント", desc:"ボス戦で獲得できるボーナスポイントを増加させます。", flavor:"効率的な狩りを思いついた。", base:1000, step:1000, defaultMax:10, max:10, lv:0, tier:10, active:true, cat:'boss',  },
+        bossShield: { icon: "🛡️", name:"ボスシールド", desc:"ボス戦でのミスを回数分だけ無効化してくれます。", flavor:"強大な敵の一撃を、見えない障壁が弾き返す。", base:600, step:1400, defaultMax:2, max:2, lv:0, tier:25, active:true, cat:'boss' },
+        bossSlow: { icon: "👁️", name:"ボス威圧", desc:"ボス戦突入時に、確率で自動的にスローが発発動します。", flavor:"あなたの放つ威圧感が、敵の動きを鈍らせる。", base:800, step:600, defaultMax:5, max:5, lv:0, tier:25, active:true, cat:'boss' },
+
         ending: { icon: "🎬", name:"真実の扉", desc:"設定画面からゲームのエンディングを見ることができます。", flavor:"すべての針が重なる時、本当の結末が目を覚ます。", base:3000, step:0, defaultMax:1, max:1, lv:0, tier:12, active:true, cat:'god' }, 
-        godMode: { icon: "👑", name:"神の領域", desc:"絶対成功領域を展開し、ポイントが常時10倍になります。", flavor:"もはやゲームではない。あなたがこの世界のルールだ。", base:100000, step:0, defaultMax:1, max:1, lv:0, tier:17, active:true, cat:'god', parent:'ending' },
+        godMode: { icon: "👑", name:"神の領域", desc:"絶対成功領域を展開し、ポイントが常時10倍になります。", flavor:"もはやゲームではない。あなたがこの世界のルールだ。", base:500000, step:0, defaultMax:1, max:1, lv:0, tier:17, active:true, cat:'god', parent:'ending' },
         limitBreak: { icon: "🔥", name:"限界突破", desc:"一部の強化(Pt系、ギア、エリア拡大+等)のLv上限を引き上げる。", flavor:"限界の先へ。神すらも踏み入らぬ無限の領域。", base:20000, step:0, defaultMax:1, max:1, lv:0, tier:20, active:true, cat:'god', parent:'ending' } 
     };
 
     const shopItems = {
-        's_blue': { icon:"🟦", name:"ブルーネオン", type:'skin', cost:400, desc:"リングを青にする", flavor:"クールな静寂。", val:'#00ccff' },
-        's_gold': { icon:"🟨", name:"ゴールドリム", type:'skin', cost:800, desc:"リングを金にする(常時発光)", flavor:"成金趣味とは言わせない。ただまぶしすぎる", val:'#ffd700' },
-        's_white':{ icon:"⬜", name:"ホワイト", type:'skin', cost:400, desc:"リングを白にする(常時発光)", flavor:"純白の輝き。", val:'#ffffff' },
-        's_red':  { icon:"🟥", name:"レッドフレア", type:'skin', cost:400, desc:"リングを赤にする", flavor:"赤すぎて何も見えない。", val:'#ff0055' },
+        's_blue': { icon:"🟦", name:"ブルーネオン", type:'skin', cost:400, desc:"ミスエリアを青にする", flavor:"クールな静寂。", val:'#00ccff' },
+        's_gold': { icon:"🟨", name:"ゴールドリム", type:'skin', cost:800, desc:"ミスエリアを金にする(常時発光)", flavor:"成金趣味とは言わせない。ただまぶしすぎる", val:'#ffd700' },
+        's_white':{ icon:"⬜", name:"ホワイト", type:'skin', cost:400, desc:"ミスエリアを白にする(常時発光)", flavor:"純白の輝き、まるで蛍光灯のようだ。", val:'#ffffff' },
+        's_red':  { icon:"🟥", name:"レッドフレア", type:'skin', cost:400, desc:"ミスエリアを赤にする", flavor:"赤すぎて何も見えない苦行。", val:'#ff0055' },
         's_real_n':{ icon:"🗡️", name:"黄金の針", type:'needle', cost:25000, desc:"針を黄金にする", flavor:"時を刻むのにふさわしい逸品。", val:'real_needle' },
         'e_thun': { icon:"⚡", name:"雷エフェクト", type:'effect', cost:2500, desc:"クリティカルヒット時に雷発生", flavor:"ビリビリくるぜ。", val:'thunder' },
         'e_party':{ icon:"✨", name:"パーティクル", type:'effect', cost:4000, desc:"ヒット時に星屑が散る", flavor:"画面を鮮やかに彩る星屑。", val:'particle' }, 
         'f_bg':   { icon:"🌐", name:"サイバー背景", type:'facility', cost:4000, desc:"背景にデジタルグリッドを描画", flavor:"ハッカー気分を味わえる電脳空間。", val:'cyber_bg' }, 
         'sd_clk': { icon:"🖱️", name:"カチッ音", type:'sound', cost:800, desc:"クリック音変更", flavor:"心地よいメカニカルスイッチの響き。", val:'click_file' },
-        'g_btn':  { icon:"🔴", name:"インターホン", type:'gadget', cost:1500, desc:"右側にボタン追加", flavor:"無性に押したくなるあのボタン。", val:'g_btn' },
+        'g_btn':  { icon:"🔴", name:"インターホン", type:'gadget', cost:1500, desc:"いつでもピンポンダッシュができる", flavor:"無性に押したくなるあのボタン。", val:'g_btn' },
         'g_met':  { icon:"⏱️", name:"メトロノーム", type:'gadget', cost:1500, desc:"リズムを刻む", flavor:"一定のテンポが集中力を高める。", val:'g_met' },
         'g_bomb': { icon:"💣", name:"爆弾ボタン", type:'gadget', cost:3000, desc:"これから毎日爆破しようぜ？", flavor:"押すと爆発する。ただそれだけだ。", val:'g_bomb' },
         'f_gorg': { icon:"🔤", name:"チップ風フォント", type:'font', cost:4000, desc:"文字がチップ風のフォントになる", flavor:"レトロな雰囲気を醸し出す。", val:'f_gorg' },
         'i_tikuwa':{ icon:"<img src='tikuwa.png'>", name:"ちくわ", type:'item', cost:7000, desc:"高級なちくわ", flavor:"なぜちくわ？考えるな、感じろ。", val:'i_tikuwa' },
-        'g_neko': { icon:"🐱", name:"招き猫", type:'gadget', cost:5000, desc:"右側に鎮座する。たまにポイントを拾う。", flavor:"チリも積もればなんとやら。自動で時々1Ptもらえるぞ。", val:'g_neko' }
+        'g_neko': { icon:"🐱", name:"招き猫", type:'gadget', cost:5000, desc:"右側に鎮座する。たまにポイントを拾う。", flavor:"チリも積もればなんとやら。自動で時々1Ptもらえるぞ。", val:'g_neko' },
+        'skin_mono': { type: 'skin', val: 'mono', icon: "👁️", name: "モノクローム", desc: "リングが白と黒で構成されたモノクロなデザインになる。", flavor: "まるで霧の森？あくまでインスパイアです。", cost: 150000 },
     };
 
     const consumeItems = {
@@ -1202,6 +1264,7 @@
         if(k==='auto') return lv===0 ? 'なし' : `${1+Math.floor((lv-1)/5)}個(${(10000-((lv-1)%5)*1800)/1000}s)`;
         if(k==='autoEff') return lv===0 ? '+0pt' : `+${9 + (lv - 1) * 10}pt`;
         
+        if(k==='bossHunt') return `+${10 + lv * 4}Pt`;
         if(k==='bossShield') return `${lv}回`;
         if(k==='bossSlow') return `${lv*20}%`;
         
@@ -1426,7 +1489,7 @@
             }
             state.targetW = Math.max(state.buffs.last ? 0.1 : 0.2, wBase); 
         } else {
-            // 通常時の幅計算（ここでスコアに応じて狭くする！）
+            // 通常時の幅計算
             let wBase = 0.7;
             if(isA('wide')) wBase += skills.wide.lv * 0.05;
             if(isA('widePlus')) wBase += skills.widePlus.lv * 0.05;
@@ -1463,9 +1526,9 @@
         state.hasDeath2 = false; 
         
         let deathThreshold = hasScaleCurse('ar_c2') ? 1 : 75;
-        if(state.score >= deathThreshold && Math.random() < 0.3) {
+        if(state.score >= deathThreshold && Math.random() < 0.5) {
             state.hasDeath = true;
-            state.deathW = hasScaleCurse('ar_c3') ? 0.6 : 0.3; 
+            state.deathW = hasScaleCurse('ar_c3') ? 1.0 : 0.5; 
             if(Math.random() < 0.5) {
                 state.deathA = (state.targetA + state.targetW/2 + state.deathW/2) % (Math.PI*2);
             } else {
@@ -1476,7 +1539,7 @@
         if(state.isBoss && hasScaleCurse('bs_c1')) {
             state.hasDeath = true;
             state.hasDeath2 = true;
-            state.deathW = hasScaleCurse('ar_c3') ? 0.6 : 0.3; 
+            state.deathW = hasScaleCurse('ar_c3') ? 1.0 : 0.5; 
             state.deathA = (state.targetA + state.targetW/2 + state.deathW/2 + 0.1) % (Math.PI*2);
             state.deathA2 = (state.targetA - state.targetW/2 - state.deathW/2 - 0.1 + Math.PI*2) % (Math.PI*2);
         }
@@ -1607,7 +1670,7 @@
         if(cDiff>Math.PI) cDiff=(Math.PI*2)-cDiff;
         
         let cWidth = state.targetW*0.15;
-        if (hasScaleCurse('rn_c2')) { cWidth *= 0.4; } // 呪い: 狭窄 (60%減)
+        if (hasScaleCurse('rn_c2')) { cWidth *= 0.4; } // 呪い: 狭窄 
         let cRate = skills.critRate.lv * 0.002;
         
         let isCritArea = (isA('crit') && cDiff<=cWidth);
@@ -1662,7 +1725,7 @@
                 }
             }
 
-            if(state.score > 0 && state.score % 50 === 0) {
+            if(state.score > 1 && state.score % 50 === 1) {
                 state.totalScoreMedals++;
                 showFloatingText("🏅メダル獲得！", "#ffd700");
                 playTone('sine', 1500, 0.2); setTimeout(()=>playTone('sine', 2000, 0.3), 100);
@@ -1684,7 +1747,7 @@
                 state.buffs.magnet--; renderConsumeSidebar();
             }
 
-            if(state.score === 100) { 
+            if(state.score === 101) { 
                 state.hasReached100 = true; 
                 if(isA('ending')) { playEnding(); }
             }
@@ -1699,7 +1762,10 @@
             
             if(state.isBoss) {
                 let bossCount = Math.floor(state.score / 10);
-                let bGain = 50 * bossCount; 
+                
+                let bossBonusPerLevel = isA('bossHunt') ? skills.bossHunt.lv * 4 : 0;
+                let bGain = (10 + bossBonusPerLevel) * bossCount; 
+                
                 if (hasScaleBless('bs_b2')) bGain *= 3;
                 if (hasScaleCurse('bs_c3')) bGain -= 50;
                 gain += Math.max(0, bGain);
@@ -1707,7 +1773,7 @@
                 if(state.score > 1) { playTone('triangle', 1000, 0.2); setTimeout(()=>playTone('triangle', 1200, 0.4), 100); }
             }
             
-            let critMult = hasScaleBless('rn_b3') ? 10 : 1.5;
+            let critMult = hasScaleBless('rn_b3') ? 5 : 1.5;
             if(isCrit) gain *= critMult;
             
             let lRate = isA('lucky') ? 0.005 : 0;
@@ -1739,7 +1805,7 @@
             } else {
                 state.pending += gain;
                 
-                // ▼マイナスになった時は表示を変える処理
+                // マイナス時表示変更
                 let txtColor = gain < 0 ? "#ff00ff" : (isCrit ? "#ffeb3b" : "#fff");
                 let prefix = gain > 0 ? "+" : "";
                 showFloatingText(prefix + gain, txtColor);
@@ -1812,14 +1878,14 @@
                 for (let i=0; i<dmg; i++) {
                     if (state.tempLife > 0) {
                         state.tempLife--;
-                        if(state.heartTimers && state.heartTimers.length > 0) state.heartTimers.shift(); // 追加
+                        if(state.heartTimers && state.heartTimers.length > 0) state.heartTimers.shift();
                     }
                     else state.life--;
                 }
                 if (state.tempLife <= 0) state.heartTimers = [];
 
                 state.combo=0;
-                let missPenaltyMult = hasScaleCurse('hp_c2') ? 2 : 1; // 呪い：腐敗 ペナルティ2倍
+                let missPenaltyMult = hasScaleCurse('hp_c2') ? 2 : 1; // 呪い：腐敗 2倍
                 
                 state.gameSpd = Math.max(0.05, state.gameSpd - (0.01 * missPenaltyMult)); 
                 state.feverG = Math.max(0, state.feverG - (10 * missPenaltyMult)); 
@@ -1858,7 +1924,6 @@
         state.heartTimers = [];
         if(state.buffs.pot > 0) state.buffs.pot = 0; 
 
-        // 呪い：崩壊でOFFにされたスキルを復元
         if (state.disabledByCurse) {
             for (let k in state.disabledByCurse) {
                 skills[k].active = true;
@@ -1868,7 +1933,7 @@
         }
 
         playTone('sawtooth',80,0.6);
-        let ins = isA('ins') ? 15 + skills.ins.lv*10 : 15;
+        let ins = isA('ins') ? 15 + skills.ins.lv*45 : 15;
         if (hasScaleBless('sc_b2')) {
             let halfPending = Math.floor(state.pending * 0.5);
             if(halfPending > ins) ins = halfPending;
@@ -1876,6 +1941,9 @@
 
         state.totalEarnedPts += Math.min(state.pending, ins); 
         state.pts += Math.min(state.pending, ins);
+
+        state.pending = 0;
+        state.score = 0;
         
         document.getElementById('score-display').innerText = "LOST";
         
@@ -1900,15 +1968,16 @@
             state.pending = Math.floor(state.pending / 2);
             showFloatingText("持ち帰り失敗!", "#ff0055");
             updateUI();
-            return; // 持ち帰らせずに強制的にゲームを続行させる
+            return; 
         }
         playBtn(); 
         state.totalEarnedPts += state.pending; 
         state.pts+=state.pending; 
+        state.pending = 0;
+        state.score = 0;
         state.isPlaying=false; 
         state.heartTimers = [];
         
-        // 呪い：崩壊でOFFにされたスキルを復元
         if (state.disabledByCurse) {
             for (let k in state.disabledByCurse) {
                 skills[k].active = true;
@@ -2039,21 +2108,45 @@
         canvas.style.boxShadow = shadow;
 
         ctx.beginPath(); ctx.arc(140,140,110,0,Math.PI*2);
-        ctx.strokeStyle = state.isFever ? '#ffeb3b' : state.skin.ring;
-        ctx.lineWidth = 15; ctx.stroke();
+        if (state.isFever) {
+            ctx.strokeStyle = '#ffeb3b';
+            ctx.lineWidth = 15;
+        } else if (state.skin.ring === 'mono') {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2; 
+        } else {
+            ctx.strokeStyle = state.skin.ring;
+            ctx.lineWidth = 15;
+        }
+        ctx.stroke();
 
         ctx.beginPath();
         if(state.isFever) {
-            ctx.arc(140,140,110,0,Math.PI*2); ctx.strokeStyle = `hsl(${Date.now()%360},${state.settings.feverSat}%,50%)`;
+            ctx.arc(140,140,110,0,Math.PI*2); 
+            ctx.strokeStyle = `hsl(${Date.now()%360},${state.settings.feverSat}%,50%)`;
+            ctx.stroke(); 
         } else {
             if(state.isBoss && !hasScaleBless('bs_b1')) { 
                 state.targetA += state.bossSpeed * state.bossDir * dtMult; 
                 if(Math.random()<0.02 * dtMult) state.bossDir*=-1; 
             }
             ctx.arc(140,140,110,state.targetA-state.targetW/2, state.targetA+state.targetW/2);
-            ctx.strokeStyle='#ff0055';
+            
+            if (state.skin.ring === 'mono') {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 15;
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 11;
+                ctx.stroke();
+                
+                ctx.lineWidth = 15; 
+            } else {
+                ctx.strokeStyle = '#ff0055';
+                ctx.stroke(); 
+            }
         }
-        ctx.stroke();
 
         if(state.hasSubTarget && !state.isFever) {
             ctx.beginPath();
@@ -2067,7 +2160,9 @@
             if (hasScaleCurse('rn_c2')) cWidth *= 0.4;
             ctx.beginPath();
             ctx.arc(140,140,110,(state.targetA+state.critOff)-cWidth/2, (state.targetA+state.critOff)+cWidth/2);
-            ctx.strokeStyle='#ffeb3b'; ctx.stroke();
+            
+            ctx.strokeStyle = (state.skin.ring === 'mono') ? '#ffffff' : '#ffeb3b';
+            ctx.stroke();
         }
 
         if(state.hasDeath && !state.isFever) {
@@ -2159,7 +2254,7 @@
         
         document.getElementById('ui-pending').innerText = forgotten ? "???" : Math.floor(state.pending);
 
-        document.getElementById('ui-ins').innerText = isA('ins') ? 15 + skills.ins.lv*10 : 15;
+        document.getElementById('ui-ins').innerText = isA('ins') ? 15 + skills.ins.lv*45 : 15;
         
         document.getElementById('rec-score').innerText = state.maxScore;
         document.getElementById('rec-combo').innerText = state.maxCombo;
@@ -2183,7 +2278,7 @@
 
             for(let i=0; i<cBase; i++) { lHtml += '<div class="life-box"></div>'; }
             for(let i=0; i<cTemp; i++) { 
-                // 点滅対象（右側にあるもの）に blink クラスを付与
+                
                 if (i >= cTemp - blinkCount) {
                     lHtml += '<div class="life-box temp blink"></div>'; 
                 } else {
@@ -2216,11 +2311,11 @@
         if(isA('balance')) {
             if(document.getElementById('ui-medals-container')) document.getElementById('ui-medals-container').style.display = 'block';
             if(document.getElementById('btn-balance-main')) document.getElementById('btn-balance-main').style.display = 'flex';
-            if(document.getElementById('btn-shop')) document.getElementById('btn-shop').style.gridColumn = 'span 1'; // ←この行を追加
+            if(document.getElementById('btn-shop')) document.getElementById('btn-shop').style.gridColumn = 'span 1'; 
         } else {
             if(document.getElementById('ui-medals-container')) document.getElementById('ui-medals-container').style.display = 'none';
             if(document.getElementById('btn-balance-main')) document.getElementById('btn-balance-main').style.display = 'none';
-            if(document.getElementById('btn-shop')) document.getElementById('btn-shop').style.gridColumn = '1 / -1'; // ←この行を追加
+            if(document.getElementById('btn-shop')) document.getElementById('btn-shop').style.gridColumn = '1 / -1'; 
         }
 
         if(document.getElementById('ui-medals')) document.getElementById('ui-medals').innerText = state.totalScoreMedals;
@@ -2230,8 +2325,8 @@
             b.style.display = isA('balance') ? 'block' : 'none';
         });
 
-        if (!state.isFever) {
-            document.getElementById('score-display').innerText = (forgotten && state.isPlaying) ? "???" : state.score;
+        if (!state.isFever && state.isPlaying) {
+            document.getElementById('score-display').innerText = forgotten ? "???" : state.score;
         }
 
         updateClocks();
@@ -2269,6 +2364,15 @@
         document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
     }
     
+    function scrollToCategory(id) {
+        if(state.isTutorial) return;
+        playBtn();
+        const target = document.getElementById(id);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
     function toggleSkill(k) {
         if(state.isTutorial) return;
         if (state.disabledByCurse && state.disabledByCurse[k]) {
@@ -2446,7 +2550,7 @@
         playBtn();
         hideGlobalTooltip();
         if (selectingScale[cat][type] === key) {
-            selectingScale[cat][type] = null; // 選択解除
+            selectingScale[cat][type] = null;
         } else {
             selectingScale[cat][type] = key;
         }
@@ -2497,7 +2601,6 @@
         
         if (pendingScaleAction.type === 'sign') {
             if(state.totalScoreMedals >= 2 && state.pts >= 5000 && selectingScale[cat].bless && selectingScale[cat].curse) {
-                // 天秤契約時のSEを tensi.mp3 に変更
                 sTensi.volume = state.settings.vol;
                 sTensi.currentTime = 0;
                 sTensi.play().catch(() => playTone('sine', 1500, 1.0));
@@ -2662,16 +2765,20 @@
 
     function renderSkills() {
         const div = document.getElementById('list-upgrade'); div.innerHTML = '';
-        let total = Object.values(skills).reduce((a,b)=>a+b.lv,0);
         
+        // 付箋コンテナの初期化
+        const shortcutsDiv = document.getElementById('upgrade-shortcuts');
+        let shortcutsHtml = '<div style="font-size:12px; font-weight:bold; color:#00ffcc; margin-right:5px; flex-shrink:0;">📑 カテゴリ別:</div>';
+
+        let total = Object.values(skills).reduce((a,b)=>a+b.lv,0);
         document.getElementById('modal-total-lv').innerText = total;
 
         const categories = [
             { id: 'basic', name: '🔵 基本強化' },
             { id: 'rng', name: '🟠 確率・特殊' },
             { id: 'system', name: '🟣 システム・補助' },
-            { id: 'boss', name: '🔴 ボス対策' },
             { id: 'fever', name: '🟡 フィーバー' },
+            { id: 'boss', name: '🔴 ボス対策' },
             { id: 'toybox', name: '📦 ショップ強化' },
             { id: 'god', name: '⚪ ？？？' }
         ];
@@ -2682,13 +2789,22 @@
             let catSkills = Object.keys(skills).filter(k => skills[k].cat === cat.id && !skills[k].parent);
             if(catSkills.length === 0) return;
 
-            if(cat.id === 'god' && !state.hasReached100 && skills.ending.lv === 0) {
-                html += `<div class="skill-category-title" style="border-left-color: #444; color: #777;">⚪ ？？？</div>`;
-            } else {
-                let catColor = getCatColor(cat.id);
-                let catName = cat.id === 'god' ? '⚪ 神の領域' : cat.name;
-                html += `<div class="skill-category-title" style="border-left-color: ${catColor}; color: ${catColor};">${catName}</div>`;
-            }
+            let isGodLocked = (cat.id === 'god' && !state.hasReached100 && skills.ending.lv === 0);
+            let catColor = getCatColor(cat.id);
+            let catName = cat.id === 'god' ? (isGodLocked ? '⚪ ？？？' : '⚪ 神の領域') : cat.name;
+            
+            let catId = `cat-title-${cat.id}`;
+            html += `<div id="${catId}" class="skill-category-title" style="border-left-color: ${isGodLocked ? '#444' : catColor}; color: ${isGodLocked ? '#777' : catColor};">${catName}</div>`;
+
+            let parts = cat.name.split(' ');
+            let iconOnly = parts[0]; 
+            let nameOnly = parts[1] || parts[0];
+            let displayName = isGodLocked ? '？？？' : (cat.id === 'god' ? '神の領域' : nameOnly);
+            
+            let tabBg = isGodLocked ? '#222' : catColor + '33'; 
+            let tabBorder = isGodLocked ? '#444' : catColor;
+
+            shortcutsHtml += `<button class="shortcut-tab" style="background:${tabBg}; border-bottom: 2px solid ${tabBorder};" data-name="${displayName}" onclick="scrollToCategory('${catId}')">${iconOnly}</button>`;
 
             catSkills.forEach(k => {
                 html += createSkillRowHTML(k, total, false);
@@ -2700,6 +2816,7 @@
         });
 
         div.innerHTML = html;
+        if (shortcutsDiv) shortcutsDiv.innerHTML = shortcutsHtml;
     }
 
     function createSkillRowHTML(k, totalLv, isChild) {
@@ -2709,7 +2826,7 @@
 
         if(k==='ending') {
             locked = !state.hasReached100;
-            lockReason = "スコア100到達で解放";
+            lockReason = "スコア100突破で解放";
         } else if(k==='antiReverse') {
             locked = state.maxScore < 50;
             lockReason = "最大スコア50達成で解放";
@@ -2890,7 +3007,7 @@
                 let countTxt = (bVal > 1) ? ` (x${bVal})` : "";
                 if(isActive && k==='c_ticket' && state.ticketTimer>0) countTxt = ` (${Math.ceil(state.ticketTimer/1000)}s)`;
                 if(isActive && k==='c_heart' && state.heartTimers && state.heartTimers.length>0) {
-                    // 一番残り時間が少ないものを表示
+
                     countTxt = ` (${Math.ceil(Math.min(...state.heartTimers)/1000)}s)`;
                 }
                 if(isActive && k==='c_magnet' && state.buffs.magnet>0) countTxt = ` (残り${state.buffs.magnet}回)`;
@@ -2938,7 +3055,7 @@
                 } else {
                     state.tempLife++; 
                     if(!state.heartTimers) state.heartTimers = [];
-                    state.heartTimers.push(60000); // 独立タイマーを追加
+                    state.heartTimers.push(60000); 
                     playTone('triangle', 1200, 0.2); 
                     showFloatingText("LIFE+1", "#ffeb3b");
                 }
@@ -3295,6 +3412,9 @@
     }
 
     function saveGame(s, silent=false, showNotice=true){ 
+        if (s === 'auto' && localStorage.getItem('tl_pc_active_tab') !== myTabId) {
+            return;
+        }
         try {
             localStorage.setItem('tl_pc_'+s, JSON.stringify({
                 pts:state.pts, skills, owned, skin:state.skin, reach100:state.hasReached100, hasTutorialDone:state.hasTutorialDone, 
